@@ -38,18 +38,63 @@ var yPixelScale = canvas.height/magnif_height; // pixels per magnif unit
 var initialT = 0;
 var dt = 0.1;
 
+var tEslider = document.getElementById("tEslider");
+var tEreadout = document.getElementById("tEreadout");
+
+var tMaxSlider = document.getElementById("tMaxSlider");
+var tMaxReadout = document.getElementById("tMaxReadout");
+
+var u0slider = document.getElementById("u0slider");
+var u0readout = document.getElementById("u0readout");
+
 window.onload = initialize();
 
 function initialize() {
+  initializeListeners();
   initializePlot();
   plotLightcurve();
 }
 
+function initializeListeners() {
+  tEslider.addEventListener("input", update_tE, false);
+  tEslider.addEventListener("change", update_tE, false);
+
+  tMaxSlider.addEventListener("input", update_tMax, false);
+  tMaxSlider.addEventListener("change", update_tMax, false);
+
+  u0slider.addEventListener("input", update_u0, false);
+  u0slider.addEventListener("change", update_u0, false);
+}
+
+function update_tE() {
+  tEreadout.innerHTML = tEslider.value;
+  t_E = tEslider.value;
+  context.clearRect(0, 0, canvas.width, canvas.height);
+  plotLightcurve();
+}
+
+function update_tMax() {
+  tMaxReadout.innerHTML = tMaxSlider.value;
+  t_max = tMaxSlider.value;
+  context.clearRect(0, 0, canvas.width, canvas.height);
+  plotLightcurve();
+}
+
+function update_u0() {
+  u0readout.innerHTML = u0slider.value;
+  u_0 = u0slider.value;
+  context.clearRect(0, 0, canvas.width, canvas.height);
+  plotLightcurve();
+}
+
+
 function initializePlot() {
+  context.clearRect(0, 0, canvas.width, canvas.height);
   // fill in background
   context.fillStyle = "white";
   context.fillRect(0, 0, canvas.width, canvas.height);
 
+  context.lineWidth = 1;
   // draw vertical lines
   for (var xPlotDay = 0; xPlotDay < day_width; xPlotDay++) {
     var xPlotPixel = xPlotDay * xPixelScale;
@@ -72,6 +117,7 @@ function initializePlot() {
 }
 
 function plotLightcurve() {
+  initializePlot();
   var prevTday = initialT;
   var prevMagnif = get_magnif(initialT);
 
