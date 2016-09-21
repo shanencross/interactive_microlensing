@@ -27,18 +27,28 @@ Also, there are 30 days per x_pixel (0 to 30)
 and 4 magnification units per y_pixel (0 to 4)
 */
 
-var tE = 10;
+// default parameter values
+var tE = 1.5;
 var tMax = 15;
 var u0 = 0.1;
 
-var dayWidth = 50;
+// plot scale and range
+var dayWidth = 30;
 var magnifHeight = 10;
 var xPixelScale = canvas.width/dayWidth; // pixels per day
 var xPlotStep = 1; // Spacing between vertical lines in days
 var yPixelScale = canvas.height/magnifHeight; // pixels per magnif unit
 var yPlotStep = 1; // Spacing between horizontal lines in magnification units
 
-var initialT = 0;
+// plot aesthetics
+var backgroundColor = "white";
+var gridColor = "black";
+var gridWidth = 0.2;
+var curveColor = "blue";
+var curveWidth = 2;
+
+// starting time and time increment
+var initialTdayDefault = 0;
 var dt = 0.1;
 
 var tEslider = document.getElementById("tEslider");
@@ -94,11 +104,11 @@ function updateU0() {
 function initPlot() {
   context.clearRect(0, 0, canvas.width, canvas.height);
   // fill in background
-  context.fillStyle = "white";
+  context.fillStyle = backgroundColor;
   context.fillRect(0, 0, canvas.width, canvas.height);
 
-  context.strokeStyle = "black";
-  context.lineWidth = 0.1;
+  context.lineWidth = gridWidth;
+  context.strokeStyle = gridColor;
   // draw vertical lines
   for (var xPlotDay = 0; xPlotDay < dayWidth; xPlotDay+=xPlotStep) {
     var xPlotPixel = xPlotDay * xPixelScale;
@@ -118,64 +128,78 @@ function initPlot() {
   }
 }
 
-function plotLightcurve(inputData, fromEquation=false) {
+function plotLightcurve(inputData, fromEquation=true) {
+  console.log("fromEquation: " + fromEquation);
+  console.log("inputData: " + inputData);
   initPlot();
-  context.lineWidth = 2;
-  context.strokeStyle = "blue";
-  if (fromEquation)
-    plotLightcurveFromEquation();
-  else
-    plotLightcurveFromData(inputData);
-}
+  // var initialTday, initialMagnif, indexMax, indexIncrement;
+  var tDay, magnif;
+  if (fromEquation) {
+    tDay = initialTdayDefault;
+    magnif = getMagnif(tDay);
+    // initialTday = initialTdayDefault;
+    // initialMagnif = getMagnif(initialTday);
 
-function plotLightcurveFromData(inputData) {
-  var curveData;
-  if (inputData === undefined) {
-    curveData = getCurveData();
+    // indexMax = dayWidth;
+    // indexIncrement = dt;
   }
   else {
-    curveData = inputData;
+    var curveData;
+    if (inputData === undefined) {
+      console.log("hi");
+      curveData = getCurveData()
+    }
+    else {
+      console.log("hullo");
+      curveData = inputData;
+    }
+    var times = curveData.times;
+    var magnifs = curveData.magnifs;
+    tDay = times[0];
+    magnif = times[0];
+    // initialTday = times[0];
+    // initialMagnif = magnifs[0];
+
+    // indexMax = times.length - 1;
+    // indexIncrement = 1;
   }
 
-  var times = curveData.times;
-  var magnifs = curveData.magnifs;
-
-  var prevTday = times[0];
-  var prevMagnif = magnifs[0];
-
-  for (var i=0; i<times.length; i++) {
-    var tDay = times[i];
-    var magnif = magnifs[i];
-
-    plotLine(prevTday, prevMagnif, tDay, magnif);
-    prevTday = tDay;
-    prevMagnif = magnif;
-  }
-}
-
-function plotLightcurveFromEquation() {
-  var prevTday = initialT;
-  var prevMagnif = getMagnif(initialT);
-
-  for (var tDay=initialT + dt; tDay <= dayWidth; tDay += dt) {
-    var magnif = getMagnif(tDay);
-
-    plotLine(prevTday, prevMagnif, tDay, magnif);
-    prevTday = tDay;
-    prevMagnif = magnif;
-  }
-}
-
-function plotLine(prevTday, prevMagnif, tDay, magnif) {
   var tPixel = tDay * xPixelScale;
-  var prevTpixel = prevTday * xPixelScale;
-
   var magnifPixel = canvas.height - magnif * yPixelScale;
-  var prevMagnifPixel = canvas.height - prevMagnif * yPixelScale;
 
   context.beginPath();
-  context.moveTo(prevTpixel, prevMagnifPixel);
-  context.lineTo(tPixel, magnifPixel);
+  context.moveTo(tPixel, magnifPixel);
+
+  var index = 0;
+  while (tDay < dayWidth) {
+    if (fromEquation) {
+      tDay += dt;
+      magnif = getMagnif(tDay);
+    }
+    else {
+      index += 1;
+      tDay = times[index];
+      magnif = magnifs[index];
+    }
+
+    var tPixel = tDay * xPixelScale;
+    var magnifPixel = canvas.height - magnif * yPixelScale;
+    context.lineTo(tPixel, magnifPixel);
+  }
+  console.log(index);
+  if (!fromEquation) {
+    console.log(times.length);
+    console.log(times[index]);
+  }
+  else {
+    console.log(tDay);
+    console.log(dayWidth);
+  }
+
+  context.restore();
+  context.lineJoin = "round";
+  context.lineWidth = curveWidth;
+  context.strokeStyle = curveColor;
   context.stroke();
 }
 
