@@ -13,9 +13,15 @@ var graphHeight = graphBottomBorder - graphTopBorder;
 var centerX = graphWidth/2 + graphLeftBorder;
 var centerY = graphHeight/2 + graphTopBorder;
 
+// parameters; only tE, tMax, and u0 work or have reasonable ranges
 var tE = 1.5;
-var tMax = 15;
+var Ml = 10;
+var Ds = 15;
 var u0 = 0.1;
+var Dl = 15;
+var tMax = 15;
+var mu = 15;
+
 
 // plot scale and range
 var dayWidth = 30;
@@ -61,11 +67,23 @@ function initListeners() {
   tEslider.addEventListener("input", updateTE, false);
   tEslider.addEventListener("change", updateTE, false);
 
-  tMaxSlider.addEventListener("input", updateTMax, false);
-  tMaxSlider.addEventListener("change", updateTMax, false);
+  MlSlider.addEventListener("input", updateMl, false);
+  MlSlider.addEventListener("change", updateMl, false);
+
+  DsSlider.addEventListener("input", updateDs, false);
+  DsSlider.addEventListener("change", updateDs, false);
 
   u0slider.addEventListener("input", updateU0, false);
   u0slider.addEventListener("change", updateU0, false);
+
+  DlSlider.addEventListener("input", updateDl, false);
+  DlSlider.addEventListener("change", updateDl, false);
+
+  tMaxSlider.addEventListener("input", updateTMax, false);
+  tMaxSlider.addEventListener("change", updateTMax, false);
+
+  muSlider.addEventListener("input", updateMu, false);
+  muSlider.addEventListener("change", updateMu, false);
 }
 
 function clearGraph() {
@@ -79,6 +97,35 @@ function updateTE() {
   plotLightcurve();
 }
 
+function updateMl() {
+  MlReadout.innerHTML = MlSlider.value;
+  Ml = MlSlider.value;
+  clearGraph();
+  plotLightcurve();
+}
+
+function updateDs() {
+  DsReadout.innerHTML = DsSlider.value;
+  Ds = DsSlider.value;
+  clearGraph();
+  plotLightcurve();
+}
+
+
+function updateU0() {
+  u0readout.innerHTML = u0slider.value;
+  u0 = u0slider.value;
+  clearGraph();
+  plotLightcurve();
+}
+
+function updateDl() {
+  DlReadout.innerHTML = DlSlider.value;
+  Dl = DlSlider.value;
+  clearGraph();
+  plotLightcurve();
+}
+
 function updateTMax() {
   tMaxReadout.innerHTML = tMaxSlider.value;
   tMax = tMaxSlider.value;
@@ -86,9 +133,9 @@ function updateTMax() {
   plotLightcurve();
 }
 
-function updateU0() {
-  u0readout.innerHTML = u0slider.value;
-  u0 = u0slider.value;
+function updateMu() {
+  muReadout.innerHTML = muSlider.value;
+  mu = muSlider.value;
   clearGraph();
   plotLightcurve();
 }
@@ -264,3 +311,12 @@ function getMagnif(t) {
   var magnif = getMagnifFromU(u);
   return magnif;
 }
+
+/*
+A = (u**2 + 2)/(u * sqrt(u0**2 + ((t-tMax)/tE)**2 ))
+thetaE = sqrt(4*G*Ml / (mu*Dl*c**2))
+
+mu = Ds / (Ds - Dl)
+
+
+*/
