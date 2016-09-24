@@ -59,7 +59,7 @@ window.onload = init;
 
 function init() {
   initListeners();
-  // initPlot();
+  initPlot();
   plotLightcurve();
 }
 
@@ -91,14 +91,14 @@ function clearGraph() {
 }
 
 function updateTE() {
-  tEreadout.innerHTML = tEslider.value;
+  tEreadout.innerHTML = Number(tEslider.value).toFixed(1);
   tE = tEslider.value;
   clearGraph();
   plotLightcurve();
 }
 
 function updateMl() {
-  MlReadout.innerHTML = MlSlider.value;
+  MlReadout.innerHTML = Number(MlSlider.value).toFixed(1);
   Ml = MlSlider.value;
   clearGraph();
   plotLightcurve();
@@ -113,7 +113,7 @@ function updateDs() {
 
 
 function updateU0() {
-  u0readout.innerHTML = u0slider.value;
+  u0readout.innerHTML = Number(u0slider.value).toFixed(3);
   u0 = u0slider.value;
   clearGraph();
   plotLightcurve();
@@ -134,7 +134,7 @@ function updateTMax() {
 }
 
 function updateMu() {
-  muReadout.innerHTML = muSlider.value;
+  muReadout.innerHTML = muSlider.value
   mu = muSlider.value;
   clearGraph();
   plotLightcurve();
@@ -187,8 +187,8 @@ function initPlot() {
 }
 
 function plotLightcurve(inputData, fromEquation=true) {
-  console.log("fromEquation: " + fromEquation);
-  console.log("inputData: " + inputData);
+  // console.log("fromEquation: " + fromEquation);
+  // console.log("inputData: " + inputData);
   initPlot();
   // var initialTday, initialMagnif, indexMax, indexIncrement;
   var tDay, magnif;
@@ -204,11 +204,9 @@ function plotLightcurve(inputData, fromEquation=true) {
   else {
     var curveData;
     if (inputData === undefined) {
-      console.log("hi");
       curveData = getCurveData()
     }
     else {
-      console.log("hullo");
       curveData = inputData;
     }
     var times = curveData.times;
@@ -258,15 +256,15 @@ function plotLightcurve(inputData, fromEquation=true) {
       var magnifPixel = yMagnifToPixel(magnif);
       context.lineTo(tPixel, magnifPixel);
     }
-    console.log(index);
-    if (!fromEquation) {
-      console.log(times.length);
-      console.log(times[index]);
-    }
-    else {
-      console.log(tDay);
-      console.log(dayWidth);
-    }
+    // console.log(index);
+    // if (!fromEquation) {
+    //   console.log(times.length);
+    //   console.log(times[index]);
+    // }
+    // else {
+    //   console.log(tDay);
+    //   console.log(dayWidth);
+    // }
     context.lineJoin = "round";
     context.lineWidth = curveWidth;
     context.strokeStyle = curveColor;
