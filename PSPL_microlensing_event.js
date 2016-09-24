@@ -13,14 +13,25 @@ var graphHeight = graphBottomBorder - graphTopBorder;
 var centerX = graphWidth/2 + graphLeftBorder;
 var centerY = graphHeight/2 + graphTopBorder;
 
-// parameters; only tE, tMax, and u0 work or have reasonable ranges
-var tE = 1.5;
+// slider parameters; only tE, tMax, and u0 work/have reasonable ranges/values
+// NOTE: There are/should be corellations between several of these for instance tE depends
+// on the rest, and mu depends on Ds and Dl;
+// need to figure that out so that updating one changes the related ones
+var tE = 1.5; // tE = thetaE / mu
 var Ml = 10;
-var Ds = 15;
+var Ds = 15; // Ds =  Dl / (1 - 1/mu)
 var u0 = 0.1;
-var Dl = 15;
+var Dl = 15; // Dl = Ds * (1 - 1/mu)
 var tMax = 15;
-var mu = 15;
+var mu = 15; // mu = thetaE / tE; mu = Ds / (Ds - Dl) = 1/(1 - Dl/Ds)
+
+// Physical constants
+const G = 1; //temp value
+const c = 1; //temp value
+
+// derived parameters
+var thetaE = Math.sqrt(4 * G * Ml / (mu * Dl * c*c))
+console.log("thetaE: " + thetaE)
 
 
 // plot scale and range
@@ -150,6 +161,14 @@ function yMagnifToPixel(yPlotMagnif) {
   return yPlotPixel;
 }
 
+function drawAxisArrows() {
+  ;
+}
+
+function drawAxisTicks() {
+  ;
+}
+
 function initPlot() {
   clearGraph();
 
@@ -169,7 +188,6 @@ function initPlot() {
     var xPlotPixel = xDayToPixel(xPlotDay);
     context.moveTo(xPlotPixel, graphTopBorder);
     context.lineTo(xPlotPixel, graphBottomBorder);
-    //context.strokeStyle = gridColor;
   }
 
   //draw horizontal lines;
@@ -179,6 +197,9 @@ function initPlot() {
     context.lineTo(graphRightBorder, yPlotPixel);
   }
   context.stroke();
+
+  drawAxisArrows();
+  drawAxisTicks();
 
   // draw border
   context.strokeStyle = graphBorderColor;
