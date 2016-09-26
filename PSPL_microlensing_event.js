@@ -1,14 +1,24 @@
 var lcurveCanvas = document.getElementById("lcurveCanvas");
 var context = lcurveCanvas.getContext("2d");
 
-var graphLeftTrailingBorder = 20; //left border of graph x-pixel value, including any trailing gridliens
-var graphLeftBorder = 20; // left border of graph x-pixel value, NOT including any trailing gridlines
-var graphRightBorder = lcurveCanvas.width - 50; // right border of graph x-pixel value, NOT including any trailing gridlines
-var graphTopBorder = 20; // top border of graph y-pixel value
-var graphBottomBorder = lcurveCanvas.height - 50; // bottom border of graph y-pixel value
+var graphLeftBorder = 50; // left border of graph x-pixel value, NOT including any trailing gridlines
+var graphTopBorder = 50; // top border of graph y-pixel value, NOT including any trailing gridlines
 
-var graphWidth = graphRightBorder - graphLeftBorder;
-var graphHeight = graphBottomBorder - graphTopBorder;
+var graphWidth = 400;
+var graphHeight = 300;
+
+var graphRightBorder = graphLeftBorder + graphWidth; // right border of graph x-pixel value, NOT including any trailing gridlines
+var graphBottomBorder = graphTopBorder + graphHeight; // bottom border of y-pixel value, NOT including any trailing gridlines
+
+var graphLeftTrailingBorder = graphLeftBorder - 10; // left border of graph x-pixel value, including any trailing gridlines
+var graphRightTrailingBorder = graphRightBorder; // right border of graph x-pixel value, including any trailing gridlines
+var graphTopTrailingBorder = graphTopBorder; // top border of graph y-pixel value, including any trailing gridlines
+var graphBottomTrailingBorder = graphBottomBorder + 10; // bottom border of graph y-pixel value, including any trailing gridlines
+
+// var graphRightBorder = lcurveCanvas.width - 50; // right border of graph x-pixel value, NOT including any trailing gridlines
+// var graphBottomBorder = lcurveCanvas.height - 50; // bottom border of graph y-pixel value
+// var graphWidth = graphRightBorder - graphLeftBorder;
+// var graphHeight = graphBottomBorder - graphTopBorder;
 
 var centerX = graphWidth/2 + graphLeftBorder;
 var centerY = graphHeight/2 + graphTopBorder;
@@ -17,7 +27,7 @@ var centerY = graphHeight/2 + graphTopBorder;
 // NOTE: There are/should be corellations between several of these for instance tE depends
 // on the rest, and mu depends on Ds and Dl;
 // need to figure that out so that updating one changes the related ones
-var tE = 1.5; // tE = thetaE / mu
+var tE = 10; // tE = thetaE / mu
 var Ml = 10;
 var Ds = 15; // Ds =  Dl / (1 - 1/mu)
 var u0 = 0.1;
@@ -33,26 +43,44 @@ const c = 1; //temp value
 var thetaE = Math.sqrt(4 * G * Ml / (mu * Dl * c*c))
 console.log("thetaE: " + thetaE)
 
-
 // plot scale and range
 var dayWidth = 30;
 var magnifHeight = 10;
 var xPixelScale = graphWidth/dayWidth; // pixels per day
-var xPlotStep = 1; // Spacing between vertical lines in days
+var xPlotStep = 2; // Spacing between vertical lines in days
 var yPixelScale = graphHeight/magnifHeight; // pixels per magnif unit
 var yPlotStep = 1; // Spacing between horizontal lines in magnification units
 
 // plot aesthetics
 var canvasBackgroundColor = "#ffffe6"
 var graphBackgroundColor = "#eff";
-var gridColor = "black";
-var gridWidth = 0.2;
+var gridColor = "grey";
+var gridWidth = 1;
 var curveColor = "blue";
 var curveWidth = 2;
-var graphBorderColor = "black";
+var graphBorderColor = "grey";
+var graphBorderWidth = 1;
+var axisColor = "black";
+var axisWidth = 2;
+
+// tick label text aesthetics
+var tickLabelFont = "10pt Arial";
+var tickLabelColor = "black";
+var tickLabelAlign = "center";
+var tickLabelBaseline = "middle";
+var tickLabelSpacing = 7; // spacking between tick label and end of trailing gridline
+
+// axis label text aesthetics
+var xLabel = "time (days)";
+var yLabel = "magnification";
+var axisLabelFont = "10pt Arial";
+var axisLabelColor = "black";
+var axisLabelAlign = "center";
+var axisLabelBaseline = "middle";
+var axisLabelSpacing = 27;
 
 // starting time and time increment
-  var initialTdayDefault = 0;
+var initialTdayDefault = 0;
 var dt = 0.1;
 
 var tEslider = document.getElementById("tEslider");
@@ -63,8 +91,6 @@ var tMaxReadout = document.getElementById("tMaxReadout");
 
 var u0slider = document.getElementById("u0slider");
 var u0readout = document.getElementById("u0readout");
-
-console.log(graphLeftBorder + " " + graphRightBorder + " " + graphTopBorder + " " + graphBottomBorder);
 
 window.onload = init;
 
@@ -161,17 +187,88 @@ function yMagnifToPixel(yPlotMagnif) {
   return yPlotPixel;
 }
 
-function drawAxisArrows() {
-  ;
+function drawAxes() {
+  context.beginPath();
+
+  // x axis
+  // the -axisWidth/2 makes the x and y axes fully connect
+  // at their intersection for all axis linewidths
+  context.moveTo(graphLeftBorder - axisWidth/2, graphBottomBorder);
+  context.lineTo(graphRightBorder + 15, graphBottomBorder);
+
+  // y axis;
+  context.moveTo(graphLeftBorder, graphBottomBorder);
+  context.lineTo(graphLeftBorder, graphTopBorder - 15);
+
+  // x axis arrow
+  // NOTE: Doesn't look right for linewidth > 2
+  context.moveTo(graphRightBorder + 15, graphBottomBorder);
+  context.lineTo(graphRightBorder + 8, graphBottomBorder - 5);
+  context.moveTo(graphRightBorder + 15, graphBottomBorder);
+  context.lineTo(graphRightBorder + 8, graphBottomBorder + 5);
+
+  // y axis arrow
+  // NOTE: Doesn't look right for linewidth > 2
+  context.moveTo(graphLeftBorder, graphTopBorder - 15);
+  context.lineTo(graphLeftBorder - 5, graphTopBorder - 8);
+  context.moveTo(graphLeftBorder, graphTopBorder - 15);
+  context.lineTo(graphLeftBorder + 5, graphTopBorder - 8);
+
+  context.strokeStyle = axisColor;
+  context.lineWidth = axisWidth;
+  context.stroke();
 }
 
-function drawAxisTicks() {
-  ;
+function drawAxisLabels(centerLayout=false) {
+  // x label
+  context.font = axisLabelFont;
+  context.textAlign = axisLabelAlign;
+  context.textBaseline = axisLabelBaseline;
+  context.fillStyle = axisLabelColor;
+
+  if (centerLayout) {
+    // x label
+    context.fillText(xLabel, centerX, graphBottomTrailingBorder + axisLabelSpacing)
+
+    // y label
+    context.save();
+    context.translate(graphLeftTrailingBorder - 25, centerY);
+    context.rotate(-Math.PI/2);
+    context.textAlign = "center";
+    context.fillText(yLabel, 0, 0);
+    context.restore();
+  }
+  else {
+    // x label
+    context.textAlign = "left";
+    context.fillText(xLabel, graphRightTrailingBorder + 20, graphBottomBorder);
+
+    // y label
+    context.textBaseline = "bottom";
+    context.textAlign = "center";
+    context.fillText(yLabel, graphLeftBorder, graphTopTrailingBorder - 20);
+  }
+
+  // x label
+
+  // y label
+
+}
+
+// not used right now, but useful if we add interactive scaling
+function updatePlotScale(width=30, height=10,xStep=2,yStep=1) {
+  dayWidth = width;
+  magnifHeight = height;
+  xPixelScale = graphWidth/dayWidth; // pixels per day
+  xPlotStep = xStep; // Spacing between vertical lines in days
+  yPixelScale = graphHeight/magnifHeight; // pixels per magnif unit
+  yPlotStep = yStep; // Spacing between horizontal lines in magnification units
 }
 
 function initPlot() {
   clearGraph();
-
+  console.log("tE: " + tE);
+  console.log("dayWidth: " + dayWidth);
   // fill in canvas background
   context.fillStyle = canvasBackgroundColor;
   context.fillRect(0, 0, lcurveCanvas.width, lcurveCanvas.height);
@@ -180,31 +277,46 @@ function initPlot() {
   context.fillStyle = graphBackgroundColor;
   context.fillRect(graphLeftBorder, graphTopBorder, graphWidth, graphHeight);
 
-  // draw vertical lines
-  context.lineWidth = gridWidth;
-  context.strokeStyle = gridColor;
+  // draw vertical lines and x axis tick labels
   context.beginPath();
   for (var xPlotDay = 0; xPlotDay <= dayWidth; xPlotDay+=xPlotStep) {
     var xPlotPixel = xDayToPixel(xPlotDay);
-    context.moveTo(xPlotPixel, graphTopBorder);
-    context.lineTo(xPlotPixel, graphBottomBorder);
+    context.moveTo(xPlotPixel, graphTopTrailingBorder);
+    context.lineTo(xPlotPixel, graphBottomTrailingBorder);
+
+    // tick text label
+    var xTickLabel = xPlotDay;
+    context.font = tickLabelFont;
+    context.fillStyle = tickLabelColor;
+    context.textAlign = tickLabelAlign;
+    context.textBaseline = tickLabelBaseline;
+    context.fillText(xTickLabel, xPlotPixel, graphBottomTrailingBorder + tickLabelSpacing);
   }
 
-  //draw horizontal lines;
-  for (var yPlotMagnif = 0; yPlotMagnif < magnifHeight; yPlotMagnif+=yPlotStep) {
+  //draw horizontal lines and y axis tick label
+  for (var yPlotMagnif = 0; yPlotMagnif <= magnifHeight; yPlotMagnif+=yPlotStep) {
     var yPlotPixel = yMagnifToPixel(yPlotMagnif);
-    context.moveTo(graphLeftBorder, yPlotPixel);
-    context.lineTo(graphRightBorder, yPlotPixel);
-  }
-  context.stroke();
+    context.moveTo(graphLeftTrailingBorder, yPlotPixel);
+    context.lineTo(graphRightTrailingBorder, yPlotPixel);
 
-  drawAxisArrows();
-  drawAxisTicks();
+    var yTickLabel = yPlotMagnif;
+    context.font = tickLabelFont;
+    context.fillStyle = tickLabelColor;
+    context.textAlign = tickLabelAlign;
+    context.textBaseline = tickLabelBaseline;
+    context.fillText(yTickLabel,graphLeftTrailingBorder - tickLabelSpacing,  yPlotPixel);
+  }
+  context.lineWidth = gridWidth;
+  context.strokeStyle = gridColor;
+  context.stroke();
 
   // draw border
   context.strokeStyle = graphBorderColor;
-  context.lineWidth = 1;
+  context.lineWidth = graphBorderWidth;
   context.strokeRect(graphLeftBorder, graphTopBorder, graphWidth, graphHeight);
+
+  drawAxes();
+  drawAxisLabels(centerLayout=false);
 }
 
 function plotLightcurve(inputData, fromEquation=true) {
