@@ -43,13 +43,19 @@ const c = 1; //temp value
 var thetaE = Math.sqrt(4 * G * Ml / (mu * Dl * c*c))
 console.log("thetaE: " + thetaE)
 
-// plot scale and range
+// plot scale
 var dayWidth = 30;
 var magnifHeight = 10;
 var xPixelScale = graphWidth/dayWidth; // pixels per day
 var xPlotStep = 2; // Spacing between vertical lines in days
 var yPixelScale = graphHeight/magnifHeight; // pixels per magnif unit
 var yPlotStep = 1; // Spacing between horizontal lines in magnification units
+
+// plot range
+var xAxisInitialDay = 0;
+var yAxisInitialMagnif = 0.5;
+var xAxisFinalDay = xAxisInitialDay + dayWidth;
+var yAxisFinalMagnif = yAxisInitialMagnif + magnifHeight;
 
 // plot aesthetics
 var canvasBackgroundColor = "#ffffe6"
@@ -92,6 +98,17 @@ var tMaxReadout = document.getElementById("tMaxReadout");
 var u0slider = document.getElementById("u0slider");
 var u0readout = document.getElementById("u0readout");
 
+// debug plot scale/range buttons
+var xLeftButton = document.getElementById("xLeft");
+var xRightButton = document.getElementById("xRight");
+var yUpButton = document.getElementById("yUp");
+var yDownButton = document.getElementById("yDown");
+
+var xZoomInButton = document.getElementById("xZoomIn");
+var xZoomOutButton = document.getElementById("xZoomOut");
+var yZoomInButton = document.getElementById("yZoomIn");
+var yZoomOutButton = document.getElementById("yZoomOut");
+
 window.onload = init;
 
 function init() {
@@ -121,7 +138,19 @@ function initListeners() {
 
   muSlider.addEventListener("input", updateMu, false);
   muSlider.addEventListener("change", updateMu, false);
+
+  // debug plot range/scale buttons
+  xLeftButton.addEventListener("click", function() { updateGraph("xLeft"); }, false);
+  xRightButton.addEventListener("click", function() {updateGraph("xRight"); }, false);
+  yUpButton.addEventListener("click", function() { updateGraph("yUp"); }, false);
+  yDownButton.addEventListener("click", function() { updateGraph("yDown"); }, false);
+
+  xZoomInButton.addEventListener("click", function() { updateGraph("xZoomIn"); }, false);
+  xZoomOutButton.addEventListener("click", function() {updateGraph("xZoomOut"); }, false);
+  yZoomInButton.addEventListener("click", function() { updateGraph("yZoomIn"); }, false);
+  yZoomOutButton.addEventListener("click", function() { updateGraph("yZoomOut"); }, false);
 }
+
 
 function clearGraph() {
   context.clearRect(graphLeftBorder, graphTopBorder, graphWidth, graphHeight);
@@ -177,13 +206,52 @@ function updateMu() {
   plotLightcurve();
 }
 
+function updateGraph(shift) {
+  console.log(shift);
+  var graphShiftStep = 0.25;
+  var graphZoomStep = 0.25;
+  var xInit, yInit, xWidth, yHeight;
+  if (shift === undefined)
+    return;
+  else if (shift === "xLeft") {
+    xInit = xAxisInitialDay + graphShiftStep;
+  }
+  else if (shift === "xRight") {
+    xInit = xAxisInitialDay - graphShiftStep;
+  }
+  else if (shift === "yUp") {
+    yInit = yAxisInitialMagnif - graphShiftStep;
+  }
+  else if (shift === "yDown") {
+    yInit = yAxisInitialMagnif + graphShiftStep;
+  }
+  else if (shift === "xZoomIn") {
+    xWidth = dayWidth - graphZoomStep;
+  }
+  else if (shift === "xZoomOut") {
+    xWidth = dayWidth + graphZoomStep;
+  }
+  else if (shift === "yZoomIn") {
+    yWidth = magnifHeight - graphZoomStep;
+  }
+  else if (shift === "yZoomOut") {
+    yWidth = magnifHeight + graphZoomStep;
+  }
+
+  // width=30, height=10,xStep=2,yStep=1,
+  //                                  xInit=0, yInit=0.5
+  updatePlotScaleAndRange(xWidth, yHeight, undefined,
+                          undefined, xInit, yInit);
+  plotLightcurve();
+}
+
 function xDayToPixel(xPlotDay) {
-  var xPlotPixel = xPlotDay * xPixelScale + graphLeftBorder;
+  var xPlotPixel = (xPlotDay - xAxisInitialDay) * xPixelScale + graphLeftBorder;
   return xPlotPixel;
 }
 
 function yMagnifToPixel(yPlotMagnif) {
-  yPlotPixel = graphBottomBorder - yPlotMagnif * yPixelScale;
+  yPlotPixel = graphBottomBorder - (yPlotMagnif - yAxisInitialMagnif) * yPixelScale;
   return yPlotPixel;
 }
 
@@ -248,25 +316,32 @@ function drawAxisLabels(centerLayout=false) {
     context.textAlign = "center";
     context.fillText(yLabel, graphLeftBorder, graphTopTrailingBorder - 20);
   }
-
-  // x label
-
-  // y label
-
 }
 
 // not used right now, but useful if we add interactive scaling
-function updatePlotScale(width=30, height=10,xStep=2,yStep=1) {
+function updatePlotScaleAndRange(width=30, height=10,xStep=2,yStep=1,
+                                 xInit=0, yInit=0.5) {
+   console.log("updatePlotScale: " + width + " " + height + " " + xStep + " "
+                                   + yStep + " " + xInit + " " + yInit);
+
+  // plot scale
   dayWidth = width;
   magnifHeight = height;
   xPixelScale = graphWidth/dayWidth; // pixels per day
   xPlotStep = xStep; // Spacing between vertical lines in days
   yPixelScale = graphHeight/magnifHeight; // pixels per magnif unit
-  yPlotStep = yStep; // Spacing between horizontal lines in magnification units
+  yPlotStep = yStep; // Spacing between horizontal lines in magnification unit
+
+  xAxisInitialDay = xInit;
+  yAxisInitialMagnif = yInit;
+  xAxisFinalDay = xAxisInitialDay + dayWidth;
+  yAxisFinalMagnif = yAxisInitialMagnif + magnifHeight;
 }
 
 function initPlot() {
   clearGraph();
+  // updatePlotScaleAndRange(undefined, undefined, undefined,
+  //                         undefined, undefined, 1.5);
   console.log("tE: " + tE);
   console.log("dayWidth: " + dayWidth);
   // fill in canvas background
@@ -279,7 +354,7 @@ function initPlot() {
 
   // draw vertical lines and x axis tick labels
   context.beginPath();
-  for (var xPlotDay = 0; xPlotDay <= dayWidth; xPlotDay+=xPlotStep) {
+  for (var xPlotDay = Math.ceil(xAxisInitialDay); xPlotDay <= Math.floor(xAxisFinalDay); xPlotDay+=xPlotStep) {
     var xPlotPixel = xDayToPixel(xPlotDay);
     context.moveTo(xPlotPixel, graphTopTrailingBorder);
     context.lineTo(xPlotPixel, graphBottomTrailingBorder);
@@ -294,7 +369,7 @@ function initPlot() {
   }
 
   //draw horizontal lines and y axis tick label
-  for (var yPlotMagnif = 0; yPlotMagnif <= magnifHeight; yPlotMagnif+=yPlotStep) {
+  for (var yPlotMagnif = Math.ceil(yAxisInitialMagnif); yPlotMagnif <= Math.floor(yAxisFinalMagnif); yPlotMagnif+=yPlotStep) {
     var yPlotPixel = yMagnifToPixel(yPlotMagnif);
     context.moveTo(graphLeftTrailingBorder, yPlotPixel);
     context.lineTo(graphRightTrailingBorder, yPlotPixel);
@@ -302,7 +377,7 @@ function initPlot() {
     var yTickLabel = yPlotMagnif;
     context.font = tickLabelFont;
     context.fillStyle = tickLabelColor;
-    context.textAlign = tickLabelAlign;
+    context.textAlign = "right";
     context.textBaseline = tickLabelBaseline;
     context.fillText(yTickLabel,graphLeftTrailingBorder - tickLabelSpacing,  yPlotPixel);
   }
