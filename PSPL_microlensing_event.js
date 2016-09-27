@@ -47,15 +47,28 @@ console.log("thetaE: " + thetaE)
 var dayWidth = 30;
 var magnifHeight = 10;
 var xPixelScale = graphWidth/dayWidth; // pixels per day
-var xPlotStep = 2; // Spacing between vertical lines in days
 var yPixelScale = graphHeight/magnifHeight; // pixels per magnif unit
-var yPlotStep = 1; // Spacing between horizontal lines in magnification units
 
 // plot range
 var xAxisInitialDay = 0;
 var yAxisInitialMagnif = 0.5;
 var xAxisFinalDay = xAxisInitialDay + dayWidth;
 var yAxisFinalMagnif = yAxisInitialMagnif + magnifHeight;
+
+// gridlines
+var xGridInitial;
+var yGridInitial;
+var xGridFinal;
+var yGridFinal;
+var xGridStep;
+var yGridStep;
+updateGridRange();
+
+// Step increments used by debug buttons to alter range/scale
+var xGraphShiftStep = 0.25;
+var yGraphShiftStep = xGraphShiftStep;
+var xGraphZoomStep = 0.25;
+var yGraphZoomStep = xGraphZoomStep;
 
 // plot aesthetics
 var canvasBackgroundColor = "#ffffe6"
@@ -208,40 +221,37 @@ function updateMu() {
 
 function updateGraph(shift) {
   console.log(shift);
-  var graphShiftStep = 0.25;
-  var graphZoomStep = 0.25;
   var xInit, yInit, xWidth, yHeight;
   if (shift === undefined)
     return;
   else if (shift === "xLeft") {
-    xInit = xAxisInitialDay + graphShiftStep;
+    xInit = xAxisInitialDay + xGraphShiftStep;
   }
   else if (shift === "xRight") {
-    xInit = xAxisInitialDay - graphShiftStep;
+    xInit = xAxisInitialDay - xGraphShiftStep;
   }
   else if (shift === "yUp") {
-    yInit = yAxisInitialMagnif - graphShiftStep;
+    yInit = yAxisInitialMagnif - yGraphShiftStep;
   }
   else if (shift === "yDown") {
-    yInit = yAxisInitialMagnif + graphShiftStep;
+    yInit = yAxisInitialMagnif + yGraphShiftStep;
   }
   else if (shift === "xZoomIn") {
-    xWidth = dayWidth - graphZoomStep;
+    xWidth = dayWidth - xGraphZoomStep;
   }
   else if (shift === "xZoomOut") {
-    xWidth = dayWidth + graphZoomStep;
+    xWidth = dayWidth + xGraphZoomStep;
   }
   else if (shift === "yZoomIn") {
-    yWidth = magnifHeight - graphZoomStep;
+    yHeight = magnifHeight - yGraphZoomStep;
   }
   else if (shift === "yZoomOut") {
-    yWidth = magnifHeight + graphZoomStep;
+    yHeight = magnifHeight + yGraphZoomStep;
   }
 
   // width=30, height=10,xStep=2,yStep=1,
   //                                  xInit=0, yInit=0.5
-  updatePlotScaleAndRange(xWidth, yHeight, undefined,
-                          undefined, xInit, yInit);
+  updatePlotScaleAndRange(xWidth, yHeight, xInit, yInit);
   plotLightcurve();
 }
 
@@ -318,24 +328,60 @@ function drawAxisLabels(centerLayout=false) {
   }
 }
 
-// not used right now, but useful if we add interactive scaling
-function updatePlotScaleAndRange(width=30, height=10,xStep=2,yStep=1,
-                                 xInit=0, yInit=0.5) {
-   console.log("updatePlotScale: " + width + " " + height + " " + xStep + " "
-                                   + yStep + " " + xInit + " " + yInit);
+function updateGridRange() {
+  xGridStep = 2;
+  yGridStep = 1;
 
+  /*
+
+  xAxisInitialDay     xGridInitial        what xGridInitial should be
+  0                   0                   0
+  0.25                1                   2
+  0.5                 1                   2
+  0.75                1                   2
+  1                 1                   2
+  1.25                2                   2
+  1.5                 2                   2
+  1.75                2                   2
+  2                   2                   2
+  2.25                3                   4
+  2.5                 3                   4
+  2.75                3                   4
+  3                   3                   4
+  3.25                4                   4
+
+  */
+
+
+  xGridInitial = Math.ceil(xAxisInitialDay);
+  yGridInitial = Math.ceil(yAxisInitialMagnif);
+  xGridFinal = Math.floor(xAxisFinalDay);
+  yGridFinal = Math.floor(yAxisFinalMagnif);
+  console.log("xGridFinal: " + xGridFinal);
+}
+
+function updatePlotScaleAndRange(width, height, xInit, yInit) {
+   console.log("updatePlotScale: " + width + " " + height + " "
+                                   + xInit + " " + yInit);
   // plot scale
-  dayWidth = width;
-  magnifHeight = height;
+  if (width !== undefined)
+    dayWidth = width;
+  if (height !== undefined)
+    magnifHeight = height;
   xPixelScale = graphWidth/dayWidth; // pixels per day
-  xPlotStep = xStep; // Spacing between vertical lines in days
   yPixelScale = graphHeight/magnifHeight; // pixels per magnif unit
-  yPlotStep = yStep; // Spacing between horizontal lines in magnification unit
-
-  xAxisInitialDay = xInit;
-  yAxisInitialMagnif = yInit;
+  if (xInit !== undefined)
+    xAxisInitialDay = xInit;
+  if (yInit !== undefined)
+    yAxisInitialMagnif = yInit;
   xAxisFinalDay = xAxisInitialDay + dayWidth;
   yAxisFinalMagnif = yAxisInitialMagnif + magnifHeight;
+
+  updateGridRange();
+
+  /*
+
+  */
 }
 
 function initPlot() {
@@ -354,7 +400,7 @@ function initPlot() {
 
   // draw vertical lines and x axis tick labels
   context.beginPath();
-  for (var xPlotDay = Math.ceil(xAxisInitialDay); xPlotDay <= Math.floor(xAxisFinalDay); xPlotDay+=xPlotStep) {
+  for (var xPlotDay = xGridInitial; xPlotDay <= xGridFinal; xPlotDay+=xGridStep) {
     var xPlotPixel = xDayToPixel(xPlotDay);
     context.moveTo(xPlotPixel, graphTopTrailingBorder);
     context.lineTo(xPlotPixel, graphBottomTrailingBorder);
@@ -369,7 +415,7 @@ function initPlot() {
   }
 
   //draw horizontal lines and y axis tick label
-  for (var yPlotMagnif = Math.ceil(yAxisInitialMagnif); yPlotMagnif <= Math.floor(yAxisFinalMagnif); yPlotMagnif+=yPlotStep) {
+  for (var yPlotMagnif = yGridInitial; yPlotMagnif <= yGridFinal; yPlotMagnif+=yGridStep) {
     var yPlotPixel = yMagnifToPixel(yPlotMagnif);
     context.moveTo(graphLeftTrailingBorder, yPlotPixel);
     context.lineTo(graphRightTrailingBorder, yPlotPixel);
@@ -401,7 +447,7 @@ function plotLightcurve(inputData, fromEquation=true) {
   // var initialTday, initialMagnif, indexMax, indexIncrement;
   var tDay, magnif;
   if (fromEquation) {
-    tDay = initialTdayDefault;
+    tDay = xAxisInitialDay;
     magnif = getMagnif(tDay);
     // initialTday = initialTdayDefault;
     // initialMagnif = getMagnif(initialTday);
@@ -445,7 +491,7 @@ function plotLightcurve(inputData, fromEquation=true) {
     // to the next
     if (!fromEquation) // Index tracks place in data arrays if reading in data
       var index = 0; //
-    while (tDay < dayWidth) {
+    while (tDay < xAxisFinalDay) {
       // If calculating from equation, increment day by set amount and
       // calculate magnification
       if (fromEquation) {
