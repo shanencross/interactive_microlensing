@@ -1,5 +1,5 @@
 var lcurveCanvas = document.getElementById("lcurveCanvas");
-var context = lcurveCanvas.getContext("2d");
+var lcurveContext = lcurveCanvas.getContext("2d");
 
 var graphLeftBorder = 50; // left border of graph x-pixel value, NOT including any trailing gridlines
 var graphTopBorder = 50; // top border of graph y-pixel value, NOT including any trailing gridlines
@@ -27,13 +27,14 @@ var centerY = graphHeight/2 + graphTopBorder;
 // NOTE: There are/should be corellations between several of these for instance tE depends
 // on the rest, and mu depends on Ds and Dl;
 // need to figure that out so that updating one changes the related ones
-var tE = 10; // tE = thetaE / mu
-var Ml = 10;
-var Ds = 15; // Ds =  Dl / (1 - 1/mu)
-var u0 = 0.1;
-var Dl = 15; // Dl = Ds * (1 - 1/mu)
-var tMax = 15;
-var mu = 15; // mu = thetaE / tE; mu = Ds / (Ds - Dl) = 1/(1 - Dl/Ds)
+var tE; // tE = thetaE / mu
+var Ml;
+var Ds; // Ds =  Dl / (1 - 1/mu)
+var u0;
+var Dl; // Dl = Ds * (1 - 1/mu)
+var tMax;
+var mu; // mu = thetaE / tE; mu = Ds / (Ds - Dl) = 1/(1 - Dl/Ds)
+initParams();
 
 // Physical constants
 const G = 1; //temp value
@@ -44,16 +45,24 @@ var thetaE = Math.sqrt(4 * G * Ml / (mu * Dl * c*c))
 console.log("thetaE: " + thetaE)
 
 // plot scale
-var dayWidth = 30;
-var magnifHeight = 10;
-var xPixelScale = graphWidth/dayWidth; // pixels per day
-var yPixelScale = graphHeight/magnifHeight; // pixels per magnif unit
+var dayWidth;
+var magnifHeight;
+var xPixelScale; // pixels per day
+var yPixelScale; // pixels per magnif unit
 
 // plot range
-var xAxisInitialDay = 0;
-var yAxisInitialMagnif = 0.5;
-var xAxisFinalDay = xAxisInitialDay + dayWidth;
-var yAxisFinalMagnif = yAxisInitialMagnif + magnifHeight;
+var xAxisInitialDay;
+var yAxisInitialMagnif;
+var xAxisFinalDay;
+var yAxisFinalMagnif;
+
+const dayWidthDefault = 30;
+const magnifHeightDefault = 10;
+const xAxisInitialDayDefault = 0;
+const yAxisInitialMagnifDefault = 0.5;
+// initialize plot scale/range vars
+updatePlotScaleAndRange(dayWidthDefault, magnifHeightDefault,
+                        xAxisInitialDayDefault, yAxisInitialMagnifDefault);
 
 // gridlines
 var xGridInitial;
@@ -62,7 +71,10 @@ var xGridFinal;
 var yGridFinal;
 var xGridStep;
 var yGridStep;
-updateGridRange();
+
+const xGridStepDefault = 2;
+const yGridStepDefault = 1;
+updateGridRange(xGridStepDefault, yGridStepDefault); // initialize gridline vars
 
 // Step increments used by debug buttons to alter range/scale
 var xGraphShiftStep = 0.25;
@@ -99,9 +111,15 @@ var axisLabelBaseline = "middle";
 var axisLabelSpacing = 27;
 
 // starting time and time increment
-var initialTdayDefault = 0;
-var dt = 0.1;
+const initialTdayDefault = 0;
+var dt = 0.01;
 
+// flag for whether graph is generated from calculating
+// magnifications for a range of times from an equation,
+// or from an input of time/magnificaiton arrays
+const fromEquationDefault = true;
+
+// parameter sliders and their readouts
 var tEslider = document.getElementById("tEslider");
 var tEreadout = document.getElementById("tEreadout");
 
@@ -110,6 +128,8 @@ var tMaxReadout = document.getElementById("tMaxReadout");
 
 var u0slider = document.getElementById("u0slider");
 var u0readout = document.getElementById("u0readout");
+
+var resetParamsButton = document.getElementById("resetParams");
 
 // debug plot scale/range buttons
 var xLeftButton = document.getElementById("xLeft");
@@ -122,15 +142,17 @@ var xZoomOutButton = document.getElementById("xZoomOut");
 var yZoomInButton = document.getElementById("yZoomIn");
 var yZoomOutButton = document.getElementById("yZoomOut");
 
+var resetGraphButton = document.getElementById("resetGraph");
+
 window.onload = init;
 
 function init() {
   initListeners();
-  initPlot();
   plotLightcurve();
 }
 
 function initListeners() {
+  // sliders
   tEslider.addEventListener("input", updateTE, false);
   tEslider.addEventListener("change", updateTE, false);
 
@@ -152,7 +174,10 @@ function initListeners() {
   muSlider.addEventListener("input", updateMu, false);
   muSlider.addEventListener("change", updateMu, false);
 
-  // debug plot range/scale buttons
+  // reset buttons
+  resetParamsButton.addEventListener("click", resetParams, false);
+
+  // debug plot range/scale and reset buttons
   xLeftButton.addEventListener("click", function() { updateGraph("xLeft"); }, false);
   xRightButton.addEventListener("click", function() {updateGraph("xRight"); }, false);
   yUpButton.addEventListener("click", function() { updateGraph("yUp"); }, false);
@@ -162,11 +187,52 @@ function initListeners() {
   xZoomOutButton.addEventListener("click", function() {updateGraph("xZoomOut"); }, false);
   yZoomInButton.addEventListener("click", function() { updateGraph("yZoomIn"); }, false);
   yZoomOutButton.addEventListener("click", function() { updateGraph("yZoomOut"); }, false);
+
+  resetGraphButton.addEventListener("click", function() { updateGraph("reset"); }, false)
+
 }
 
+function initParams() {
+  // set lense curve parameters to defaults
+  tE = 10; // tE = thetaE / mu
+  Ml = 10;
+  Ds = 15; // Ds =  Dl / (1 - 1/mu)
+  u0 = 0.1;
+  Dl = 15; // Dl = Ds * (1 - 1/mu)
+  tMax = 15;
+  mu = 15; // mu = thetaE / tE; mu = Ds / (Ds - Dl) = 1/(1 - Dl/Ds)
+}
+
+function resetParams() {
+  // reset lense curve parameters to defaults and redraw curve
+  // NOTE: Need to update sliders too
+  console.log("RESET");
+  initParams();
+  resetSliders();
+  plotLightcurve();
+}
+
+function resetSliders() {
+  // set slider values to current parameter values and update readouts
+  tEslider.value = tE;
+  MlSlider.value = Ml;
+  DsSlider.value = Ds;
+  u0slider.value = u0;
+  DlSlider.value = Dl
+  tMaxSlider.value = tMax;
+  muSlider.value = mu;
+
+  updateTE();
+  updateMl();
+  updateDs();
+  updateU0();
+  updateDl();
+  updateTMax();
+  updateMu();
+}
 
 function clearGraph() {
-  context.clearRect(graphLeftBorder, graphTopBorder, graphWidth, graphHeight);
+  lcurveContext.clearRect(graphLeftBorder, graphTopBorder, graphWidth, graphHeight);
 }
 
 function updateTE() {
@@ -189,7 +255,6 @@ function updateDs() {
   clearGraph();
   plotLightcurve();
 }
-
 
 function updateU0() {
   u0readout.innerHTML = Number(u0slider.value).toFixed(3);
@@ -248,11 +313,59 @@ function updateGraph(shift) {
   else if (shift === "yZoomOut") {
     yHeight = magnifHeight + yGraphZoomStep;
   }
+  else if (shift === "reset") {
+    updatePlotScaleAndRange(dayWidthDefault, magnifHeightDefault,
+                            xAxisInitialDayDefault, yAxisInitialMagnifDefault);
+    updateGridRange(xGridStepDefault, yGridStepDefault);
+  }
 
   // width=30, height=10,xStep=2,yStep=1,
   //                                  xInit=0, yInit=0.5
   updatePlotScaleAndRange(xWidth, yHeight, xInit, yInit);
   plotLightcurve();
+}
+
+function updateGridRange(xStep, yStep) {
+  // if both arguments are undefined, update grid step values;
+  // otherwise leave grid steps unchanged
+  if ( !(xStep === undefined) && !(yStep === undefined)) {
+    xGridStep = xStep;
+    yGridStep = yStep;
+  }
+
+  // Round the initial x grid line placement from initial day on axis
+  // up to next xGridStep increment, except when exactly on an xGridStep
+  // increment
+  if (xAxisInitialDay % xGridStep === 0)
+    xGridInitial = xAxisInitialDay;
+  else
+    xGridInitial = xGridStep * (Math.floor(xAxisInitialDay / xGridStep) + 1);
+
+  // same rounding for final grid line placement
+  if (xAxisFinalDay % xGridStep === 0)
+    xGridFinal = xAxisFinalDay;
+  else
+    xGridFinal = xGridStep * (Math.floor(xAxisFinalDay / xGridStep));
+
+  // same rounding for initial y grid line placement
+  if (yAxisInitialMagnif % yGridStep === 0)
+    yGridInitial = yAxisInitialMagnif;
+  else
+    yGridInitial = yGridStep * (Math.floor(Math.floor(yAxisInitialMagnif) / yGridStep) + 1);
+
+  // same rounding for final y grid line placement
+  if (yAxisFinalMagnif % yGridStep === 0)
+    yGridFinal = yAxisFinalMagnif;
+  else
+    yGridFinal = yGridStep * (Math.floor(yAxisFinalMagnif / yGridStep));
+
+  // console.log(Math.floor)
+  // console.log("MathFloored xAxisInitialDay: " + Math.floor(xAxisInitialDay));
+  // console.log("xGridInitial: " + xGridInitial);
+  // console.log("xGridFinal: " + xGridFinal);
+  // console.log("MathFloored yAxisInitialMagnif: " + Math.floor(yAxisInitialMagnif));
+  // console.log("yGridInitial: " + yGridInitial);
+  // console.log("yGridFinal: " + yGridFinal);
 }
 
 function xDayToPixel(xPlotDay) {
@@ -266,103 +379,73 @@ function yMagnifToPixel(yPlotMagnif) {
 }
 
 function drawAxes() {
-  context.beginPath();
+  lcurveContext.beginPath();
 
   // x axis
   // the -axisWidth/2 makes the x and y axes fully connect
   // at their intersection for all axis linewidths
-  context.moveTo(graphLeftBorder - axisWidth/2, graphBottomBorder);
-  context.lineTo(graphRightBorder + 15, graphBottomBorder);
+  lcurveContext.moveTo(graphLeftBorder - axisWidth/2, graphBottomBorder);
+  lcurveContext.lineTo(graphRightBorder + 15, graphBottomBorder);
 
   // y axis;
-  context.moveTo(graphLeftBorder, graphBottomBorder);
-  context.lineTo(graphLeftBorder, graphTopBorder - 15);
+  lcurveContext.moveTo(graphLeftBorder, graphBottomBorder);
+  lcurveContext.lineTo(graphLeftBorder, graphTopBorder - 15);
 
   // x axis arrow
   // NOTE: Doesn't look right for linewidth > 2
-  context.moveTo(graphRightBorder + 15, graphBottomBorder);
-  context.lineTo(graphRightBorder + 8, graphBottomBorder - 5);
-  context.moveTo(graphRightBorder + 15, graphBottomBorder);
-  context.lineTo(graphRightBorder + 8, graphBottomBorder + 5);
+  lcurveContext.moveTo(graphRightBorder + 15, graphBottomBorder);
+  lcurveContext.lineTo(graphRightBorder + 8, graphBottomBorder - 5);
+  lcurveContext.moveTo(graphRightBorder + 15, graphBottomBorder);
+  lcurveContext.lineTo(graphRightBorder + 8, graphBottomBorder + 5);
 
   // y axis arrow
   // NOTE: Doesn't look right for linewidth > 2
-  context.moveTo(graphLeftBorder, graphTopBorder - 15);
-  context.lineTo(graphLeftBorder - 5, graphTopBorder - 8);
-  context.moveTo(graphLeftBorder, graphTopBorder - 15);
-  context.lineTo(graphLeftBorder + 5, graphTopBorder - 8);
+  lcurveContext.moveTo(graphLeftBorder, graphTopBorder - 15);
+  lcurveContext.lineTo(graphLeftBorder - 5, graphTopBorder - 8);
+  lcurveContext.moveTo(graphLeftBorder, graphTopBorder - 15);
+  lcurveContext.lineTo(graphLeftBorder + 5, graphTopBorder - 8);
 
-  context.strokeStyle = axisColor;
-  context.lineWidth = axisWidth;
-  context.stroke();
+  lcurveContext.strokeStyle = axisColor;
+  lcurveContext.lineWidth = axisWidth;
+  lcurveContext.stroke();
 }
 
 function drawAxisLabels(centerLayout=false) {
   // x label
-  context.font = axisLabelFont;
-  context.textAlign = axisLabelAlign;
-  context.textBaseline = axisLabelBaseline;
-  context.fillStyle = axisLabelColor;
+  lcurveContext.font = axisLabelFont;
+  lcurveContext.textAlign = axisLabelAlign;
+  lcurveContext.textBaseline = axisLabelBaseline;
+  lcurveContext.fillStyle = axisLabelColor;
 
   if (centerLayout) {
     // x label
-    context.fillText(xLabel, centerX, graphBottomTrailingBorder + axisLabelSpacing)
+    lcurveContext.fillText(xLabel, centerX, graphBottomTrailingBorder + axisLabelSpacing)
 
     // y label
-    context.save();
-    context.translate(graphLeftTrailingBorder - 25, centerY);
-    context.rotate(-Math.PI/2);
-    context.textAlign = "center";
-    context.fillText(yLabel, 0, 0);
-    context.restore();
+    lcurveContext.save();
+    lcurveContext.translate(graphLeftTrailingBorder - 25, centerY);
+    lcurveContext.rotate(-Math.PI/2);
+    lcurveContext.textAlign = "center";
+    lcurveContext.fillText(yLabel, 0, 0);
+    lcurveContext.restore();
   }
   else {
     // x label
-    context.textAlign = "left";
-    context.fillText(xLabel, graphRightTrailingBorder + 20, graphBottomBorder);
+    lcurveContext.textAlign = "left";
+    lcurveContext.fillText(xLabel, graphRightTrailingBorder + 20, graphBottomBorder);
 
     // y label
-    context.textBaseline = "bottom";
-    context.textAlign = "center";
-    context.fillText(yLabel, graphLeftBorder, graphTopTrailingBorder - 20);
+    lcurveContext.textBaseline = "bottom";
+    lcurveContext.textAlign = "center";
+    lcurveContext.fillText(yLabel, graphLeftBorder, graphTopTrailingBorder - 20);
   }
 }
 
-function updateGridRange() {
-  xGridStep = 2;
-  yGridStep = 1;
-
-  /*
-
-  xAxisInitialDay     xGridInitial        what xGridInitial should be
-  0                   0                   0
-  0.25                1                   2
-  0.5                 1                   2
-  0.75                1                   2
-  1                 1                   2
-  1.25                2                   2
-  1.5                 2                   2
-  1.75                2                   2
-  2                   2                   2
-  2.25                3                   4
-  2.5                 3                   4
-  2.75                3                   4
-  3                   3                   4
-  3.25                4                   4
-
-  */
-
-
-  xGridInitial = Math.ceil(xAxisInitialDay);
-  yGridInitial = Math.ceil(yAxisInitialMagnif);
-  xGridFinal = Math.floor(xAxisFinalDay);
-  yGridFinal = Math.floor(yAxisFinalMagnif);
-  console.log("xGridFinal: " + xGridFinal);
-}
-
 function updatePlotScaleAndRange(width, height, xInit, yInit) {
-   console.log("updatePlotScale: " + width + " " + height + " "
-                                   + xInit + " " + yInit);
+  // Change range/scale of plot
+
+  //  console.log("updatePlotScale: " + width + " " + height + " "
+  //                                  + xInit + " " + yInit);
   // plot scale
   if (width !== undefined)
     dayWidth = width;
@@ -391,56 +474,56 @@ function initPlot() {
   console.log("tE: " + tE);
   console.log("dayWidth: " + dayWidth);
   // fill in canvas background
-  context.fillStyle = canvasBackgroundColor;
-  context.fillRect(0, 0, lcurveCanvas.width, lcurveCanvas.height);
+  lcurveContext.fillStyle = canvasBackgroundColor;
+  lcurveContext.fillRect(0, 0, lcurveCanvas.width, lcurveCanvas.height);
 
   // fill in graph background
-  context.fillStyle = graphBackgroundColor;
-  context.fillRect(graphLeftBorder, graphTopBorder, graphWidth, graphHeight);
+  lcurveContext.fillStyle = graphBackgroundColor;
+  lcurveContext.fillRect(graphLeftBorder, graphTopBorder, graphWidth, graphHeight);
 
   // draw vertical lines and x axis tick labels
-  context.beginPath();
+  lcurveContext.beginPath();
   for (var xPlotDay = xGridInitial; xPlotDay <= xGridFinal; xPlotDay+=xGridStep) {
     var xPlotPixel = xDayToPixel(xPlotDay);
-    context.moveTo(xPlotPixel, graphTopTrailingBorder);
-    context.lineTo(xPlotPixel, graphBottomTrailingBorder);
+    lcurveContext.moveTo(xPlotPixel, graphTopTrailingBorder);
+    lcurveContext.lineTo(xPlotPixel, graphBottomTrailingBorder);
 
     // tick text label
     var xTickLabel = xPlotDay;
-    context.font = tickLabelFont;
-    context.fillStyle = tickLabelColor;
-    context.textAlign = tickLabelAlign;
-    context.textBaseline = tickLabelBaseline;
-    context.fillText(xTickLabel, xPlotPixel, graphBottomTrailingBorder + tickLabelSpacing);
+    lcurveContext.font = tickLabelFont;
+    lcurveContext.fillStyle = tickLabelColor;
+    lcurveContext.textAlign = tickLabelAlign;
+    lcurveContext.textBaseline = tickLabelBaseline;
+    lcurveContext.fillText(xTickLabel, xPlotPixel, graphBottomTrailingBorder + tickLabelSpacing);
   }
 
   //draw horizontal lines and y axis tick label
   for (var yPlotMagnif = yGridInitial; yPlotMagnif <= yGridFinal; yPlotMagnif+=yGridStep) {
     var yPlotPixel = yMagnifToPixel(yPlotMagnif);
-    context.moveTo(graphLeftTrailingBorder, yPlotPixel);
-    context.lineTo(graphRightTrailingBorder, yPlotPixel);
+    lcurveContext.moveTo(graphLeftTrailingBorder, yPlotPixel);
+    lcurveContext.lineTo(graphRightTrailingBorder, yPlotPixel);
 
     var yTickLabel = yPlotMagnif;
-    context.font = tickLabelFont;
-    context.fillStyle = tickLabelColor;
-    context.textAlign = "right";
-    context.textBaseline = tickLabelBaseline;
-    context.fillText(yTickLabel,graphLeftTrailingBorder - tickLabelSpacing,  yPlotPixel);
+    lcurveContext.font = tickLabelFont;
+    lcurveContext.fillStyle = tickLabelColor;
+    lcurveContext.textAlign = "right";
+    lcurveContext.textBaseline = tickLabelBaseline;
+    lcurveContext.fillText(yTickLabel,graphLeftTrailingBorder - tickLabelSpacing,  yPlotPixel);
   }
-  context.lineWidth = gridWidth;
-  context.strokeStyle = gridColor;
-  context.stroke();
+  lcurveContext.lineWidth = gridWidth;
+  lcurveContext.strokeStyle = gridColor;
+  lcurveContext.stroke();
 
   // draw border
-  context.strokeStyle = graphBorderColor;
-  context.lineWidth = graphBorderWidth;
-  context.strokeRect(graphLeftBorder, graphTopBorder, graphWidth, graphHeight);
+  lcurveContext.strokeStyle = graphBorderColor;
+  lcurveContext.lineWidth = graphBorderWidth;
+  lcurveContext.strokeRect(graphLeftBorder, graphTopBorder, graphWidth, graphHeight);
 
   drawAxes();
   drawAxisLabels(centerLayout=false);
 }
 
-function plotLightcurve(inputData, fromEquation=true) {
+function plotLightcurve(inputData, fromEquation=fromEquationDefault) {
   // console.log("fromEquation: " + fromEquation);
   // console.log("inputData: " + inputData);
   initPlot();
@@ -474,18 +557,18 @@ function plotLightcurve(inputData, fromEquation=true) {
     // indexIncrement = 1;
   }
 
-  context.save();
+  lcurveContext.save();
     // set up clipping region as graph region, so that curve does not
     // extend beyond graph region
-    context.beginPath();
-    context.rect(graphLeftBorder, graphTopBorder, graphWidth, graphHeight);
-    context.clip();
+    lcurveContext.beginPath();
+    lcurveContext.rect(graphLeftBorder, graphTopBorder, graphWidth, graphHeight);
+    lcurveContext.clip();
 
     // prepare to draw curve and move to initial pixel coordinate
     var tPixel = xDayToPixel(tDay);
     var magnifPixel = yMagnifToPixel(magnif);
-    context.beginPath();
-    context.moveTo(tPixel, magnifPixel);
+    lcurveContext.beginPath();
+    lcurveContext.moveTo(tPixel, magnifPixel);
 
     // Iterate over remaining days and draw lines from each pixel coordinate
     // to the next
@@ -508,7 +591,7 @@ function plotLightcurve(inputData, fromEquation=true) {
 
       var tPixel = xDayToPixel(tDay);
       var magnifPixel = yMagnifToPixel(magnif);
-      context.lineTo(tPixel, magnifPixel);
+      lcurveContext.lineTo(tPixel, magnifPixel);
     }
     // console.log(index);
     // if (!fromEquation) {
@@ -519,11 +602,11 @@ function plotLightcurve(inputData, fromEquation=true) {
     //   console.log(tDay);
     //   console.log(dayWidth);
     // }
-    context.lineJoin = "round";
-    context.lineWidth = curveWidth;
-    context.strokeStyle = curveColor;
-    context.stroke();
-  context.restore();
+    lcurveContext.lineJoin = "round";
+    lcurveContext.lineWidth = curveWidth;
+    lcurveContext.strokeStyle = curveColor;
+    lcurveContext.stroke();
+  lcurveContext.restore();
 }
 
 function getCurveData() {
