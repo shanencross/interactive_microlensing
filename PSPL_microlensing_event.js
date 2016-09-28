@@ -10,10 +10,10 @@ var graphHeight = 300;
 var graphRightBorder = graphLeftBorder + graphWidth; // right border of graph x-pixel value, NOT including any trailing gridlines
 var graphBottomBorder = graphTopBorder + graphHeight; // bottom border of y-pixel value, NOT including any trailing gridlines
 
-var graphLeftTrailingBorder = graphLeftBorder - 10; // left border of graph x-pixel value, including any trailing gridlines
-var graphRightTrailingBorder = graphRightBorder; // right border of graph x-pixel value, including any trailing gridlines
-var graphTopTrailingBorder = graphTopBorder; // top border of graph y-pixel value, including any trailing gridlines
-var graphBottomTrailingBorder = graphBottomBorder + 10; // bottom border of graph y-pixel value, including any trailing gridlines
+var graphLeftTrailingBorder = graphLeftBorder - 10; // left border of graph x-pixel value, INCLUDING any trailing gridlines
+var graphRightTrailingBorder = graphRightBorder; // right border of graph x-pixel value, INCLUDING any trailing gridlines
+var graphTopTrailingBorder = graphTopBorder; // top border of graph y-pixel value, INCLUDING any trailing gridlines
+var graphBottomTrailingBorder = graphBottomBorder + 10; // bottom border of graph y-pixel value, INCLUDING any trailing gridlines
 
 // var graphRightBorder = lcurveCanvas.width - 50; // right border of graph x-pixel value, NOT including any trailing gridlines
 // var graphBottomBorder = lcurveCanvas.height - 50; // bottom border of graph y-pixel value
@@ -23,7 +23,7 @@ var graphBottomTrailingBorder = graphBottomBorder + 10; // bottom border of grap
 var centerX = graphWidth/2 + graphLeftBorder;
 var centerY = graphHeight/2 + graphTopBorder;
 
-// slider parameters; only tE, tMax, and u0 work/have reasonable ranges/values
+// slider parameters; only tE, t0, and u0 work/have reasonable ranges/values
 // NOTE: There are/should be corellations between several of these for instance tE depends
 // on the rest, and mu depends on Ds and Dl;
 // need to figure that out so that updating one changes the related ones
@@ -32,17 +32,13 @@ var Ml;
 var Ds; // Ds =  Dl / (1 - 1/mu)
 var u0;
 var Dl; // Dl = Ds * (1 - 1/mu)
-var tMax;
+var t0;
 var mu; // mu = thetaE / tE; mu = Ds / (Ds - Dl) = 1/(1 - Dl/Ds)
 initParams();
 
 // Physical constants
-const G = 1; //temp value
-const c = 1; //temp value
-
-// derived parameters
-var thetaE = Math.sqrt(4 * G * Ml / (mu * Dl * c*c))
-console.log("thetaE: " + thetaE)
+const G = 6.67384e-11; // m3 kg−1 s−2 (astropy value)
+const c = 299792458.0; // m s-1 (astropy value)
 
 // plot scale
 var dayWidth;
@@ -123,8 +119,8 @@ const fromEquationDefault = true;
 var tEslider = document.getElementById("tEslider");
 var tEreadout = document.getElementById("tEreadout");
 
-var tMaxSlider = document.getElementById("tMaxSlider");
-var tMaxReadout = document.getElementById("tMaxReadout");
+var t0slider = document.getElementById("t0slider");
+var t0readout = document.getElementById("t0readout");
 
 var u0slider = document.getElementById("u0slider");
 var u0readout = document.getElementById("u0readout");
@@ -153,26 +149,26 @@ function init() {
 
 function initListeners() {
   // sliders
-  tEslider.addEventListener("input", updateTE, false);
-  tEslider.addEventListener("change", updateTE, false);
+  tEslider.addEventListener("input", function() { updateParam("tE"); }, false);
+  tEslider.addEventListener("change", function() { updateParam("tE"); }, false);
 
-  MlSlider.addEventListener("input", updateMl, false);
-  MlSlider.addEventListener("change", updateMl, false);
+  MlSlider.addEventListener("input", function() { updateParam("Ml"); }, false);
+  MlSlider.addEventListener("change", function() { updateParam("Ml"); }, false);
 
-  DsSlider.addEventListener("input", updateDs, false);
-  DsSlider.addEventListener("change", updateDs, false);
+  DsSlider.addEventListener("input", function() { updateParam("Ds"); }, false);
+  DsSlider.addEventListener("change", function() { updateParam("Ds"); }, false);
 
-  u0slider.addEventListener("input", updateU0, false);
-  u0slider.addEventListener("change", updateU0, false);
+  u0slider.addEventListener("input", function() { updateParam("u0"); }, false);
+  u0slider.addEventListener("change", function() { updateParam("u0"); }, false);
 
-  DlSlider.addEventListener("input", updateDl, false);
-  DlSlider.addEventListener("change", updateDl, false);
+  DlSlider.addEventListener("input", function() { updateParam("Dl"); }, false);
+  DlSlider.addEventListener("change", function() { updateParam("Dl"); }, false);
 
-  tMaxSlider.addEventListener("input", updateTMax, false);
-  tMaxSlider.addEventListener("change", updateTMax, false);
+  t0slider.addEventListener("input", function() { updateParam("t0"); }, false);
+  t0slider.addEventListener("change", function() { updateParam("t0"); }, false);
 
-  muSlider.addEventListener("input", updateMu, false);
-  muSlider.addEventListener("change", updateMu, false);
+  muSlider.addEventListener("input", function() { updateParam("mu"); }, false);
+  muSlider.addEventListener("change", function() { updateParam("mu"); }, false);
 
   // reset buttons
   resetParamsButton.addEventListener("click", resetParams, false);
@@ -195,18 +191,16 @@ function initListeners() {
 function initParams() {
   // set lense curve parameters to defaults
   tE = 10; // tE = thetaE / mu
-  Ml = 10;
+  Ml = 1.0; // solar masses
   Ds = 15; // Ds =  Dl / (1 - 1/mu)
   u0 = 0.1;
   Dl = 15; // Dl = Ds * (1 - 1/mu)
-  tMax = 15;
+  t0 = 15;
   mu = 15; // mu = thetaE / tE; mu = Ds / (Ds - Dl) = 1/(1 - Dl/Ds)
 }
 
 function resetParams() {
   // reset lense curve parameters to defaults and redraw curve
-  // NOTE: Need to update sliders too
-  console.log("RESET");
   initParams();
   resetSliders();
   plotLightcurve();
@@ -219,68 +213,65 @@ function resetSliders() {
   DsSlider.value = Ds;
   u0slider.value = u0;
   DlSlider.value = Dl
-  tMaxSlider.value = tMax;
+  t0slider.value = t0;
   muSlider.value = mu;
 
-  updateTE();
-  updateMl();
-  updateDs();
-  updateU0();
-  updateDl();
-  updateTMax();
-  updateMu();
+  console.log("resetSliders Ml: " + Ml);
+  console.log("resetSliders MlSlider.value: " + MlSlider.value);
+
+  updateParam("tE");
+  updateParam("Ml");
+  updateParam("Ds");
+  updateParam("u0");
+  updateParam("Dl");
+  updateParam("t0");
+  updateParam("mu");
 }
 
-function clearGraph() {
-  lcurveContext.clearRect(graphLeftBorder, graphTopBorder, graphWidth, graphHeight);
-}
+function updateParam(param) {
+  if (param === "tE") {
+    tEreadout.innerHTML = Number(tEslider.value).toFixed(1);
+    oldTE = tE;
+    tE = tEslider.value;
+    tEratio = tE / oldTE;
 
-function updateTE() {
-  tEreadout.innerHTML = Number(tEslider.value).toFixed(1);
-  tE = tEslider.value;
-  clearGraph();
-  plotLightcurve();
-}
+    // Ml is proportional to tE^2, all else being unchanged
+    Ml *= tEratio*tEratio;
+    MlSlider.value = Ml;
+    MlReadout.innerHTML = Number(MlSlider.value).toFixed(1);
+  }
+  else if (param === "Ml") {
+    MlReadout.innerHTML = Number(MlSlider.value).toFixed(1);
+    var oldMl = Ml;
+    Ml = MlSlider.value;
+    var MlRatio = Ml / oldMl;
 
-function updateMl() {
-  MlReadout.innerHTML = Number(MlSlider.value).toFixed(1);
-  Ml = MlSlider.value;
-  clearGraph();
-  plotLightcurve();
-}
+    // tE is proportional to sqrt(Ml), all else being unchanged
+    tE *= Math.sqrt(MlRatio);
+    tEslider.value = tE;
+    tEreadout.innerHTML = Number(tEslider.value).toFixed(1);
+  }
+  else if (param === "Ds") {
+    DsReadout.innerHTML = DsSlider.value;
+    Ds = DsSlider.value;
+  }
+  else if (param === "u0") {
+    u0readout.innerHTML = Number(u0slider.value).toFixed(3);
+    u0 = u0slider.value;
+  }
+  else if (param === "Dl") {
+    DlReadout.innerHTML = DlSlider.value;
+    Dl = DlSlider.value;
+  }
+  else if (param === "t0") {
+    t0readout.innerHTML = t0slider.value;
+    t0 = t0slider.value;
+  }
+  else if (param === "mu") {
+    muReadout.innerHTML = muSlider.value
+    mu = muSlider.value;
+  }
 
-function updateDs() {
-  DsReadout.innerHTML = DsSlider.value;
-  Ds = DsSlider.value;
-  clearGraph();
-  plotLightcurve();
-}
-
-function updateU0() {
-  u0readout.innerHTML = Number(u0slider.value).toFixed(3);
-  u0 = u0slider.value;
-  clearGraph();
-  plotLightcurve();
-}
-
-function updateDl() {
-  DlReadout.innerHTML = DlSlider.value;
-  Dl = DlSlider.value;
-  clearGraph();
-  plotLightcurve();
-}
-
-function updateTMax() {
-  tMaxReadout.innerHTML = tMaxSlider.value;
-  tMax = tMaxSlider.value;
-  clearGraph();
-  plotLightcurve();
-}
-
-function updateMu() {
-  muReadout.innerHTML = muSlider.value
-  mu = muSlider.value;
-  clearGraph();
   plotLightcurve();
 }
 
@@ -326,12 +317,17 @@ function updateGraph(shift) {
 }
 
 function updateGridRange(xStep, yStep) {
-  // if both arguments are undefined, update grid step values;
-  // otherwise leave grid steps unchanged
+  // update grid with new step values,
+  // and/or update grid for new initial/final axis values using
+
+  // if new step values are passed in, update grid step values;
+  // otherwise leave grid steps unchanged when updating grid
   if ( !(xStep === undefined) && !(yStep === undefined)) {
     xGridStep = xStep;
     yGridStep = yStep;
   }
+
+  // update grid using current x/y axis initial and final values
 
   // Round the initial x grid line placement from initial day on axis
   // up to next xGridStep increment, except when exactly on an xGridStep
@@ -366,6 +362,10 @@ function updateGridRange(xStep, yStep) {
   // console.log("MathFloored yAxisInitialMagnif: " + Math.floor(yAxisInitialMagnif));
   // console.log("yGridInitial: " + yGridInitial);
   // console.log("yGridFinal: " + yGridFinal);
+}
+
+function clearGraph() {
+  lcurveContext.clearRect(graphLeftBorder, graphTopBorder, graphWidth, graphHeight);
 }
 
 function xDayToPixel(xPlotDay) {
@@ -541,7 +541,7 @@ function plotLightcurve(inputData, fromEquation=fromEquationDefault) {
   else {
     var curveData;
     if (inputData === undefined) {
-      curveData = getCurveData()
+      curveData = getCurveData();
     }
     else {
       curveData = inputData;
@@ -549,7 +549,7 @@ function plotLightcurve(inputData, fromEquation=fromEquationDefault) {
     var times = curveData.times;
     var magnifs = curveData.magnifs;
     tDay = times[0];
-    magnif = times[0];
+    magnif = magnifs[0];
     // initialTday = times[0];
     // initialMagnif = magnifs[0];
 
@@ -613,18 +613,19 @@ function getCurveData() {
   var times = [];
   var magnifs = [];
 
-  for (var tDay=0; tDay <= dayWidth; tDay += dt) {
+  for (var tDay = xAxisInitialDay; tDay <= xAxisFinalDay; tDay += dt) {
     var magnif = getMagnif(tDay);
+    // if (tDay === 0)
+    //   console.log("magnif: " + magnif);
     times.push(tDay);
     magnifs.push(magnif);
   }
-
   var curveData = {times:times, magnifs:magnifs};
   return curveData;
 }
 
 function getTimeTerm(t) {
-  timeTerm = (t - tMax)/tE;
+  timeTerm = (t - t0)/tE;
   return timeTerm;
 }
 
@@ -647,8 +648,20 @@ function getMagnif(t) {
   return magnif;
 }
 
+function getTE() {
+  var tE = 3;
+  return tE;
+}
+
+function getThetaE() {
+  var thetaE = Math.sqrt(4 * G * Ml / (mu * Dl * c*c));
+  console.log("thetaE: " + thetaE)
+  return thetaE;
+}
+
+
 /*
-A = (u**2 + 2)/(u * sqrt(u0**2 + ((t-tMax)/tE)**2 ))
+A = (u**2 + 2)/(u * sqrt(u0**2 + ((t-t0)/tE)**2 ))
 thetaE = sqrt(4*G*Ml / (mu*Dl*c**2))
 
 mu = Ds / (Ds - Dl)
