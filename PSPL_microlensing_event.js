@@ -250,13 +250,15 @@ function updateThetaE() {
   thetaE = Math.sqrt(4 * G * eqMl/(c*c*eqDrel)); // radians (i.e. unitless)
 }
 
-function updateTE() {
+function updateTE(debug=true) {
   const masToRad = 4.84813681109536e-9; // rad/mas
   const yearToDay = 365.25; // day/year
 
   var eqMu = mu * masToRad / yearToDay // mu converted for equation to rad/yr
   // thetaE is in radians
   tE = thetaE/mu; // days
+  if (debug)
+    tE *= 1e10; // something is wrong; have to multiply by 1e9+ to get reasonable plot
 }
 
 function updateSliders() {
@@ -336,6 +338,7 @@ function updateParam(param) {
 
   updateDerivedQuantities();
   updateSliders();
+  console.log(`tE: ${tE}`);
   plotLightcurve();
 }
 
