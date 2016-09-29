@@ -32,13 +32,16 @@ var centerY = graphHeight/2 + graphTopBorder;
 const G = 6.67384e-11; // m3 kg−1 s−2 (astropy value)
 const c = 299792458.0; // m s-1 (astropy value)
 
+// Dl slider/value is kept one "step" below Ds; determines size of that step
+const sourceLensMinSeparation = 0.01; // kpc
+
 // base quantities set by user
-var Ml;
-var Ds; // Ds =  Dl / (1 - 1/mu)
+var Ml; // solMass
+var Ds; // kpc: Ds =  Dl / (1 - 1/mu)
 var u0;
-var Dl; // Dl = Ds * (1 - 1/mu)
-var t0;
-var mu; // mu = thetaE / tE; mu = Ds / (Ds - Dl) = 1/(1 - Dl/Ds)
+var Dl; // kpc: Dl = Ds * (1 - 1/mu)
+var t0; // days
+var mu; // mas/yr: mu = thetaE / tE; mu = Ds / (Ds - Dl) = 1/(1 - Dl/Ds)
 
 // derived quantities
 var Drel;
@@ -194,26 +197,20 @@ function initListeners() {
   updateSliders(); // in case HTML slider values differ from actual starting values
 }
 
-function initParams(debug=false) {
+function initParams() {
   // set lense curve parameters to defaults
 
   // set base quantity defaults
   // tE = 10; // tE = thetaE / mu
-  Ml = 1.0; // solar masses
+  Ml = 1.0; // solMass
   Ds = 6.5; // kpc: Ds =  Dl / (1 - 1/mu)
   u0 = 0.1;
   Dl = 3.0; // kpc: Dl = Ds * (1 - 1/mu)
   t0 = 15; // days
-  mu = 0.1; // mu = thetaE / tE
-
-  if (debug) {
-    // for if the other derived quantity functions don't work yet
-    tE = 10; // days
-    return;
-  }
+  mu = 4; // mas/yr: mu = thetaE / tE
 
   // set derived quantities
-  updateDerivedQuantities(); // slider not initialized yet
+  updateDerivedQuantities();
 }
 
 function updateDerivedQuantities(noSlider=false) {
@@ -245,7 +242,7 @@ function updateSliders() {
   t0readout.innerHTML = Number(t0slider.value).toFixed(1);
 
   muSlider.value = mu;
-  muReadout.innerHTML = Number(muSlider.value).toFixed(1);
+  muReadout.innerHTML = Number(muSlider.value).toFixed(2);
 }
 
 function updateDrel() {
@@ -281,7 +278,7 @@ function updateParam(param) {
     }
     // If Ds slider is less than or equal to Dl, we should set Ds to one step above Dl
     else {
-      Ds = Dl + 0.01;
+      Ds = Dl + sourceLensMinSeparation;
     }
     // tE depends on thetaE depends on Drel depends on Ds
   }
@@ -295,7 +292,7 @@ function updateParam(param) {
     }
     // If Dl slider is less than or equal to Dl, we should set Dl to one step below Ds
     else {
-      Dl = Ds - 0.01;
+      Dl = Ds - sourceLensMinSeparation;
     }
     // TE depends on thetaE depends on Drel depends on Dl
   }
@@ -667,6 +664,8 @@ function getCurveData() {
   var curveData = {times:times, magnifs:magnifs};
   return curveData;
 }
+
+// functions to calculate magnification from parameters for a given time
 
 function getTimeTerm(t) {
   var timeTerm = (t - t0)/tE;
