@@ -27,18 +27,27 @@ var centerY = graphHeight/2 + graphTopBorder;
 // NOTE: There are/should be corellations between several of these for instance tE depends
 // on the rest, and mu depends on Ds and Dl;
 // need to figure that out so that updating one changes the related ones
-var tE; // tE = thetaE / mu
-var Ml;
-var Ds; // Ds =  Dl / (1 - 1/mu)
-var u0;
-var Dl; // Dl = Ds * (1 - 1/mu)
-var t0;
-var mu; // mu = thetaE / tE; mu = Ds / (Ds - Dl) = 1/(1 - Dl/Ds)
-initParams();
 
 // Physical constants
 const G = 6.67384e-11; // m3 kg−1 s−2 (astropy value)
 const c = 299792458.0; // m s-1 (astropy value)
+
+// Dl slider/value is kept one "step" below Ds; determines size of that step
+const sourceLensMinSeparation = 0.01; // kpc
+
+// base quantities set by user
+var Ml; // solMass
+var Ds; // kpc: Ds =  Dl / (1 - 1/mu)
+var u0;
+var Dl; // kpc: Dl = Ds * (1 - 1/mu)
+var t0; // days
+var mu; // mas/yr: mu = thetaE / tE; mu = Ds / (Ds - Dl) = 1/(1 - Dl/Ds)
+
+// derived quantities
+var Drel; // kpc
+var thetaE; // radians (or should we use milliarcsecond?)
+var tE; // days: tE = thetaE / mu
+initParams();
 
 // plot scale
 var dayWidth;
@@ -145,6 +154,10 @@ window.onload = init;
 function init() {
   initListeners();
   plotLightcurve();
+  console.log(`tE: ${tE}`);
+  console.log(`thetaE: ${thetaE}`);
+  console.log(`Drel: ${Drel}`);
+  console.log(`mu: ${mu}`);
 }
 
 function initListeners() {
@@ -185,93 +198,158 @@ function initListeners() {
   yZoomOutButton.addEventListener("click", function() { updateGraph("yZoomOut"); }, false);
 
   resetGraphButton.addEventListener("click", function() { updateGraph("reset"); }, false)
-
+  updateSliders(); // in case HTML slider values differ from actual starting values
 }
 
 function initParams() {
   // set lense curve parameters to defaults
-  tE = 10; // tE = thetaE / mu
-  Ml = 1.0; // solar masses
-  Ds = 15; // Ds =  Dl / (1 - 1/mu)
+
+  // set base quantity defaults
+  // tE = 10; // tE = thetaE / mu
+  Ml = 1.0; // solMass
+  Ds = 6.5; // kpc: Ds =  Dl / (1 - 1/mu)
   u0 = 0.1;
-  Dl = 15; // Dl = Ds * (1 - 1/mu)
-  t0 = 15;
-  mu = 15; // mu = thetaE / tE; mu = Ds / (Ds - Dl) = 1/(1 - Dl/Ds)
+  Dl = 3.0; // kpc: Dl = Ds * (1 - 1/mu)
+  t0 = 15; // days
+  mu = 4; // mas/yr  (milliarcseconds/year): mu = thetaE / tE
+
+  // set derived quantities
+  updateDerivedQuantities();
+}
+
+function updateDerivedQuantities() {
+  updateDrel();
+  updateThetaE();
+  // console.log(`tE before: ${tE}`);
+  updateTE();
+  // console.log(`tE after: ${tE}`);
+}
+
+function updateDrel() {
+  Drel = 1/((1/Dl) - (1/Ds)); // kpc
+}
+
+function updateThetaE() {
+  /*
+  G: m3 kg−1 s−2 (astropy value)
+  c: 299792458.0; // m s-1 (astropy value)
+  Ml: solMass
+  Drel: kpc
+
+  solMass -> kg: 1.9891e+30 kg/solMass
+  kpc -> m: 3.0856775814671917e+19 m/kpc
+
+  kg -> solMass: 5.02739932632849e-31
+  m -> kpc: 3.240779289469756e-20 kpc/m
+  */
+
+  const solMassToKg = 1.9891e30; // kg/solMass
+  const kpcToM = 3.0856775814671917e19; // m/kpc
+
+  var eqMl = Ml * solMassToKg; // Ml converted for equation to kg
+  var eqDrel = Drel * kpcToM; // Drel converted for equation to m
+
+  // G is m^3 /(kg * s^2)
+  // c is m/s
+  thetaE = Math.sqrt(4 * G * eqMl/(c*c*eqDrel)); // radians (i.e. unitless)
+}
+
+function updateTE(debug=false) {
+  const masToRad = 4.84813681109536e-9; // rad/mas
+  const yearToDay = 365.25; // day/year
+
+  var eqMu = mu * masToRad / yearToDay // mu converted for equation to rad/yr
+  // thetaE is in radians
+  tE = thetaE/eqMu; // days
+  if (debug)
+    tE *= 1e10; // something is wrong; have to multiply by 1e9+ to get reasonable plot
+}
+
+function updateSliders() {
+  const tEmax = 365; // maximum tE slider value
+  // update slider values and readouts to reflect current variable values
+  tEslider.value = tE;
+  tEreadout.innerHTML = Number(tEslider.value).toFixed(3);
+
+  // add "+" once tE exceeds maximum slider value;
+  // NOTE: Very hacky. Improve this
+  if (tE > tEmax) {
+    tEreadout.innerHTML += "+";
+  }
+
+  MlSlider.value = Ml;
+  MlReadout.innerHTML = Number(MlSlider.value).toFixed(6);
+
+  DsSlider.value = Ds;
+  DsReadout.innerHTML = Number(DsSlider.value).toFixed(2);
+
+  u0slider.value = u0;
+  u0readout.innerHTML = Number(u0slider.value).toFixed(3);
+
+  DlSlider.value = Dl;
+  DlReadout.innerHTML = Number(DlSlider.value).toFixed(2);
+
+  t0slider.value = t0;
+  t0readout.innerHTML = Number(t0slider.value).toFixed(1);
+
+  muSlider.value = mu;
+  muReadout.innerHTML = Number(muSlider.value).toFixed(2);
 }
 
 function resetParams() {
   // reset lense curve parameters to defaults and redraw curve
   initParams();
-  resetSliders();
+  updateSliders();
   plotLightcurve();
 }
 
-function resetSliders() {
-  // set slider values to current parameter values and update readouts
-  tEslider.value = tE;
-  MlSlider.value = Ml;
-  DsSlider.value = Ds;
-  u0slider.value = u0;
-  DlSlider.value = Dl
-  t0slider.value = t0;
-  muSlider.value = mu;
-
-  console.log("resetSliders Ml: " + Ml);
-  console.log("resetSliders MlSlider.value: " + MlSlider.value);
-
-  updateParam("tE");
-  updateParam("Ml");
-  updateParam("Ds");
-  updateParam("u0");
-  updateParam("Dl");
-  updateParam("t0");
-  updateParam("mu");
-}
-
 function updateParam(param) {
-  if (param === "tE") {
-    tEreadout.innerHTML = Number(tEslider.value).toFixed(1);
-    oldTE = tE;
-    tE = tEslider.value;
-    tEratio = tE / oldTE;
-
-    // Ml is proportional to tE^2, all else being unchanged
-    Ml *= tEratio*tEratio;
-    MlSlider.value = Ml;
-    MlReadout.innerHTML = Number(MlSlider.value).toFixed(1);
-  }
-  else if (param === "Ml") {
-    MlReadout.innerHTML = Number(MlSlider.value).toFixed(1);
-    var oldMl = Ml;
-    Ml = MlSlider.value;
-    var MlRatio = Ml / oldMl;
-
-    // tE is proportional to sqrt(Ml), all else being unchanged
-    tE *= Math.sqrt(MlRatio);
-    tEslider.value = tE;
-    tEreadout.innerHTML = Number(tEslider.value).toFixed(1);
+  if (param === "Ml") {
+    Ml = Number(MlSlider.value);
+    // tE depends on thetaE which depends on Ml
   }
   else if (param === "Ds") {
-    DsReadout.innerHTML = DsSlider.value;
-    Ds = DsSlider.value;
+    if (Number(DsSlider.value) > Dl) { // source must be farther than lens
+      Ds = Number(DsSlider.value);
+    }
+    // If Ds slider is less than or equal to Dl, we should set Ds to one step above Dl
+    else {
+      Ds = Dl + sourceLensMinSeparation;
+    }
+    // tE depends on thetaE depends on Drel depends on Ds
   }
   else if (param === "u0") {
-    u0readout.innerHTML = Number(u0slider.value).toFixed(3);
-    u0 = u0slider.value;
+    u0 = Number(u0slider.value);
   }
   else if (param === "Dl") {
-    DlReadout.innerHTML = DlSlider.value;
-    Dl = DlSlider.value;
+      // console.log(`Dl: ${Dl}, DlSlider.value: ${DlSlider.value}, Ds: ${Ds}, DlSlider.value < Ds: ${DlSlider.value < Ds}`)
+    if (Number(DlSlider.value) < Ds) { // lens must be closer than source
+      Dl = Number(DlSlider.value);
+    }
+    // If Dl slider is less than or equal to Dl, we should set Dl to one step below Ds
+    else {
+      Dl = Ds - sourceLensMinSeparation;
+    }
+    // TE depends on thetaE depends on Drel depends on Dl
   }
   else if (param === "t0") {
-    t0readout.innerHTML = t0slider.value;
-    t0 = t0slider.value;
+    t0 = Number(t0slider.value);
   }
   else if (param === "mu") {
-    muReadout.innerHTML = muSlider.value
-    mu = muSlider.value;
+    mu = Number(muSlider.value);
+    // tE depends on mu
+  }
+  else if (param === "tE") {
+    console.log("Can't change tE yet (since it's a derived quantity)");
   }
 
+  // updates Drel, then thetaE, then tE, each of which depends on the last,
+  // and collectively depends on some of these base quantities;
+  // not necessary for every option, but probably cleaner code this way
+
+  updateDerivedQuantities();
+  updateSliders();
+  console.log(`tE: ${tE}`);
   plotLightcurve();
 }
 
@@ -471,8 +549,8 @@ function initPlot() {
   clearGraph();
   // updatePlotScaleAndRange(undefined, undefined, undefined,
   //                         undefined, undefined, 1.5);
-  console.log("tE: " + tE);
-  console.log("dayWidth: " + dayWidth);
+  // console.log("tE: " + tE);
+  // console.log("dayWidth: " + dayWidth);
   // fill in canvas background
   lcurveContext.fillStyle = canvasBackgroundColor;
   lcurveContext.fillRect(0, 0, lcurveCanvas.width, lcurveCanvas.height);
@@ -624,39 +702,30 @@ function getCurveData() {
   return curveData;
 }
 
+// functions to calculate magnification from parameters for a given time
+
 function getTimeTerm(t) {
-  timeTerm = (t - t0)/tE;
+  var timeTerm = (t - t0)/tE; // unitless
   return timeTerm;
 }
 
 function getU(timeTerm) {
-  u = Math.sqrt(u0*u0 + timeTerm*timeTerm);
+  var u = Math.sqrt(u0*u0 + timeTerm*timeTerm); // unitless
   return u;
 }
 
 function getMagnifFromU(u) {
   var magnifNumerator = u*u + 2;
   var magnifDenominator = u * Math.sqrt(u * u + 4);
-  magnif = magnifNumerator / magnifDenominator;
+  magnif = magnifNumerator / magnifDenominator; // unitless
   return magnif;
 }
 
 function getMagnif(t) {
-  var timeTerm = getTimeTerm(t);
-  var u = getU(timeTerm);
-  var magnif = getMagnifFromU(u);
+  var timeTerm = getTimeTerm(t); // unitless
+  var u = getU(timeTerm); // unitless
+  var magnif = getMagnifFromU(u); // unitless
   return magnif;
-}
-
-function getTE() {
-  var tE = 3;
-  return tE;
-}
-
-function getThetaE() {
-  var thetaE = Math.sqrt(4 * G * Ml / (mu * Dl * c*c));
-  console.log("thetaE: " + thetaE)
-  return thetaE;
 }
 
 
