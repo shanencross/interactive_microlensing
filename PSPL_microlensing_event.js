@@ -266,12 +266,19 @@ function updateTE(debug=false) {
 }
 
 function updateSliders() {
-  // update tE slider to reflect new tE value
+  const tEmax = 365; // maximum tE slider value
+  // update slider values and readouts to reflect current variable values
   tEslider.value = tE;
-  tEreadout.innerHTML = Number(tEslider.value).toFixed(1);
+  tEreadout.innerHTML = Number(tEslider.value).toFixed(3);
+
+  // add "+" once tE exceeds maximum slider value;
+  // NOTE: Very hacky. Improve this
+  if (tE > tEmax) {
+    tEreadout.innerHTML += "+";
+  }
 
   MlSlider.value = Ml;
-  MlReadout.innerHTML = Number(MlSlider.value).toFixed(3);
+  MlReadout.innerHTML = Number(MlSlider.value).toFixed(6);
 
   DsSlider.value = Ds;
   DsReadout.innerHTML = Number(DsSlider.value).toFixed(2);

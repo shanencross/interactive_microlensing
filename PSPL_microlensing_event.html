@@ -4,6 +4,18 @@
 <head>
   <meta charset="utf-8">
   <title>Point Source, Point Lens Microlensing Event</title>
+  <style>
+    input[type="range"] {
+    width: 300px;
+    padding: 0px;
+    }
+    input[type="range"]::-ms-tooltip { /* hides readout in IE */
+    display: none;
+    }
+    input[type="range"]::-ms-track { /* hides tick marks in IE */
+    color: transparent;
+    }
+</style>
 </head>
 
 <body style="background-color:#ffffe6; margin-left:auto; margin-right:auto;">
@@ -17,15 +29,15 @@
     </canvas>
   </div>
   <div style="text-align:center; position:relative;">
-    t<sub>E</sub> <input type="range" id="tEslider" min="0.5" max="150" step="0.5" value="110.5">
+    t<sub>E</sub> <input type="range" id="tEslider" min="0.001" max="365" step="0.001" value="110.5">
     <span id="tEreadout" style="display:inline-block;
-                     width:2.3em; text-align:right;">110.5</span> days
+                     width:3.8em; text-align:right;">110.500</span> days
   </div>
 
   <div style="text-align:center; position:relative;">
-    M<sub>l</sub> <input type="range" id="MlSlider" min="0.005" max="15" step="0.005" value="1">
+    M<sub>l</sub> <input type="range" id="MlSlider" min="0.000001" max="15" step="0.000001" value="1">
     <span id="MlReadout" style="display:inline-block;
-                     width:2.8em; text-align:right;">1.000</span> solMass
+                     width:4.4em; text-align:right;">1.000</span> solMass
     &nbsp; &nbsp; &nbsp;
     D<sub>s</sub> <input type="range" id="DsSlider" min="0.01" max="8.5" step="0.01" value="6.5">
     <span id="DsReadout" style="display:inline-block;
