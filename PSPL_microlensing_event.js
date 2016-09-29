@@ -44,9 +44,9 @@ var t0; // days
 var mu; // mas/yr: mu = thetaE / tE; mu = Ds / (Ds - Dl) = 1/(1 - Dl/Ds)
 
 // derived quantities
-var Drel;
-var thetaE;
-var tE; // tE = thetaE / mu
+var Drel; // kpc
+var thetaE; // radians (or should we use milliarcsecond?)
+var tE; // days: tE = thetaE / mu
 initParams();
 
 // plot scale
@@ -207,18 +207,56 @@ function initParams() {
   u0 = 0.1;
   Dl = 3.0; // kpc: Dl = Ds * (1 - 1/mu)
   t0 = 15; // days
-  mu = 4; // mas/yr: mu = thetaE / tE
+  mu = 4; // mas/yr  (milliarcseconds/year): mu = thetaE / tE
 
   // set derived quantities
   updateDerivedQuantities();
 }
 
-function updateDerivedQuantities(noSlider=false) {
+function updateDerivedQuantities() {
   updateDrel();
   updateThetaE();
   // console.log(`tE before: ${tE}`);
   updateTE();
   // console.log(`tE after: ${tE}`);
+}
+
+function updateDrel() {
+  Drel = 1/((1/Dl) - (1/Ds)); // kpc
+}
+
+function updateThetaE() {
+  /*
+  G: m3 kg−1 s−2 (astropy value)
+  c: 299792458.0; // m s-1 (astropy value)
+  Ml: solMass
+  Drel: kpc
+
+  solMass -> kg: 1.9891e+30 kg/solMass
+  kpc -> m: 3.0856775814671917e+19 m/kpc
+
+  kg -> solMass: 5.02739932632849e-31
+  m -> kpc: 3.240779289469756e-20 kpc/m
+  */
+
+  const solMassToKg = 1.9891e30; // kg/solMass
+  const kpcToM = 3.0856775814671917e19; // m/kpc
+
+  var eqMl = Ml * solMassToKg; // Ml converted for equation to kg
+  var eqDrel = Drel * kpcToM; // Drel converted for equation to m
+
+  // G is m^3 /(kg * s^2)
+  // c is m/s
+  thetaE = Math.sqrt(4 * G * eqMl/(c*c*eqDrel)); // radians (i.e. unitless)
+}
+
+function updateTE() {
+  const masToRad = 4.84813681109536e-9; // rad/mas
+  const yearToDay = 365.25; // day/year
+
+  var eqMu = mu * masToRad / yearToDay // mu converted for equation to rad/yr
+  // thetaE is in radians
+  tE = thetaE/mu; // days
 }
 
 function updateSliders() {
@@ -243,21 +281,6 @@ function updateSliders() {
 
   muSlider.value = mu;
   muReadout.innerHTML = Number(muSlider.value).toFixed(2);
-}
-
-function updateDrel() {
-  Drel = 1/((1/Dl) - (1/Ds));
-}
-
-function updateThetaE() {
-  /*
-  */
-
-  thetaE = Math.sqrt(4 * G * Ml/(c*c*Drel));
-}
-
-function updateTE() {
-  tE = thetaE/mu;
 }
 
 function resetParams() {
@@ -668,26 +691,26 @@ function getCurveData() {
 // functions to calculate magnification from parameters for a given time
 
 function getTimeTerm(t) {
-  var timeTerm = (t - t0)/tE;
+  var timeTerm = (t - t0)/tE; // unitless
   return timeTerm;
 }
 
 function getU(timeTerm) {
-  var u = Math.sqrt(u0*u0 + timeTerm*timeTerm);
+  var u = Math.sqrt(u0*u0 + timeTerm*timeTerm); // unitless
   return u;
 }
 
 function getMagnifFromU(u) {
   var magnifNumerator = u*u + 2;
   var magnifDenominator = u * Math.sqrt(u * u + 4);
-  magnif = magnifNumerator / magnifDenominator;
+  magnif = magnifNumerator / magnifDenominator; // unitless
   return magnif;
 }
 
 function getMagnif(t) {
-  var timeTerm = getTimeTerm(t);
-  var u = getU(timeTerm);
-  var magnif = getMagnifFromU(u);
+  var timeTerm = getTimeTerm(t); // unitless
+  var u = getU(timeTerm); // unitless
+  var magnif = getMagnifFromU(u); // unitless
   return magnif;
 }
 
