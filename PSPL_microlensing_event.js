@@ -115,8 +115,7 @@ var axisLabelAlign = "center";
 var axisLabelBaseline = "middle";
 var axisLabelSpacing = 27;
 
-// starting time and time increment
-const initialTdayDefault = 0;
+// time increment for drawing curve
 var dt = 0.01;
 
 // flag for whether graph is generated from calculating
@@ -128,11 +127,23 @@ const fromEquationDefault = true;
 var tEslider = document.getElementById("tEslider");
 var tEreadout = document.getElementById("tEreadout");
 
-var t0slider = document.getElementById("t0slider");
-var t0readout = document.getElementById("t0readout");
+var MlSlider = document.getElementById("MlSlider");
+var MlReadout = document.getElementById("MlReadout");
+
+var DsSlider = document.getElementById("DsSlider");
+var DsReadout = document.getElementById("DsReadout");
 
 var u0slider = document.getElementById("u0slider");
 var u0readout = document.getElementById("u0readout");
+
+var DlSlider = document.getElementById("DlSlider");
+var DlReadout = document.getElementById("DlReadout");
+
+var t0slider = document.getElementById("t0slider");
+var t0readout = document.getElementById("t0readout");
+
+var muSlider = document.getElementById("muSlider");
+var muReadout = document.getElementById("muReadout")
 
 var resetParamsButton = document.getElementById("resetParams");
 
@@ -150,8 +161,12 @@ var yZoomOutButton = document.getElementById("yZoomOut");
 var resetGraphButton = document.getElementById("resetGraph");
 
 window.onload = init;
+// init();
 
 function init() {
+  console.log(tEslider);
+  console.log(tEslider);
+  // console.log(muSlider);
   initListeners();
   plotLightcurve();
   console.log(`tE: ${tE}`);
@@ -161,7 +176,6 @@ function init() {
 }
 
 function initListeners() {
-  // sliders
   tEslider.addEventListener("input", function() { updateParam("tE"); }, false);
   tEslider.addEventListener("change", function() { updateParam("tE"); }, false);
 
@@ -605,16 +619,10 @@ function plotLightcurve(inputData, fromEquation=fromEquationDefault) {
   // console.log("fromEquation: " + fromEquation);
   // console.log("inputData: " + inputData);
   initPlot();
-  // var initialTday, initialMagnif, indexMax, indexIncrement;
   var tDay, magnif;
   if (fromEquation) {
     tDay = xAxisInitialDay;
     magnif = getMagnif(tDay);
-    // initialTday = initialTdayDefault;
-    // initialMagnif = getMagnif(initialTday);
-
-    // indexMax = dayWidth;
-    // indexIncrement = dt;
   }
   else {
     var curveData;
@@ -628,11 +636,6 @@ function plotLightcurve(inputData, fromEquation=fromEquationDefault) {
     var magnifs = curveData.magnifs;
     tDay = times[0];
     magnif = magnifs[0];
-    // initialTday = times[0];
-    // initialMagnif = magnifs[0];
-
-    // indexMax = times.length - 1;
-    // indexIncrement = 1;
   }
 
   lcurveContext.save();
@@ -727,13 +730,3 @@ function getMagnif(t) {
   var magnif = getMagnifFromU(u); // unitless
   return magnif;
 }
-
-
-/*
-A = (u**2 + 2)/(u * sqrt(u0**2 + ((t-t0)/tE)**2 ))
-thetaE = sqrt(4*G*Ml / (mu*Dl*c**2))
-
-mu = Ds / (Ds - Dl)
-
-
-*/
