@@ -154,6 +154,10 @@ window.onload = init;
 function init() {
   initListeners();
   plotLightcurve();
+  console.log(`tE: ${tE}`);
+  console.log(`thetaE: ${thetaE}`);
+  console.log(`Drel: ${Drel}`);
+  console.log(`mu: ${mu}`);
 }
 
 function initListeners() {
@@ -250,13 +254,13 @@ function updateThetaE() {
   thetaE = Math.sqrt(4 * G * eqMl/(c*c*eqDrel)); // radians (i.e. unitless)
 }
 
-function updateTE(debug=true) {
+function updateTE(debug=false) {
   const masToRad = 4.84813681109536e-9; // rad/mas
   const yearToDay = 365.25; // day/year
 
   var eqMu = mu * masToRad / yearToDay // mu converted for equation to rad/yr
   // thetaE is in radians
-  tE = thetaE/mu; // days
+  tE = thetaE/eqMu; // days
   if (debug)
     tE *= 1e10; // something is wrong; have to multiply by 1e9+ to get reasonable plot
 }
@@ -267,7 +271,7 @@ function updateSliders() {
   tEreadout.innerHTML = Number(tEslider.value).toFixed(1);
 
   MlSlider.value = Ml;
-  MlReadout.innerHTML = Number(MlSlider.value).toFixed(1);
+  MlReadout.innerHTML = Number(MlSlider.value).toFixed(3);
 
   DsSlider.value = Ds;
   DsReadout.innerHTML = Number(DsSlider.value).toFixed(2);
