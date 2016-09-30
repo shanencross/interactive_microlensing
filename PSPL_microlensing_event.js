@@ -1,3 +1,5 @@
+lcurveScript = {};
+
 var lcurveCanvas = document.getElementById("lcurveCanvas");
 var lcurveContext = lcurveCanvas.getContext("2d");
 
@@ -122,6 +124,7 @@ var dt = 0.01;
 // magnifications for a range of times from an equation,
 // or from an input of time/magnificaiton arrays
 const fromEquationDefault = true;
+const centerLayout = false;
 
 // parameter sliders and their readouts
 var tEslider = document.getElementById("tEslider");
@@ -164,9 +167,6 @@ window.onload = init;
 // init();
 
 function init() {
-  console.log(tEslider);
-  console.log(tEslider);
-  // console.log(muSlider);
   initListeners();
   plotLightcurve();
   console.log(`tE: ${tE}`);
@@ -381,7 +381,7 @@ function updateGraph(shift) {
   else if (shift === "yUp") {
     yInit = yAxisInitialMagnif - yGraphShiftStep;
   }
-  else if (shift === "yDown") {
+    else if (shift === "yDown") {
     yInit = yAxisInitialMagnif + yGraphShiftStep;
   }
   else if (shift === "xZoomIn") {
@@ -402,8 +402,6 @@ function updateGraph(shift) {
     updateGridRange(xGridStepDefault, yGridStepDefault);
   }
 
-  // width=30, height=10,xStep=2,yStep=1,
-  //                                  xInit=0, yInit=0.5
   updatePlotScaleAndRange(xWidth, yHeight, xInit, yInit);
   plotLightcurve();
 }
@@ -502,7 +500,7 @@ function drawAxes() {
   lcurveContext.stroke();
 }
 
-function drawAxisLabels(centerLayout=false) {
+function drawAxisLabels() {
   // x label
   lcurveContext.font = axisLabelFont;
   lcurveContext.textAlign = axisLabelAlign;
@@ -553,10 +551,6 @@ function updatePlotScaleAndRange(width, height, xInit, yInit) {
   yAxisFinalMagnif = yAxisInitialMagnif + magnifHeight;
 
   updateGridRange();
-
-  /*
-
-  */
 }
 
 function initPlot() {
@@ -612,7 +606,7 @@ function initPlot() {
   lcurveContext.strokeRect(graphLeftBorder, graphTopBorder, graphWidth, graphHeight);
 
   drawAxes();
-  drawAxisLabels(centerLayout=false);
+  drawAxisLabels();
 }
 
 function plotLightcurve(inputData, fromEquation=fromEquationDefault) {
