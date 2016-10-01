@@ -16,7 +16,7 @@ var PSPL_microlensing_event = (function() {
   // "trail" lengths for gridlines extending beyond graph border
   var graphLeftTrail = 10;
   var graphRightTrail = 0;
-  var graphTopTrail = 10;
+  var graphTopTrail = 0;
   var graphBottomTrail = 10;
 
   var graphRightBorder = graphLeftBorder + graphWidth; // right border of graph x-pixel value, NOT including any trailing gridlines
