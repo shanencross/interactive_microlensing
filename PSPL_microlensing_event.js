@@ -1,6 +1,7 @@
 console.log("Executing PSPL_microlensing_event.js");
 
 //NOTE: const keyword not compatible with IE -- should replace it with var and document what values are constant
+//NOTE update: const uses replaced with var, with comments marking them "const"
 
 // "revealing pattern" module object for this script file
 var PSPL_microlensing_event = (function() {
@@ -41,11 +42,11 @@ var PSPL_microlensing_event = (function() {
   // need to figure that out so that updating one changes the related ones
 
   // Physical constants
-  const G = 6.67384e-11; // m3 kg−1 s−2 (astropy value)
-  const c = 299792458.0; // m s-1 (astropy value)
+  var G = 6.67384e-11; // m3 kg−1 s−2 (astropy value); const
+  var c = 299792458.0; // m s-1 (astropy value); const
 
   // Dl slider/value is kept one "step" below Ds; determines size of that step
-  const sourceLensMinSeparation = 0.01; // kpc
+  var sourceLensMinSeparation = 0.01; // kpc; const
 
   // base quantities set by user
   var Ml; // solMass
@@ -73,10 +74,10 @@ var PSPL_microlensing_event = (function() {
   var xAxisFinalDay;
   var yAxisFinalMagnif;
 
-  const dayWidthDefault = 30;
-  const magnifHeightDefault = 10;
-  const xAxisInitialDayDefault = 0;
-  const yAxisInitialMagnifDefault = 0.5;
+  var dayWidthDefault = 30; // const
+  var magnifHeightDefault = 10; // const
+  var xAxisInitialDayDefault = 0; // const
+  var yAxisInitialMagnifDefault = 0.5; // const
   // initialize plot scale/range vars
   updatePlotScaleAndRange(dayWidthDefault, magnifHeightDefault,
                           xAxisInitialDayDefault, yAxisInitialMagnifDefault);
@@ -89,8 +90,8 @@ var PSPL_microlensing_event = (function() {
   var xGridStep;
   var yGridStep;
 
-  const xGridStepDefault = 2;
-  const yGridStepDefault = 1;
+  var xGridStepDefault = 2; // const
+  var yGridStepDefault = 1; // const
   updateGridRange(xGridStepDefault, yGridStepDefault); // initialize gridline vars
 
   // Step increments used by debug buttons to alter range/scale
@@ -133,8 +134,8 @@ var PSPL_microlensing_event = (function() {
   // flag for whether graph is generated from calculating
   // magnifications for a range of times from an equation,
   // or from an input of time/magnificaiton arrays
-  const fromEquationDefault = true;
-  const centerLayout = false;
+  var fromEquationDefault = true; // const
+  var centerLayout = false; // const
 
   // parameter sliders and their readouts
   var tEslider = document.getElementById("tEslider");
@@ -174,6 +175,7 @@ var PSPL_microlensing_event = (function() {
   var resetGraphButton = document.getElementById("resetGraph");
 
   // window.onload = init;
+  // console.log(PSPL_microlensing_event_lens_plane);
   init();
 
   function init() {
@@ -267,8 +269,8 @@ var PSPL_microlensing_event = (function() {
     m -> kpc: 3.240779289469756e-20 kpc/m
     */
 
-    const solMassToKg = 1.9891e30; // kg/solMass
-    const kpcToM = 3.0856775814671917e19; // m/kpc
+    var solMassToKg = 1.9891e30; // kg/solMass; const
+    var kpcToM = 3.0856775814671917e19; // m/kpc; const
 
     var eqMl = Ml * solMassToKg; // Ml converted for equation to kg
     var eqDrel = Drel * kpcToM; // Drel converted for equation to m
@@ -279,8 +281,8 @@ var PSPL_microlensing_event = (function() {
   }
 
   function updateTE(debug=false) {
-    const masToRad = 4.84813681109536e-9; // rad/mas
-    const yearToDay = 365.25; // day/year
+    var masToRad = 4.84813681109536e-9; // rad/mas; const
+    var yearToDay = 365.25; // day/year; const
 
     var eqMu = mu * masToRad / yearToDay // mu converted for equation to rad/yr
     // thetaE is in radians
@@ -290,7 +292,7 @@ var PSPL_microlensing_event = (function() {
   }
 
   function updateSliders() {
-    const tEmax = 365; // maximum tE slider value
+    var tEmax = 365; // maximum tE slider value; const
     // update slider values and readouts to reflect current variable values
     tEslider.value = tE;
     tEreadout.innerHTML = Number(tEslider.value).toFixed(3);
@@ -474,7 +476,7 @@ var PSPL_microlensing_event = (function() {
   }
 
   function yMagnifToPixel(yPlotMagnif) {
-    yPlotPixel = graphBottomBorder - (yPlotMagnif - yAxisInitialMagnif) * yPixelScale;
+    var yPlotPixel = graphBottomBorder - (yPlotMagnif - yAxisInitialMagnif) * yPixelScale;
     return yPlotPixel;
   }
 
