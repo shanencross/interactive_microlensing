@@ -3,8 +3,10 @@ console.log("Executing PSPL_microlensing_event.js");
 //NOTE: const keyword not compatible with IE -- should replace it with var and document what values are constant
 //NOTE update: const uses replaced with var, with comments marking them "const"
 
+var tE; // days: tE = thetaE / mu
 // "revealing pattern" module object for this script file
 var PSPL_microlensing_event = (function() {
+  var propertiesToReturn = {};
   var lcurveCanvas = document.getElementById("lcurveCanvas");
   var lcurveContext = lcurveCanvas.getContext("2d");
 
@@ -59,7 +61,7 @@ var PSPL_microlensing_event = (function() {
   // derived quantities
   var Drel; // kpc
   var thetaE; // radians (or should we use milliarcsecond?)
-  var tE; // days: tE = thetaE / mu
+
   initParams();
 
   // plot scale
@@ -232,12 +234,12 @@ var PSPL_microlensing_event = (function() {
 
     // set base quantity defaults
     // tE = 10; // tE = thetaE / mu
-    Ml = 1.0; // solMass
-    Ds = 6.5; // kpc: Ds =  Dl / (1 - 1/mu)
+    Ml = 0.1; // solMass
+    Ds = 8.0; // kpc: Ds =  Dl / (1 - 1/mu)
     u0 = 0.1;
-    Dl = 3.0; // kpc: Dl = Ds * (1 - 1/mu)
+    Dl = 7.0; // kpc: Dl = Ds * (1 - 1/mu)
     t0 = 15; // days
-    mu = 4; // mas/yr  (milliarcseconds/year): mu = thetaE / tE
+    mu = 7; // mas/yr  (milliarcseconds/year): mu = thetaE / tE
 
     // set derived quantities
     updateDerivedQuantities();
@@ -375,7 +377,8 @@ var PSPL_microlensing_event = (function() {
 
     updateDerivedQuantities();
     updateSliders();
-    console.log(`tE: ${tE}`);
+    // console.log(`tE: ${tE}`);
+    PSPL_microlensing_event_lens_plane.init();
     plotLightcurve();
   }
 
@@ -739,7 +742,7 @@ var PSPL_microlensing_event = (function() {
 
   // public properties to be stored in module object,
   // accessible via module object by code executed after this script
-  return {
+  propertiesToReturn = {
     Ml: Ml, // base modeling parameters
     Ds: Ds,
     Dl: Dl,
@@ -754,4 +757,6 @@ var PSPL_microlensing_event = (function() {
                          // probably want to store t and u values in arrays
                          // and share those instead, honestly
   };
+
+  return propertiesToReturn;
 })();

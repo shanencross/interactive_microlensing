@@ -46,24 +46,33 @@ var PSPL_microlensing_event_lens_plane = (function() {
   var picBackgroundColor = "#eff";
   var picBorderColor = "grey";
   var picBorderWidth = 1;
-  var circleColor = "black";
-  var circleWidth = 2;
+
+  var ringColor = "dimgrey";
+  var ringWidth = 1;
+  var dashedRingLength = 5;
+  var dashedRingSpacing = 5;
+
   var pathColor = "blue";;
   var pathWidth = 2;
+
   var dashedPathColor = "teal";
   var dashedPathWidth = 1;
   var dashedPathLength = 5;
   var dashedPathSpacing = 15
+
   var sourceColor = "teal";
   var sourceRadius = 2;
   var sourceOutlineWidth = 2;
   var sourceOutlineColor = sourceColor;
+
   var lensColor = "red";
   var lensRadius = 2;
   var lensOutlineWidth = 2;
   var lensOutlineColor = lensColor;
+
   var uArrowColor;
   var uArrowWidth;
+
   var axisColor = "black";
   var axisWidth = "2";
 
@@ -149,11 +158,14 @@ var PSPL_microlensing_event_lens_plane = (function() {
      // places source partway in between left/right canvas borders for debugging
      // line and dashed line drawing
     if (debug) {
-      sourcePos. x = xAxisFinalDay - 20;
+      sourcePos. x = xAxisFinalDay - 12;
     }
 
     // convert position to pixel units
     sourcePixelPos = {x: xDayToPixel(sourcePos.x), y: thetaYtoPixel(sourcePos.y)};
+    ringRadius =tE * xPixelScale;
+    console.log(tE);
+    console.log(ringRadius);
   }
 
   function thetXtoPixel() {
@@ -175,6 +187,20 @@ var PSPL_microlensing_event_lens_plane = (function() {
   function xDayToThetaX() {}
 
   function drawPic() {
+    function clearPic() {
+      context.clearRect(picLeftBorder, picTopBorder, picWidth, picHeight);
+    }
+
+    function drawBackgrounds() {
+      // canvas background
+      context.fillStyle = backgroundColor;
+      context.fillRect(0, 0, canvas.width, canvas.height);
+
+      // picture drawing area background
+      context.fillStyle = picBackgroundColor;
+      context.fillRect(picLeftBorder, picTopBorder, picWidth, picHeight);
+    }
+
     function switchClippingRegion(switchOn=true) {
       // set up clipping region as graph region, so that curve does not
       // extend beyond graph region
@@ -190,16 +216,6 @@ var PSPL_microlensing_event_lens_plane = (function() {
       }
     }
 
-    function drawBackgrounds() {
-      // canvas background
-      context.fillStyle = backgroundColor;
-      context.fillRect(0, 0, canvas.width, canvas.height);
-
-      // picture drawing area background
-      context.fillStyle = picBackgroundColor;
-      context.fillRect(picLeftBorder, picTopBorder, picWidth, picHeight);
-    }
-
     function drawLens() {
       context.beginPath();
       context.arc(centerX, centerY, lensRadius, 0, 2*Math.PI, false);
@@ -209,7 +225,16 @@ var PSPL_microlensing_event_lens_plane = (function() {
       context.strokeStyle = lensOutlineColor;
       context.stroke();
     }
-    function drawRing() {}
+    function drawRing() {
+      context.beginPath();
+      context.arc(centerX, centerY, ringRadius, 0, 2*Math.PI, false);
+      context.strokeStyle = ringColor;
+      context.strokeWidth = ringWidth;
+      context.setLineDash([dashedRingLength, dashedRingSpacing]); // turn on dashed lines
+      context.stroke();
+
+      context.setLineDash([]); // turn off dashed-line drawing
+    }
 
     // use this for when implementing animation;
     // for now, should be at end of path, if we bother placing it
@@ -267,6 +292,8 @@ var PSPL_microlensing_event_lens_plane = (function() {
       function drawAxisArrows() {}
     }
 
+    console.log(PSPL_microlensing_event.tE);
+    clearPic();
     drawBackgrounds();
     switchClippingRegion(switchOn=true);
     drawLens();
@@ -285,6 +312,6 @@ var PSPL_microlensing_event_lens_plane = (function() {
   // public properties to be stored in module object,
   // accessible via module object by code executed after this script
   return {
-
+    init: init
   };
 })();
