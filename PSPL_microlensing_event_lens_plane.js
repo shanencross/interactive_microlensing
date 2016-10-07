@@ -15,7 +15,6 @@ return {
 })();
 */
 
-
 // "revealing pattern" module object for this script file
 var PSPL_microlensing_event_lens_plane = (function() {
   // reference to module holding parameter values
@@ -37,7 +36,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
   var dayWidth = 30;
   var thetaYheight = 30; // temp value
   var xAxisInitialDay = 0;
-  var yAxisInitialThetaY = 0;
+  var yAxisInitialThetaY = -15; // half of thetaYheight so that 0 is the middle
   var xGridStepDefault = 2;
   var yGridStepDefault = 1;
 
@@ -120,56 +119,80 @@ var PSPL_microlensing_event_lens_plane = (function() {
   canvas = document.getElementById("lensPlaneCanvas")
   context = canvas.getContext("2d");
 
+  // debug flags
+  var animationFlag = false;
+  var debugFlag = true;
+
   // called from PSPL_microlensing_event.js (or whichever script holds the parameter
   // values) after initializations and slider updates),
   // because we NEED parameters intialized first to do drawing and scaling
-  function init() {
-    initDerivedValues();
+
+  function init(animation=animationFlag, debug=debugFlag) {
+    updateScaleAndRangeValues();
+    redraw();
+  }
+
+  function redraw(animation=animationFlag, debug=debugFlag) {
+    updateDrawingValues(animation=animation, debug=debug);
     drawPic();
   }
 
-  function initDerivedValues(animation=false, debug=true) {
-    // borders
-    picRightBorder = picLeftBorder + picWidth; // right border of picture x-pixel value, NOT including any trailing gridlines
-    picBottomBorder = picTopBorder + picHeight; // bottom border of picture y-pixel value, NOT including any trailing gridlines
-    centerX = picWidth/2 + picLeftBorder;
-    centerY = picHeight/2 + picTopBorder;
+function updateScaleAndRangeValues() {
+  // borders
+  picRightBorder = picLeftBorder + picWidth; // right border of picture x-pixel value, NOT including any trailing gridlines
+  picBottomBorder = picTopBorder + picHeight; // bottom border of picture y-pixel value, NOT including any trailing gridlines
+  centerX = picWidth/2 + picLeftBorder;
+  centerY = picHeight/2 + picTopBorder;
 
-    // trails
-    picLeftTrailingBorder = picLeftBorder - picLeftTrail; // left border of picture x-pixel value, INCLUDING any trailing gridlines
-    picRightTrailingBorder = picRightBorder + picRightTrail; // right border of picture x-pixel value, INCLUDING any trailing gridlines
-    picTopTrailingBorder = picTopBorder - picTopTrail; // top border of picture y-pixel value, INCLUDING any trailing gridlines
-    picBottomTrailingBorder = picBottomBorder + picBottomTrail; // bottom border of picture y-pixel value, INCLUDING any trailing gridlines
+  // trails
+  picLeftTrailingBorder = picLeftBorder - picLeftTrail; // left border of picture x-pixel value, INCLUDING any trailing gridlines
+  picRightTrailingBorder = picRightBorder + picRightTrail; // right border of picture x-pixel value, INCLUDING any trailing gridlines
+  picTopTrailingBorder = picTopBorder - picTopTrail; // top border of picture y-pixel value, INCLUDING any trailing gridlines
+  picBottomTrailingBorder = picBottomBorder + picBottomTrail; // bottom border of picture y-pixel value, INCLUDING any trailing gridlines
 
-    // range/scale
-    xPixelScale = picWidth/dayWidth;
-    yPixelScale = picHeight/thetaYheight;
-    xAxisFinalDay = xAxisInitialDay + dayWidth;
-    yAxisFinalThetaY = yAxisInitialThetaY + thetaYheight;
+  // range/scale
+  xPixelScale = picWidth/dayWidth;
+  yPixelScale = picHeight/thetaYheight;
+  xAxisFinalDay = xAxisInitialDay + dayWidth;
+  yAxisFinalThetaY = yAxisInitialThetaY + thetaYheight;
+}
 
-    // source position
-    var sourceThetaY = thetaYheight/2 + 5; // temp value
-    sourcePos = {x: xAxisInitialDay, y: sourceThetaY}; // place source at start of path
+function updateDrawingValues(animation=animationFlag, debug=debugFlag) {
 
-    if (animation === false) {
-      console.log("no animation");
-      sourcePos.x = xAxisFinalDay; // if not animated, immediately place source at end of path
-    }
-
-     // places source partway in between left/right canvas borders for debugging
-     // line and dashed line drawing
-    if (debug === true) {
-      sourcePos. x = xAxisFinalDay - 12;
-    }
-
-    // convert position to pixel units
-    sourcePixelPos = {x: xDayToPixel(sourcePos.x), y: thetaYtoPixel(sourcePos.y)};
-    ringRadius = eventModule.tE * xPixelScale;
-    console.log(eventModule.tE);
-    console.log(ringRadius);
+  function getSourceThetaY() {
+    var u0 = eventModule.u0;
+    var thetaE = eventModule.thetaE;
+    // var sourceThetaY = u0 * thetaE;
+    var sourceThetaY = u0;
+    // var sourceThetaY = thetaYheight/2 + 5; // temp value
+    // var sourceThetaY = 0;
+    console.log(`sourceThetaY: ${sourceThetaY}`);
+    return sourceThetaY;
   }
 
-  function thetXtoPixel() {
+  // source position
+  var sourceThetaY = getSourceThetaY();
+  sourcePos = {x: xAxisInitialDay, y: sourceThetaY}; // place source at start of path
+
+  if (animation === false) {
+    console.log("no animation");
+    sourcePos.x = xAxisFinalDay; // if not animated, immediately place source at end of path
+  }
+
+   // places source partway in between left/right canvas borders for debugging
+   // line and dashed line drawing
+  if (debug === true) {
+    sourcePos. x = xAxisFinalDay - 12;
+  }
+
+  // convert position to pixel units
+  sourcePixelPos = {x: xDayToPixel(sourcePos.x), y: thetaYtoPixel(sourcePos.y)};
+  ringRadius = eventModule.tE * xPixelScale;
+  console.log(eventModule.tE);
+  console.log(ringRadius);
+}
+
+  function thetaXtoPixel() {
     console.log("ERROR: use of thetaXtoXpixel(). This function isn't ready yet!");
     console.log("Returning undefined.");
     return undefined; // not working yet
@@ -181,7 +204,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
   }
 
   function thetaYtoPixel(yPicThetaY) {
-    var yPlotPixel = picBottomBorder - (yPicThetaY - yAxisInitialThetaY) * yPixelScale;
+    var yPlotPixel = picBottomBorder - (yPicThetaY - yAxisInitialThetaY) * yPixelScale
     return yPlotPixel;
   }
 
@@ -202,7 +225,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
       context.fillRect(picLeftBorder, picTopBorder, picWidth, picHeight);
     }
 
-    function switchClippingRegion(turnOn) {
+    function toggleClippingRegion(turnOn) {
       // set up clipping region as graph region, so that curve does not
       // extend beyond graph region
 
@@ -247,7 +270,6 @@ var PSPL_microlensing_event_lens_plane = (function() {
       context.strokeWidth = ringWidth;
       context.setLineDash([dashedRingLength, dashedRingSpacing]); // turn on dashed lines
       context.stroke();
-
       context.setLineDash([]); // turn off dashed-line drawing
     }
 
@@ -309,13 +331,13 @@ var PSPL_microlensing_event_lens_plane = (function() {
 
     clearPic();
     drawBackgrounds();
-    switchClippingRegion(turnOn=true);
+    toggleClippingRegion(turnOn=true);
     drawLens();
     drawRing();
     drawSource();
     drawSourcePath();
     drawUarrow();
-    switchClippingRegion(turnOn=false);
+    toggleClippingRegion(turnOn=false);
     drawBorder();
     drawAxes();
   }
@@ -325,6 +347,6 @@ var PSPL_microlensing_event_lens_plane = (function() {
   // public properties to be stored in module object,
   // accessible via module object by code executed after this script
   return {
-    init: init
+    redraw: redraw,
   };
 })();

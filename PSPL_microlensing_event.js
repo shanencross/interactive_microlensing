@@ -377,7 +377,7 @@ var PSPL_microlensing_event = (function() {
     updateDerivedQuantities();
     updateSliders();
     // console.log(`tE: ${tE}`);
-    PSPL_microlensing_event_lens_plane.init();
+    PSPL_microlensing_event_lens_plane.redraw();
     plotLightcurve();
   }
 
