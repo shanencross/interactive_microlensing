@@ -19,7 +19,7 @@ return {
 // "revealing pattern" module object for this script file
 var PSPL_microlensing_event_lens_plane = (function() {
   // reference to module holding parameter values
-  var paramModule = PSPL_microlensing_event;
+  var eventModule = PSPL_microlensing_event;
 
   // base variables (borders)
   var picLeftBorder = 50;
@@ -113,6 +113,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
   // derived variable (source position)
   var sourcePos; // x value: time (days); y value: thetaY
   var sourcePixelPos; // pixel x and y values
+  var ringRadius;
 
 
   //sort of derived variables? but not really? (canvas/context)
@@ -150,21 +151,21 @@ var PSPL_microlensing_event_lens_plane = (function() {
     var sourceThetaY = thetaYheight/2 + 5; // temp value
     sourcePos = {x: xAxisInitialDay, y: sourceThetaY}; // place source at start of path
 
-    if (!animation) {
+    if (animation === false) {
       console.log("no animation");
       sourcePos.x = xAxisFinalDay; // if not animated, immediately place source at end of path
     }
 
      // places source partway in between left/right canvas borders for debugging
      // line and dashed line drawing
-    if (debug) {
+    if (debug === true) {
       sourcePos. x = xAxisFinalDay - 12;
     }
 
     // convert position to pixel units
     sourcePixelPos = {x: xDayToPixel(sourcePos.x), y: thetaYtoPixel(sourcePos.y)};
-    ringRadius =tE * xPixelScale;
-    console.log(tE);
+    ringRadius = eventModule.tE * xPixelScale;
+    console.log(eventModule.tE);
     console.log(ringRadius);
   }
 
@@ -201,18 +202,32 @@ var PSPL_microlensing_event_lens_plane = (function() {
       context.fillRect(picLeftBorder, picTopBorder, picWidth, picHeight);
     }
 
-    function switchClippingRegion(switchOn=true) {
+    function switchClippingRegion(turnOn) {
       // set up clipping region as graph region, so that curve does not
       // extend beyond graph region
 
-      if (switchOn) {
+      // iOn flag tracks whether clipping was last turned on/off; off by default
+      if (this.isOn === undefined) {
+        this.isOn = false;
+      }
+
+      // toggle clipping if on/off command not specified
+      if (turnOn !== true && turnOn !==false) {
+        turnOn = !this.isOn;
+      }
+
+      // if told to turn clipping on, and clipping is not already on:
+      if (turnOn === true && this.isOn === false) {
         context.save();
         context.beginPath();
         context.rect(picLeftBorder, picTopBorder, picWidth, picHeight);
         context.clip();
+        this.isOn = true;
       }
-      else { // switch off
+      // If told to turn clipping off, and clipping is not already off:
+      else if (turnOn === false && this.isOn === true){
         context.restore();
+        this.isOn = false;
       }
     }
 
@@ -292,20 +307,18 @@ var PSPL_microlensing_event_lens_plane = (function() {
       function drawAxisArrows() {}
     }
 
-    console.log(PSPL_microlensing_event.tE);
     clearPic();
     drawBackgrounds();
-    switchClippingRegion(switchOn=true);
+    switchClippingRegion(turnOn=true);
     drawLens();
     drawRing();
     drawSource();
     drawSourcePath();
     drawUarrow();
-    switchClippingRegion(switchOn=false);
+    switchClippingRegion(turnOn=false);
     drawBorder();
     drawAxes();
   }
-
 
   // executing script initialization
   init();

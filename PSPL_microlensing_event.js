@@ -3,10 +3,9 @@ console.log("Executing PSPL_microlensing_event.js");
 //NOTE: const keyword not compatible with IE -- should replace it with var and document what values are constant
 //NOTE update: const uses replaced with var, with comments marking them "const"
 
-var tE; // days: tE = thetaE / mu
 // "revealing pattern" module object for this script file
+
 var PSPL_microlensing_event = (function() {
-  var propertiesToReturn = {};
   var lcurveCanvas = document.getElementById("lcurveCanvas");
   var lcurveContext = lcurveCanvas.getContext("2d");
 
@@ -59,9 +58,9 @@ var PSPL_microlensing_event = (function() {
   var mu; // mas/yr: mu = thetaE / tE; mu = Ds / (Ds - Dl) = 1/(1 - Dl/Ds)
 
   // derived quantities
+  var tE; // days
   var Drel; // kpc
   var thetaE; // radians (or should we use milliarcsecond?)
-
   initParams();
 
   // plot scale
@@ -740,23 +739,54 @@ var PSPL_microlensing_event = (function() {
     return magnif;
   }
 
+  // function getParam(param) {
+  //   if (param == "Ds") {
+  //     return Ds;
+  //   }
+  //   else if (param == "u0") {
+  //     return u0;
+  //   }
+  //   else if (param == "Dl") {
+  //     return Dl;
+  //   }
+  //   else if (param == "t0") {
+  //     return t0;
+  //   }
+  //   else if (param == "mu") {
+  //     return mu;
+  //   }
+  //   else if (param == "Drel") {
+  //     return Drel;
+  //   }
+  //   else if (param == "thetaE") {
+  //     return thetaE;
+  //   }
+  //   else if (param == "tE") {
+  //     return tE;
+  //   }
+  //   else {
+  //     console.log(`Error: ${param} is not a valid parameter.`)
+  //   }
+  // }
+
   // public properties to be stored in module object,
   // accessible via module object by code executed after this script
-  propertiesToReturn = {
-    Ml: Ml, // base modeling parameters
-    Ds: Ds,
-    Dl: Dl,
-    t0: t0,
-    mu: mu,
+  return {
+    // getters for variables we want to share
+    get Ml() { return Ml; }, // base modeling parameters
+    get Ds() { return Ds; },
+    get u0() { return u0; },
+    get Dl() { return Dl; },
+    get t0() { return t0; },
+    get mu() { return mu; },
 
-    Drel: Drel, // derived modelin parameters
-    thetaE: thetaE,
-    tE: tE,
+    get Drel() { return Drel; }, // derived modeling parameters
+    get thetaE() { return thetaE; },
+    get tE() { return tE; },
 
-    getMagnif: getMagnif // getting magnification for a given time;
-                         // probably want to store t and u values in arrays
-                         // and share those instead, honestly
+    // getParam: getParam,
+    getMagnif: getMagnif, // getting magnification for a given time;
+                          // probably want to store t and u values in arrays
+                          // and share those instead, honestly
   };
-
-  return propertiesToReturn;
 })();
