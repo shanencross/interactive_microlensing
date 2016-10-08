@@ -75,6 +75,9 @@ var PSPL_microlensing_event_lens_plane = (function() {
   var axisColor = "black";
   var axisWidth = "2";
 
+  var gridColor = "grey";
+  var gridWidth = 1;
+
   //base variables (tick labels)
   var tickLabelFont = "10pt Arial";
   var tickLabelColor = "black";
@@ -83,8 +86,8 @@ var PSPL_microlensing_event_lens_plane = (function() {
   var tickLabelSpacing = 7; // spacking between tick label and end of trailing gridline
 
   // base variables (axis labels)
-  var xLabel = "thetaX";
-  var yLabel = "thetaY";
+  var xLabel = "time (days)";
+  var yLabel = String.fromCharCode(952) + "y (?)"; // thetaY
   var axisLabelFont = "10pt Arial";
   var axisLabelColor = "black";
   var axisLabelAlign = "center";
@@ -109,11 +112,18 @@ var PSPL_microlensing_event_lens_plane = (function() {
   var xAxisFinalDay;
   var yAxisFinalThetaY;
 
+  // derived variables (gridlines)
+  var xGridInitial;
+  var yGridInitial;
+  var xGridFinal;
+  var yGridFinal;
+  var xGridStep;
+  var yGridStep;
+
   // derived variable (source position)
   var sourcePos; // x value: time (days); y value: thetaY
   var sourcePixelPos; // pixel x and y values
   var ringRadius;
-
 
   //sort of derived variables? but not really? (canvas/context)
   canvas = document.getElementById("lensPlaneCanvas")
@@ -122,6 +132,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
   // debug flags
   var animationFlag = false;
   var debugFlag = true;
+  var centerLayoutFlag = false;
 
   // called from PSPL_microlensing_event.js (or whichever script holds the parameter
   // values) after initializations and slider updates),
@@ -137,60 +148,65 @@ var PSPL_microlensing_event_lens_plane = (function() {
     drawPic();
   }
 
-function updateScaleAndRangeValues() {
-  // borders
-  picRightBorder = picLeftBorder + picWidth; // right border of picture x-pixel value, NOT including any trailing gridlines
-  picBottomBorder = picTopBorder + picHeight; // bottom border of picture y-pixel value, NOT including any trailing gridlines
-  centerX = picWidth/2 + picLeftBorder;
-  centerY = picHeight/2 + picTopBorder;
+  function updateScaleAndRangeValues() {
+    // borders
+    picRightBorder = picLeftBorder + picWidth; // right border of picture x-pixel value, NOT including any trailing gridlines
+    picBottomBorder = picTopBorder + picHeight; // bottom border of picture y-pixel value, NOT including any trailing gridlines
+    centerX = picWidth/2 + picLeftBorder;
+    centerY = picHeight/2 + picTopBorder;
 
-  // trails
-  picLeftTrailingBorder = picLeftBorder - picLeftTrail; // left border of picture x-pixel value, INCLUDING any trailing gridlines
-  picRightTrailingBorder = picRightBorder + picRightTrail; // right border of picture x-pixel value, INCLUDING any trailing gridlines
-  picTopTrailingBorder = picTopBorder - picTopTrail; // top border of picture y-pixel value, INCLUDING any trailing gridlines
-  picBottomTrailingBorder = picBottomBorder + picBottomTrail; // bottom border of picture y-pixel value, INCLUDING any trailing gridlines
+    // trails
+    picLeftTrailingBorder = picLeftBorder - picLeftTrail; // left border of picture x-pixel value, INCLUDING any trailing gridlines
+    picRightTrailingBorder = picRightBorder + picRightTrail; // right border of picture x-pixel value, INCLUDING any trailing gridlines
+    picTopTrailingBorder = picTopBorder - picTopTrail; // top border of picture y-pixel value, INCLUDING any trailing gridlines
+    picBottomTrailingBorder = picBottomBorder + picBottomTrail; // bottom border of picture y-pixel value, INCLUDING any trailing gridlines
 
-  // range/scale
-  xPixelScale = picWidth/dayWidth;
-  yPixelScale = picHeight/thetaYheight;
-  xAxisFinalDay = xAxisInitialDay + dayWidth;
-  yAxisFinalThetaY = yAxisInitialThetaY + thetaYheight;
-}
+    // range/scale
+    xPixelScale = picWidth/dayWidth;
+    yPixelScale = picHeight/thetaYheight;
+    xAxisFinalDay = xAxisInitialDay + dayWidth;
+    yAxisFinalThetaY = yAxisInitialThetaY + thetaYheight;
 
-function updateDrawingValues(animation=animationFlag, debug=debugFlag) {
-
-  function getSourceThetaY() {
-    var u0 = eventModule.u0;
-    var thetaE = eventModule.thetaE;
-    // var sourceThetaY = u0 * thetaE;
-    var sourceThetaY = u0;
-    // var sourceThetaY = thetaYheight/2 + 5; // temp value
-    // var sourceThetaY = 0;
-    console.log(`sourceThetaY: ${sourceThetaY}`);
-    return sourceThetaY;
+    //grid values
+    var xGridStepDefault = 2; // const
+    var yGridStepDefault = 2; // const
+    updateGridRange(xGridStepDefault, yGridStepDefault); // initialize gridline vars
   }
 
-  // source position
-  var sourceThetaY = getSourceThetaY();
-  sourcePos = {x: xAxisInitialDay, y: sourceThetaY}; // place source at start of path
+  function updateDrawingValues(animation=animationFlag, debug=debugFlag) {
 
-  if (animation === false) {
-    console.log("no animation");
-    sourcePos.x = xAxisFinalDay; // if not animated, immediately place source at end of path
+    function getSourceThetaY() {
+      var u0 = eventModule.u0;
+      var thetaE = eventModule.thetaE;
+      // var sourceThetaY = u0 * thetaE;
+      var sourceThetaY = u0;
+      // var sourceThetaY = thetaYheight/2 + 5; // temp value
+      // var sourceThetaY = 0;
+      console.log(`sourceThetaY: ${sourceThetaY}`);
+      return sourceThetaY;
+    }
+
+    // source position
+    var sourceThetaY = getSourceThetaY();
+    sourcePos = {x: xAxisInitialDay, y: sourceThetaY}; // place source at start of path
+
+    if (animation === false) {
+      console.log("no animation");
+      sourcePos.x = xAxisFinalDay; // if not animated, immediately place source at end of path
+    }
+
+     // places source partway in between left/right canvas borders for debugging
+     // line and dashed line drawing
+    if (debug === true) {
+      sourcePos. x = xAxisFinalDay - 12;
+    }
+
+    // convert position to pixel units
+    sourcePixelPos = {x: xDayToPixel(sourcePos.x), y: thetaYtoPixel(sourcePos.y)};
+    ringRadius = eventModule.tE * xPixelScale;
+    console.log(eventModule.tE);
+    console.log(ringRadius);
   }
-
-   // places source partway in between left/right canvas borders for debugging
-   // line and dashed line drawing
-  if (debug === true) {
-    sourcePos. x = xAxisFinalDay - 12;
-  }
-
-  // convert position to pixel units
-  sourcePixelPos = {x: xDayToPixel(sourcePos.x), y: thetaYtoPixel(sourcePos.y)};
-  ringRadius = eventModule.tE * xPixelScale;
-  console.log(eventModule.tE);
-  console.log(ringRadius);
-}
 
   function thetaXtoPixel() {
     console.log("ERROR: use of thetaXtoXpixel(). This function isn't ready yet!");
@@ -199,13 +215,61 @@ function updateDrawingValues(animation=animationFlag, debug=debugFlag) {
   }
 
   function xDayToPixel(xPicDay) {
-    var xPlotPixel = (xPicDay - xAxisInitialDay) * xPixelScale + picLeftBorder;
-    return xPlotPixel;
+    var xPixel = (xPicDay - xAxisInitialDay) * xPixelScale + picLeftBorder;
+    return xPixel;
   }
 
   function thetaYtoPixel(yPicThetaY) {
-    var yPlotPixel = picBottomBorder - (yPicThetaY - yAxisInitialThetaY) * yPixelScale
-    return yPlotPixel;
+    var yPixel = picBottomBorder - (yPicThetaY - yAxisInitialThetaY) * yPixelScale
+    return yPixel;
+  }
+
+  function updateGridRange(xStep, yStep) {
+    // update grid with new step values,
+    // and/or update grid for new initial/final axis values using
+
+    // if new step values are passed in, update grid step values;
+    // otherwise leave grid steps unchanged when updating grid
+    if ( !(xStep === undefined) && !(yStep === undefined)) {
+      xGridStep = xStep;
+      yGridStep = yStep;
+    }
+
+    // update grid using current x/y axis initial and final values
+
+    // Round the initial x grid line placement from initial day on axis
+    // up to next xGridStep increment, except when exactly on an xGridStep
+    // increment
+    if (xAxisInitialDay % xGridStep === 0)
+      xGridInitial = xAxisInitialDay;
+    else
+      xGridInitial = xGridStep * (Math.floor(xAxisInitialDay / xGridStep) + 1);
+
+    // same rounding for final grid line placement
+    if (xAxisFinalDay % xGridStep === 0)
+      xGridFinal = xAxisFinalDay;
+    else
+      xGridFinal = xGridStep * (Math.floor(xAxisFinalDay / xGridStep));
+
+    // same rounding for initial y grid line placement
+    if (yAxisInitialThetaY % yGridStep === 0)
+      yGridInitial = yAxisInitialThetaY;
+    else
+      yGridInitial = yGridStep * (Math.floor(Math.floor(yAxisInitialThetaY) / yGridStep) + 1);
+
+    // same rounding for final y grid line placement
+    if (yAxisFinalThetaY % yGridStep === 0)
+      yGridFinal = yAxisFinalThetaY;
+    else
+      yGridFinal = yGridStep * (Math.floor(yAxisFinalThetaY / yGridStep));
+
+    // console.log(Math.floor)
+    // console.log("MathFloored xAxisInitialDay: " + Math.floor(xAxisInitialDay));
+    // console.log("xGridInitial: " + xGridInitial);
+    // console.log("xGridFinal: " + xGridFinal);
+    // console.log("MathFloored yAxisInitialThetaY: " + Math.floor(yAxisInitialThetaY));
+    // console.log("yGridInitial: " + yGridInitial);
+    // console.log("yGridFinal: " + yGridFinal);
   }
 
   function xDayToThetaX() {}
@@ -226,8 +290,8 @@ function updateDrawingValues(animation=animationFlag, debug=debugFlag) {
     }
 
     function toggleClippingRegion(turnOn) {
-      // set up clipping region as graph region, so that curve does not
-      // extend beyond graph region
+      // set up clipping region as picture region, so that curve does not
+      // extend beyond picture region
 
       // iOn flag tracks whether clipping was last turned on/off; off by default
       if (this.isOn === undefined) {
@@ -318,15 +382,122 @@ function updateDrawingValues(animation=animationFlag, debug=debugFlag) {
     }
 
     function drawAxes() {
-      drawThetaXaxis();
-      drawTaxis();
-      drawThetaYaxis();
-      drawAxisArrows();
+      function drawAxisLines() {
+        context.beginPath();
 
-      function drawThetaXaxis() {} // horizontal (x) axis
-      function drawTaxis() {} // second horizontal (x) axis
-      function drawThetaYaxis() {} // vertical (y) axis
-      function drawAxisArrows() {}
+        // x axis
+        // the -axisWidth/2 makes the x and y axes fully connect
+        // at their intersection for all axis linewidths
+        context.moveTo(picLeftBorder - axisWidth/2, picBottomBorder);
+        context.lineTo(picRightBorder + 15, picBottomBorder);
+
+        // y axis;
+        context.moveTo(picLeftBorder, picBottomBorder);
+        context.lineTo(picLeftBorder, picTopBorder - 15);
+
+        // x axis arrow
+        // NOTE: Doesn't look right for linewidth > 2
+        context.moveTo(picRightBorder + 15, picBottomBorder);
+        context.lineTo(picRightBorder + 8, picBottomBorder - 5);
+        context.moveTo(picRightBorder + 15, picBottomBorder);
+        context.lineTo(picRightBorder + 8, picBottomBorder + 5);
+
+        // thetaT axis arrow
+        // NOTE: Doesn't look right for linewidth > 2
+        context.moveTo(picLeftBorder, picTopBorder - 15);
+        context.lineTo(picLeftBorder - 5, picTopBorder - 8);
+        context.moveTo(picLeftBorder, picTopBorder - 15);
+        context.lineTo(picLeftBorder + 5, picTopBorder - 8);
+
+        context.strokeStyle = axisColor;
+        context.lineWidth = axisWidth;
+        context.stroke();
+      }
+
+      function drawAxisLabels(centerLayout=centerLayoutFlag) {
+        // x label
+        context.font = axisLabelFont;
+        context.textAlign = axisLabelAlign;
+        context.textBaseline = axisLabelBaseline;
+        context.fillStyle = axisLabelColor;
+
+        if (centerLayout === true) {
+          // y label
+          context.fillText(xLabel, centerX, picBottomTrailingBorder + axisLabelSpacing)
+
+          // thetaT label
+          context.save();
+          context.translate(picLeftTrailingBorder - 25, centerY);
+          context.rotate(-Math.PI/2);
+          context.textAlign = "center";
+          context.fillText(yLabel, 0, 0);
+          context.restore();
+        }
+        else {
+          // x label
+          context.textAlign = "left";
+          context.fillText(xLabel, picRightTrailingBorder + 20, picBottomBorder);
+
+          // y label
+          context.textBaseline = "bottom";
+          context.textAlign = "center";
+          context.fillText(yLabel, picLeftBorder, picTopTrailingBorder - 20);
+        }
+      }
+
+      drawAxisLines();
+      drawAxisLabels();
+    }
+
+    function drawGridlinesAndTicks(drawGrid=true, noTicks) {
+      // draw vertical lines and x axis tick labels
+      context.beginPath();
+      for (var xDay = xGridInitial; xDay <= xGridFinal; xDay+=xGridStep) {
+        var xPixel = xDayToPixel(xDay);
+        // line starts from bottom trail
+        context.moveTo(xPixel, picBottomTrailingBorder);
+
+        // if using gridlines, line extends top end of top trail
+        var yLineEnd = picTopTrailingBorder;
+        // if not using grid lines, draw tick lines
+        if (drawGrid === false) {
+          // tick lines extend one trailing length on either side of axis
+          yLineEnd = picBottomBorder - picBottomTrail;
+        }
+
+        context.lineTo(xPixel, yLineEnd);
+
+        // tick text label
+        var xTickLabel = xDay;
+        context.font = tickLabelFont;
+        context.fillStyle = tickLabelColor;
+        context.textAlign = tickLabelAlign;
+        context.textBaseline = tickLabelBaseline;
+        context.fillText(xTickLabel, xPixel, picBottomTrailingBorder + tickLabelSpacing);
+      }
+
+      //draw horizontal lines and y axis tick label
+      for (var thetaY = yGridInitial; thetaY <= yGridFinal; thetaY+=yGridStep) {
+        var yPixel = thetaYtoPixel(thetaY);
+        context.moveTo(picLeftTrailingBorder, yPixel);
+        // if using gridlines, line extends to end of right trail
+        var xLineEnd = picRightTrailingBorder;
+        // if not using gridlines, draw tick lines
+        if (drawGrid ===false)
+          // tick lines extend one trailing length on either side of axis
+          xLineEnd = picLeftBorder + picLeftTrail;
+        context.lineTo(xLineEnd, yPixel);
+
+        var yTickLabel = thetaY;
+        context.font = tickLabelFont;
+        context.fillStyle = tickLabelColor;
+        context.textAlign = "right";
+        context.textBaseline = tickLabelBaseline;
+        context.fillText(yTickLabel,picLeftTrailingBorder - tickLabelSpacing,  yPixel);
+      }
+      context.lineWidth = gridWidth;
+      context.strokeStyle = gridColor;
+      context.stroke();
     }
 
     clearPic();
@@ -340,6 +511,7 @@ function updateDrawingValues(animation=animationFlag, debug=debugFlag) {
     toggleClippingRegion(turnOn=false);
     drawBorder();
     drawAxes();
+    drawGridlinesAndTicks(drawGrid=false);
   }
 
   // executing script initialization

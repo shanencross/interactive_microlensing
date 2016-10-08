@@ -134,7 +134,7 @@ var PSPL_microlensing_event = (function() {
 
   // flag for whether graph is generated from calculating
   // magnifications for a range of times from an equation,
-  // or from an input of time/magnificaiton arrays
+  // or from an input of time/magnification arrays
   var fromEquationDefault = true; // const
   var centerLayout = false; // const
 
@@ -521,7 +521,7 @@ var PSPL_microlensing_event = (function() {
     lcurveContext.textBaseline = axisLabelBaseline;
     lcurveContext.fillStyle = axisLabelColor;
 
-    if (centerLayout) {
+    if (centerLayout === true) {
       // x label
       lcurveContext.fillText(xLabel, centerX, graphBottomTrailingBorder + axisLabelSpacing)
 
