@@ -34,11 +34,13 @@ var PSPL_microlensing_event_lens_plane = (function() {
 
   // plot range/scale
   var dayWidth = 30;
-  var thetaYheight = 30; // temp value
-  var xAxisInitialDay = 0;
-  var yAxisInitialThetaY = -15; // half of thetaYheight so that 0 is the middle
-  var xGridStepDefault = 2;
-  var yGridStepDefault = 1;
+  var thetaXwidth = 1;
+  var thetaYheight = 1; // mas
+  var xAxisInitialDay = -15;
+  var xAxisInitialThetaX = -0.5
+  var yAxisInitialThetaY = -0.5; // half of thetaYheight so that 0 is the middle
+  var xGridStepDefault = 0.05;
+  var yGridStepDefault = 0.05;
 
   //base variables (background/picture aesthetics)
   var backgroundColor = "#ffffe6";
@@ -86,8 +88,9 @@ var PSPL_microlensing_event_lens_plane = (function() {
   var tickLabelSpacing = 7; // spacking between tick label and end of trailing gridline
 
   // base variables (axis labels)
-  var xLabel = "time (days)";
-  var yLabel = String.fromCharCode(952) + "y (?)"; // thetaY
+  var xDayLabel = "time (days)";
+  var xLabel = String.fromCharCode(952) + "x (mas)"; // thetaX
+  var yLabel = String.fromCharCode(952) + "y (mas)"; // thetaY
   var axisLabelFont = "10pt Arial";
   var axisLabelColor = "black";
   var axisLabelAlign = "center";
@@ -107,6 +110,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
   var picBottomTrailingBorder;
 
   // derived variables (range/scale)
+  var xDayPixelScale;
   var xPixelScale;
   var yPixelScale;
   var xAxisFinalDay;
@@ -162,24 +166,27 @@ var PSPL_microlensing_event_lens_plane = (function() {
     picBottomTrailingBorder = picBottomBorder + picBottomTrail; // bottom border of picture y-pixel value, INCLUDING any trailing gridlines
 
     // range/scale
-    xPixelScale = picWidth/dayWidth;
+    xDayPixelScale = picWidth/dayWidth;
+    xPixelScale = picWidth/thetaXwidth;
     yPixelScale = picHeight/thetaYheight;
+
     xAxisFinalDay = xAxisInitialDay + dayWidth;
+    xAxisFinalThetaX = xAxisInitialThetaX + thetaXwidth;
     yAxisFinalThetaY = yAxisInitialThetaY + thetaYheight;
 
     //grid values
-    var xGridStepDefault = 2; // const
-    var yGridStepDefault = 2; // const
     updateGridRange(xGridStepDefault, yGridStepDefault); // initialize gridline vars
   }
 
   function updateDrawingValues(animation=animationFlag, debug=debugFlag) {
 
     function getSourceThetaY() {
+      var RadToMillarcseconds = 206264806.24709633;
       var u0 = eventModule.u0;
-      var thetaE = eventModule.thetaE;
-      // var sourceThetaY = u0 * thetaE;
-      var sourceThetaY = u0;
+       // convert thetaE from radians to milliarcseconds
+      var thetaE_mas = eventModule.thetaE * RadToMillarcseconds;
+      var sourceThetaY = u0 * thetaE_mas;
+      // var sourceThetaY = u0;
       // var sourceThetaY = thetaYheight/2 + 5; // temp value
       // var sourceThetaY = 0;
       console.log(`sourceThetaY: ${sourceThetaY}`);
@@ -188,34 +195,33 @@ var PSPL_microlensing_event_lens_plane = (function() {
 
     // source position
     var sourceThetaY = getSourceThetaY();
-    sourcePos = {x: xAxisInitialDay, y: sourceThetaY}; // place source at start of path
+    sourcePos = {x:xAxisInitialThetaX, y:sourceThetaY}; // place source at start of path
 
     if (animation === false) {
       console.log("no animation");
-      sourcePos.x = xAxisFinalDay; // if not animated, immediately place source at end of path
+      sourcePos.x = xAxisFinalThetaX; // if not animated, immediately place source at end of path
     }
 
      // places source partway in between left/right canvas borders for debugging
      // line and dashed line drawing
     if (debug === true) {
-      sourcePos. x = xAxisFinalDay - 12;
+      sourcePos. x = xAxisFinalThetaX - 12;
     }
 
     // convert position to pixel units
-    sourcePixelPos = {x: xDayToPixel(sourcePos.x), y: thetaYtoPixel(sourcePos.y)};
+    sourcePixelPos = {x: thetaXtoPixel(sourcePos.x), y: thetaYtoPixel(sourcePos.y)};
     ringRadius = eventModule.tE * xPixelScale;
     console.log(eventModule.tE);
     console.log(ringRadius);
   }
 
-  function thetaXtoPixel() {
-    console.log("ERROR: use of thetaXtoXpixel(). This function isn't ready yet!");
-    console.log("Returning undefined.");
-    return undefined; // not working yet
+  function thetaXtoPixel(xPicThetaX) {
+    var xPixel = (xPicThetaX - xAxisInitialThetaX) * xPixelScale + picLeftBorder;
+    return xPixel;
   }
 
   function xDayToPixel(xPicDay) {
-    var xPixel = (xPicDay - xAxisInitialDay) * xPixelScale + picLeftBorder;
+    var xPixel = (xPicDay - xAxisInitialDay) * xDayPixelScale + picLeftBorder;
     return xPixel;
   }
 
@@ -240,16 +246,16 @@ var PSPL_microlensing_event_lens_plane = (function() {
     // Round the initial x grid line placement from initial day on axis
     // up to next xGridStep increment, except when exactly on an xGridStep
     // increment
-    if (xAxisInitialDay % xGridStep === 0)
-      xGridInitial = xAxisInitialDay;
+    if (xAxisInitialThetaX % xGridStep === 0)
+      xGridInitial = xAxisInitialThetaX;
     else
-      xGridInitial = xGridStep * (Math.floor(xAxisInitialDay / xGridStep) + 1);
+      xGridInitial = xGridStep * (Math.floor(xAxisInitialThetaX / xGridStep) + 1);
 
     // same rounding for final grid line placement
-    if (xAxisFinalDay % xGridStep === 0)
-      xGridFinal = xAxisFinalDay;
+    if (xAxisFinalThetaX % xGridStep === 0)
+      xGridFinal = xAxisFinalThetaX;
     else
-      xGridFinal = xGridStep * (Math.floor(xAxisFinalDay / xGridStep));
+      xGridFinal = xGridStep * (Math.floor(xAxisFinalThetaX / xGridStep));
 
     // same rounding for initial y grid line placement
     if (yAxisInitialThetaY % yGridStep === 0)
@@ -329,7 +335,8 @@ var PSPL_microlensing_event_lens_plane = (function() {
     }
     function drawRing() {
       context.beginPath();
-      context.arc(centerX, centerY, ringRadius, 0, 2*Math.PI, false);
+      // context.arc(centerX, centerY, ringRadius, 0, 2*Math.PI, false);
+      context.ellipse(centerX, centerY, ringRadius, ringRadius, 0, 0, 2*Math.PI)
       context.strokeStyle = ringColor;
       context.strokeWidth = ringWidth;
       context.setLineDash([dashedRingLength, dashedRingSpacing]); // turn on dashed lines
@@ -422,10 +429,10 @@ var PSPL_microlensing_event_lens_plane = (function() {
         context.fillStyle = axisLabelColor;
 
         if (centerLayout === true) {
-          // y label
+          // x label
           context.fillText(xLabel, centerX, picBottomTrailingBorder + axisLabelSpacing)
 
-          // thetaT label
+          // y label
           context.save();
           context.translate(picLeftTrailingBorder - 25, centerY);
           context.rotate(-Math.PI/2);
@@ -452,8 +459,8 @@ var PSPL_microlensing_event_lens_plane = (function() {
     function drawGridlinesAndTicks(drawGrid=true, noTicks) {
       // draw vertical lines and x axis tick labels
       context.beginPath();
-      for (var xDay = xGridInitial; xDay <= xGridFinal; xDay+=xGridStep) {
-        var xPixel = xDayToPixel(xDay);
+      for (var thetaX = xGridInitial; thetaX <= xGridFinal; thetaX+=xGridStep) {
+        var xPixel = thetaXtoPixel(thetaX);
         // line starts from bottom trail
         context.moveTo(xPixel, picBottomTrailingBorder);
 
@@ -468,7 +475,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
         context.lineTo(xPixel, yLineEnd);
 
         // tick text label
-        var xTickLabel = xDay;
+        var xTickLabel = thetaX;
         context.font = tickLabelFont;
         context.fillStyle = tickLabelColor;
         context.textAlign = tickLabelAlign;

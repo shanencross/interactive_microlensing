@@ -77,7 +77,7 @@ var PSPL_microlensing_event = (function() {
 
   var dayWidthDefault = 30; // const
   var magnifHeightDefault = 10; // const
-  var xAxisInitialDayDefault = 0; // const
+  var xAxisInitialDayDefault = -15; // const
   var yAxisInitialMagnifDefault = 0.5; // const
   // initialize plot scale/range vars
   updatePlotScaleAndRange(dayWidthDefault, magnifHeightDefault,
@@ -237,7 +237,7 @@ var PSPL_microlensing_event = (function() {
     Ds = 8.0; // kpc: Ds =  Dl / (1 - 1/mu)
     u0 = 0.1;
     Dl = 7.0; // kpc: Dl = Ds * (1 - 1/mu)
-    t0 = 15; // days
+    t0 = 0; // days
     mu = 7; // mas/yr  (milliarcseconds/year): mu = thetaE / tE
 
     // set derived quantities
@@ -346,6 +346,8 @@ var PSPL_microlensing_event = (function() {
       // tE depends on thetaE depends on Drel depends on Ds
     }
     else if (param === "u0") {
+      // if (u0slider.value == 0)
+      //   u0slider.value = 0.001;
       u0 = Number(u0slider.value);
     }
     else if (param === "Dl") {
