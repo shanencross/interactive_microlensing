@@ -135,7 +135,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
 
   // debug flags
   var animationFlag = false;
-  var debugFlag = false;
+  var debugFlag = true;
   var centerLayoutFlag = false;
 
   // called from PSPL_microlensing_event.js (or whichever script holds the parameter
@@ -204,7 +204,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
      // places source partway in between left/right canvas borders for debugging
      // line and dashed line drawing
     if (debug === true) {
-      sourcePos. x = xAxisFinalThetaX - 12;
+      sourcePos. x = xAxisFinalThetaX - thetaXwidth*(2/3);
     }
 
     // convert position to pixel units
