@@ -46,6 +46,9 @@ var PSPL_microlensing_event = (function() {
   var G = 6.67384e-11; // m3 kg−1 s−2 (astropy value); const
   var c = 299792458.0; // m s-1 (astropy value); const
 
+  // conversion constants
+  var masToRad = 4.84813681109536e-9; // rad/mas; const
+
   // Dl slider/value is kept one "step" below Ds; determines size of that step
   var sourceLensMinSeparation = 0.01; // kpc; const
 
@@ -282,7 +285,6 @@ var PSPL_microlensing_event = (function() {
   }
 
   function updateTE(debug=false) {
-    var masToRad = 4.84813681109536e-9; // rad/mas; const
     var yearToDay = 365.25; // day/year; const
 
     var eqMu = mu * masToRad / yearToDay // mu converted for equation to rad/yr
@@ -776,15 +778,17 @@ var PSPL_microlensing_event = (function() {
   return {
     // getters for variables we want to share
     get Ml() { return Ml; }, // base modeling parameters
-    get Ds() { return Ds; },
-    get u0() { return u0; },
-    get Dl() { return Dl; },
-    get t0() { return t0; },
-    get mu() { return mu; },
+    get Ds() { return Ds; }, // kpc
+    get u0() { return u0; }, // unitless (units of thetaE)
+    get Dl() { return Dl; }, // kpc
+    get t0() { return t0; }, // days
+    get mu() { return mu; }, // mas/yr
 
     get Drel() { return Drel; }, // derived modeling parameters
-    get thetaE() { return thetaE; },
-    get tE() { return tE; },
+    get thetaE() { return thetaE; }, // radians
+    get tE() { return tE; }, // days
+
+    get thetaE_mas() { return thetaE / masToRad; }, // milliarcseconds (mas)
 
     // getParam: getParam,
     getMagnif: getMagnif, // getting magnification for a given time;

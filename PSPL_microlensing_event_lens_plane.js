@@ -39,8 +39,8 @@ var PSPL_microlensing_event_lens_plane = (function() {
   var xAxisInitialDay = -15;
   var xAxisInitialThetaX = -0.5
   var yAxisInitialThetaY = -0.5; // half of thetaYheight so that 0 is the middle
-  var xGridStepDefault = 0.05;
-  var yGridStepDefault = 0.05;
+  var xGridStepDefault = 0.1;
+  var yGridStepDefault = 0.1;
 
   //base variables (background/picture aesthetics)
   var backgroundColor = "#ffffe6";
@@ -135,7 +135,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
 
   // debug flags
   var animationFlag = false;
-  var debugFlag = true;
+  var debugFlag = false;
   var centerLayoutFlag = false;
 
   // called from PSPL_microlensing_event.js (or whichever script holds the parameter
@@ -183,8 +183,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
     function getSourceThetaY() {
       var RadToMillarcseconds = 206264806.24709633;
       var u0 = eventModule.u0;
-       // convert thetaE from radians to milliarcseconds
-      var thetaE_mas = eventModule.thetaE * RadToMillarcseconds;
+      var thetaE_mas = eventModule.thetaE_mas; // thetaE in milliarcseconds
       var sourceThetaY = u0 * thetaE_mas;
       // var sourceThetaY = u0;
       // var sourceThetaY = thetaYheight/2 + 5; // temp value
@@ -210,9 +209,10 @@ var PSPL_microlensing_event_lens_plane = (function() {
 
     // convert position to pixel units
     sourcePixelPos = {x: thetaXtoPixel(sourcePos.x), y: thetaYtoPixel(sourcePos.y)};
-    ringRadius = eventModule.tE * xPixelScale;
-    console.log(eventModule.tE);
+    ringRadius = eventModule.thetaE_mas * xPixelScale;
+    console.log(eventModule.thetaE_mas);
     console.log(ringRadius);
+    console.log(sourcePos);
   }
 
   function thetaXtoPixel(xPicThetaX) {
@@ -246,28 +246,20 @@ var PSPL_microlensing_event_lens_plane = (function() {
     // Round the initial x grid line placement from initial day on axis
     // up to next xGridStep increment, except when exactly on an xGridStep
     // increment
-    if (xAxisInitialThetaX % xGridStep === 0)
-      xGridInitial = xAxisInitialThetaX;
-    else
-      xGridInitial = xGridStep * (Math.floor(xAxisInitialThetaX / xGridStep) + 1);
+    xGridInitial = xAxisInitialThetaX;
+    console.log(`xGridInitial: ${xGridInitial}`);
 
     // same rounding for final grid line placement
-    if (xAxisFinalThetaX % xGridStep === 0)
-      xGridFinal = xAxisFinalThetaX;
-    else
-      xGridFinal = xGridStep * (Math.floor(xAxisFinalThetaX / xGridStep));
+    xGridFinal = xAxisFinalThetaX;
 
     // same rounding for initial y grid line placement
-    if (yAxisInitialThetaY % yGridStep === 0)
-      yGridInitial = yAxisInitialThetaY;
-    else
-      yGridInitial = yGridStep * (Math.floor(Math.floor(yAxisInitialThetaY) / yGridStep) + 1);
+    yGridInitial = yAxisInitialThetaY;
+
+    console.log(`yAxisInitialThetaY: ${yAxisInitialThetaY}`);
+    console.log(`yGridInitial: ${yGridInitial}`);
 
     // same rounding for final y grid line placement
-    if (yAxisFinalThetaY % yGridStep === 0)
-      yGridFinal = yAxisFinalThetaY;
-    else
-      yGridFinal = yGridStep * (Math.floor(yAxisFinalThetaY / yGridStep));
+    yGridFinal = yAxisFinalThetaY;
 
     // console.log(Math.floor)
     // console.log("MathFloored xAxisInitialDay: " + Math.floor(xAxisInitialDay));
@@ -459,7 +451,9 @@ var PSPL_microlensing_event_lens_plane = (function() {
     function drawGridlinesAndTicks(drawGrid=true, noTicks) {
       // draw vertical lines and x axis tick labels
       context.beginPath();
+      console.log(`yGridStep: ${yGridStep}`);
       for (var thetaX = xGridInitial; thetaX <= xGridFinal; thetaX+=xGridStep) {
+        console.log(thetaX);
         var xPixel = thetaXtoPixel(thetaX);
         // line starts from bottom trail
         context.moveTo(xPixel, picBottomTrailingBorder);
@@ -475,7 +469,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
         context.lineTo(xPixel, yLineEnd);
 
         // tick text label
-        var xTickLabel = thetaX;
+        var xTickLabel = Number(thetaX).toFixed(2);
         context.font = tickLabelFont;
         context.fillStyle = tickLabelColor;
         context.textAlign = tickLabelAlign;
@@ -495,7 +489,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
           xLineEnd = picLeftBorder + picLeftTrail;
         context.lineTo(xLineEnd, yPixel);
 
-        var yTickLabel = thetaY;
+        var yTickLabel = Number(thetaY).toFixed(2);
         context.font = tickLabelFont;
         context.fillStyle = tickLabelColor;
         context.textAlign = "right";
@@ -517,8 +511,8 @@ var PSPL_microlensing_event_lens_plane = (function() {
     drawUarrow();
     toggleClippingRegion(turnOn=false);
     drawBorder();
-    drawAxes();
     drawGridlinesAndTicks(drawGrid=false);
+    drawAxes();
   }
 
   // executing script initialization
