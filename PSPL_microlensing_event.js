@@ -330,6 +330,8 @@ var PSPL_microlensing_event = (function() {
     initParams();
     updateSliders();
     plotLightcurve();
+    if (typeof PSPL_microlensing_event_lens_plane !== undefined)
+      PSPL_microlensing_event_lens_plane.redraw();
   }
 
   function updateParam(param) {
