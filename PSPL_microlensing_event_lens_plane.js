@@ -150,7 +150,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
   // need on to work in Firefox;
   // replaces context.ellipse with context.arc since firefox doesn't support ellipse;
   // however, y-scaling of ring won't be correct if x/y aspect ratio is not square;
-  var firefoxCompatibilityFlag = false;
+  var firefoxCompatibilityFlag = true;
 
   // called from PSPL_microlensing_event.js (or whichever script holds the parameter
   // values) after initializations and slider updates),
