@@ -84,7 +84,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
   var gridWidth = 1;
 
   //base variables (tick labels)
-  var tickLabelFont = "10pt Arial";
+  var tickLabelFont = "8pt Arial";
   var tickLabelColor = "black";
   var tickLabelAlign = "center";
   var tickLabelBaseline = "middle";
