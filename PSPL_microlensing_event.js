@@ -317,38 +317,68 @@ var PSPL_microlensing_event = (function() {
   }
 
   function updateSliders() {
-    var tEmax = 365; // maximum tE slider value; const
+    // maximum parameter values that can be displayed;
+    // need to match up with max value on HTML sliders
+    var tEmax = 365; // days
+    var u0max = 2; // unitless (einstein radii)
+    var MlMax = 15; // solMass
+    var DsMax = 8.5 // kpc
+    var thetaYmax = 2; // mas
+    var DlMax = 8.5 // kpc
+    var t0max = 75 // days
+    var muMax = 10 // milliarcseconds/year
+
     // update slider values and readouts to reflect current variable values
     tEslider.value = tE;
     tEreadout.innerHTML = Number(tEslider.value).toFixed(3);
-
-    // add "+" once tE exceeds maximum slider value;
+    // add "+" once after exceeding maximum slider value;
     // NOTE: Very hacky. Improve this
     if (tE > tEmax) {
       tEreadout.innerHTML += "+";
     }
 
+    u0slider.value = u0;
+    u0readout.innerHTML = Number(u0slider.value).toFixed(3);
+    if (u0 > u0max) {
+      u0readout.innerHTML += "+";
+    }
+
     MlSlider.value = Ml;
     MlReadout.innerHTML = Number(MlSlider.value).toFixed(6);
+    if (Ml > MlMax) {
+      MlReadout.innerHTML += "+";
+    }
 
     DsSlider.value = Ds;
     DsReadout.innerHTML = Number(DsSlider.value).toFixed(2);
+    if (Ds > DsMax) {
+      DsReadout.innerHTML += "+";
+    }
 
     thetaYslider.value = thetaY;
     thetaYreadout.innerHTML = Number(thetaYslider.value).toFixed(3);
+    if (thetaY > thetaYmax) {
+      thetaYreadout.innerHTML += "+";
+    }
 
     DlSlider.value = Dl;
     DlReadout.innerHTML = Number(DlSlider.value).toFixed(2);
+    if (Dl > DlMax) {
+      DlReadout.innerHTML += "+";
+    }
 
     t0slider.value = t0;
     t0readout.innerHTML = Number(t0slider.value).toFixed(1);
+    if (t0 > t0max) {
+      t0Readout.innerHTML += "+";
+    }
 
     muSlider.value = mu;
     muReadout.innerHTML = Number(muSlider.value).toFixed(2);
+    if (mu > muMax) {
+      muReadout.innerHTML += "+";
+    }
 
-    u0slider.value = u0;
-    u0readout.innerHTML = Number(u0slider.value).toFixed(3);
-    console.log("------------U0: " + u0 + "  -------------");
   }
 
   function resetParams() {
@@ -397,6 +427,21 @@ var PSPL_microlensing_event = (function() {
     }
     else if (param === "tE") {
       console.log("Can't change tE yet (since it's a derived quantity)");
+      var oldTE = tE;
+      tE = Number(tEslider.value);
+      /*
+      thetaE = k * sqrt(M)
+      tE = thetaE / mu
+
+      tE = (k/mu) * sqrt(M)
+         = k2 * sqrt(M)
+
+       M = (tE/k2)**2
+       M = k3 * tE**2
+       */
+
+       Ml *= (tE/oldTE)*(tE/oldTE);
+
     }
     else if (param === "u0") {
       u0 = Number(u0slider.value);
