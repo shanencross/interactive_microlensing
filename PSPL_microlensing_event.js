@@ -150,7 +150,7 @@ var PSPL_microlensing_event = (function() {
   var tEreadout = document.getElementById("tEreadout");
 
   var u0slider = document.getElementById("u0slider");
-  var u0readout = document.getElementById("tEreadout");
+  var u0readout = document.getElementById("u0readout");
 
   var MlSlider = document.getElementById("MlSlider");
   var MlReadout = document.getElementById("MlReadout");
@@ -252,7 +252,7 @@ var PSPL_microlensing_event = (function() {
     // tE = 10; // tE = thetaE / mu
     Ml = 0.1; // solMass
     Ds = 8.0; // kpc: Ds =  Dl / (1 - 1/mu)
-    thetaY = 0.1; // milliarcseconds (mas)
+    thetaY = 0.0121; // milliarcseconds (mas)
     Dl = 7.0; // kpc: Dl = Ds * (1 - 1/mu)
     t0 = 0; // days
     mu = 7; // mas/yr  (milliarcseconds/year): mu = thetaE / tE
