@@ -34,13 +34,16 @@ var PSPL_microlensing_event_lens_plane = (function() {
 
   // plot range/scale
   var dayWidth = 30;
-  var thetaXwidth = 1;
+  var thetaXwidth = 4/3;
   var thetaYheight = 1; // mas
   var xAxisInitialDay = -15;
-  var xAxisInitialThetaX = -0.5
+  var xAxisInitialThetaX = -(4/3)/2
   var yAxisInitialThetaY = -0.5; // half of thetaYheight so that 0 is the middle
   var xGridStepDefault = 0.1;
   var yGridStepDefault = 0.1;
+
+  // lens (thetaX, thetaY) position in milliarcseconds
+  var lensPos = {x: 0, y:0};
 
   //base variables (background/picture aesthetics)
   var backgroundColor = "#ffffe6";
@@ -124,10 +127,12 @@ var PSPL_microlensing_event_lens_plane = (function() {
   var xGridStep;
   var yGridStep;
 
-  // derived variable (source position)
+  // derived variable (source/lens/ring)
   var sourcePos; // x value: time (days); y value: thetaY
   var sourcePixelPos; // pixel x and y values
-  var ringRadius;
+  var lensPixelPos;
+  var ringRadiusX;
+  var ringRadiusY;
 
   //sort of derived variables? but not really? (canvas/context)
   canvas = document.getElementById("lensPlaneCanvas")
@@ -137,6 +142,11 @@ var PSPL_microlensing_event_lens_plane = (function() {
   var animationFlag = false;
   var debugFlag = true;
   var centerLayoutFlag = false;
+  var drawGridFlag = true;
+  // if on, grid lines/ticks for that axis are created in steps starting from 0,
+  // rather than starting from the lowest x-axis value or y-axis value
+  var centerXgridOnZeroFlag = true;
+  var centerYgridOnZeroFlag = true;
 
   // called from PSPL_microlensing_event.js (or whichever script holds the parameter
   // values) after initializations and slider updates),
@@ -194,7 +204,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
 
     // source position
     var sourceThetaY = getSourceThetaY();
-    sourcePos = {x:xAxisInitialThetaX, y:sourceThetaY}; // place source at start of path
+    sourcePos = {x: xAxisInitialThetaX, y: sourceThetaY}; // place source at start of path
 
     if (animation === false) {
       console.log("no animation");
@@ -204,15 +214,16 @@ var PSPL_microlensing_event_lens_plane = (function() {
      // places source partway in between left/right canvas borders for debugging
      // line and dashed line drawing
     if (debug === true) {
-      sourcePos. x = xAxisFinalThetaX - thetaXwidth*(2/3);
+      sourcePos.x = lensPos.x - 1/4*thetaXwidth;
     }
 
     // convert position to pixel units
     sourcePixelPos = {x: thetaXtoPixel(sourcePos.x), y: thetaYtoPixel(sourcePos.y)};
-    ringRadius = eventModule.thetaE_mas * xPixelScale;
-    console.log(eventModule.thetaE_mas);
-    console.log(ringRadius);
-    console.log(sourcePos);
+    ringRadiusX = eventModule.thetaE_mas * xPixelScale;
+    ringRadiusY = eventModule.thetaE_mas * yPixelScale;
+
+    // lens pixel position
+    lensPixelPos = {x:thetaXtoPixel(lensPos.x), y: thetaYtoPixel(lensPos.y)};
   }
 
   function thetaXtoPixel(xPicThetaX) {
@@ -230,7 +241,8 @@ var PSPL_microlensing_event_lens_plane = (function() {
     return yPixel;
   }
 
-  function updateGridRange(xStep, yStep) {
+  function updateGridRange(xStep, yStep, centerXgridOnZero=centerXgridOnZeroFlag,
+                           centerYgridOnZero=centerYgridOnZeroFlag) {
     // update grid with new step values,
     // and/or update grid for new initial/final axis values using
 
@@ -242,19 +254,23 @@ var PSPL_microlensing_event_lens_plane = (function() {
     }
 
     // update grid using current x/y axis initial and final values
-
-    // Round the initial x grid line placement from initial day on axis
-    // up to next xGridStep increment, except when exactly on an xGridStep
-    // increment
-    xGridInitial = xAxisInitialThetaX;
+    // NOTE: hacky almostEquals solution to rounding error issue that isn't very readable: fix
+    if ((centerXgridOnZero === true) && (xGridStep - Math.abs(xAxisInitialThetaX % xGridStep) > 1e-10))
+     xGridInitial = xAxisInitialThetaX - (xAxisInitialThetaX % xGridStep);
+    else
+      xGridInitial = xAxisInitialThetaX;
     console.log(`xGridInitial: ${xGridInitial}`);
 
-    // same rounding for final grid line placement
     xGridFinal = xAxisFinalThetaX;
 
-    // same rounding for initial y grid line placement
-    yGridInitial = yAxisInitialThetaY;
+    // NOTE: hacky almostEquals solution to rounding error issue that isn't very readable: fix
+    if ((centerYgridOnZero === true) && (yGridStep - Math.abs(yAxisInitialThetaY % yGridStep) > 1e-10))
+      yGridInitial = yAxisInitialThetaY - (yAxisInitialThetaY % yGridStep);
+    else
+      yGridInitial = yAxisInitialThetaY;
 
+    console.log(`y axis grid offset: ${yAxisInitialThetaY % yGridStep}`)
+    console.log(`yGridStep - Math.abs(yAxisInitialThetaY % yGridStep): ${yGridStep - Math.abs(yAxisInitialThetaY % yGridStep) < 0.01}`);
     console.log(`yAxisInitialThetaY: ${yAxisInitialThetaY}`);
     console.log(`yGridInitial: ${yGridInitial}`);
 
@@ -318,7 +334,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
 
     function drawLens() {
       context.beginPath();
-      context.arc(centerX, centerY, lensRadius, 0, 2*Math.PI, false);
+      context.arc(lensPixelPos.x, lensPixelPos.y, lensRadius, 0, 2*Math.PI, false);
       context.fillStyle = lensColor;
       context.fill();
       context.lineWidth = lensOutlineWidth;
@@ -328,7 +344,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
     function drawRing() {
       context.beginPath();
       // context.arc(centerX, centerY, ringRadius, 0, 2*Math.PI, false);
-      context.ellipse(centerX, centerY, ringRadius, ringRadius, 0, 0, 2*Math.PI)
+      context.ellipse(lensPixelPos.x, lensPixelPos.y, ringRadiusX, ringRadiusY, 0, 0, 2*Math.PI)
       context.strokeStyle = ringColor;
       context.strokeWidth = ringWidth;
       context.setLineDash([dashedRingLength, dashedRingSpacing]); // turn on dashed lines
@@ -448,12 +464,12 @@ var PSPL_microlensing_event_lens_plane = (function() {
       drawAxisLabels();
     }
 
-    function drawGridlinesAndTicks(drawGrid=true, noTicks) {
+    function drawGridlinesAndTicks(drawGrid=drawGridFlag, noTicks) {
       // draw vertical lines and x axis tick labels
       context.beginPath();
       console.log(`yGridStep: ${yGridStep}`);
       for (var thetaX = xGridInitial; thetaX <= xGridFinal; thetaX+=xGridStep) {
-        console.log(thetaX);
+        // console.log(thetaX);
         var xPixel = thetaXtoPixel(thetaX);
         // line starts from bottom trail
         context.moveTo(xPixel, picBottomTrailingBorder);
@@ -511,7 +527,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
     drawUarrow();
     toggleClippingRegion(turnOn=false);
     drawBorder();
-    drawGridlinesAndTicks(drawGrid=false);
+    drawGridlinesAndTicks();
     drawAxes();
   }
 

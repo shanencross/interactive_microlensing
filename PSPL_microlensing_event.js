@@ -80,7 +80,7 @@ var PSPL_microlensing_event = (function() {
 
   var dayWidthDefault = 30; // const
   var magnifHeightDefault = 10; // const
-  var xAxisInitialDayDefault = -15; // const
+  var xAxisInitialDayDefault = -16; // const
   var yAxisInitialMagnifDefault = 0.5; // const
   // initialize plot scale/range vars
   updatePlotScaleAndRange(dayWidthDefault, magnifHeightDefault,
