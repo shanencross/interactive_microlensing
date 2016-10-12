@@ -6,8 +6,8 @@ console.log("Executing PSPL_microlensing_event.js");
 // "revealing pattern" module object for this script file
 
 var PSPL_microlensing_event = (function() {
-  var lcurveCanvas = document.getElementById("lcurveCanvas");
-  var lcurveContext = lcurveCanvas.getContext("2d");
+  var canvas = document.getElementById("lcurveCanvas");
+  var context = canvas.getContext("2d");
 
   var graphLeftBorder = 50; // left border of graph x-pixel value, NOT including any trailing gridlines
   var graphTopBorder = 50; // top border of graph y-pixel value, NOT including any trailing gridlines
@@ -29,15 +29,15 @@ var PSPL_microlensing_event = (function() {
   var graphTopTrailingBorder = graphTopBorder - graphTopTrail; // top border of graph y-pixel value, INCLUDING any trailing gridlines
   var graphBottomTrailingBorder = graphBottomBorder + graphBottomTrail; // bottom border of graph y-pixel value, INCLUDING any trailing gridlines
 
-  // var graphRightBorder = lcurveCanvas.width - 50; // right border of graph x-pixel value, NOT including any trailing gridlines
-  // var graphBottomBorder = lcurveCanvas.height - 50; // bottom border of graph y-pixel value
+  // var graphRightBorder = canvas.width - 50; // right border of graph x-pixel value, NOT including any trailing gridlines
+  // var graphBottomBorder = canvas.height - 50; // bottom border of graph y-pixel value
   // var graphWidth = graphRightBorder - graphLeftBorder;
   // var graphHeight = graphBottomBorder - graphTopBorder;
 
   var centerX = graphWidth/2 + graphLeftBorder;
   var centerY = graphHeight/2 + graphTopBorder;
 
-  // slider parameters; only tE, t0, and u0 work/have reasonable ranges/values
+  // slider parameters; only tE, t0, and thetaY work/have reasonable ranges/values
   // NOTE: There are/should be corellations between several of these for instance tE depends
   // on the rest, and mu depends on Ds and Dl;
   // need to figure that out so that updating one changes the related ones
@@ -55,12 +55,13 @@ var PSPL_microlensing_event = (function() {
   // base quantities set by user
   var Ml; // solMass
   var Ds; // kpc: Ds =  Dl / (1 - 1/mu)
-  var u0;
+  var thetaY; // milliarcseconds
   var Dl; // kpc: Dl = Ds * (1 - 1/mu)
   var t0; // days
   var mu; // mas/yr: mu = thetaE / tE; mu = Ds / (Ds - Dl) = 1/(1 - Dl/Ds)
 
   // derived quantities
+  var u0;
   var tE; // days
   var Drel; // kpc
   var thetaE; // radians (or should we use milliarcsecond?)
@@ -151,8 +152,8 @@ var PSPL_microlensing_event = (function() {
   var DsSlider = document.getElementById("DsSlider");
   var DsReadout = document.getElementById("DsReadout");
 
-  var u0slider = document.getElementById("u0slider");
-  var u0readout = document.getElementById("u0readout");
+  var thetaYslider = document.getElementById("thetaYslider");
+  var thetaYreadout = document.getElementById("thetaYreadout");
 
   var DlSlider = document.getElementById("DlSlider");
   var DlReadout = document.getElementById("DlReadout");
@@ -201,8 +202,8 @@ var PSPL_microlensing_event = (function() {
     DsSlider.addEventListener("input", function() { updateParam("Ds"); }, false);
     DsSlider.addEventListener("change", function() { updateParam("Ds"); }, false);
 
-    u0slider.addEventListener("input", function() { updateParam("u0"); }, false);
-    u0slider.addEventListener("change", function() { updateParam("u0"); }, false);
+    thetaYslider.addEventListener("input", function() { updateParam("thetaY"); }, false);
+    thetaYslider.addEventListener("change", function() { updateParam("thetaY"); }, false);
 
     DlSlider.addEventListener("input", function() { updateParam("Dl"); }, false);
     DlSlider.addEventListener("change", function() { updateParam("Dl"); }, false);
@@ -238,7 +239,7 @@ var PSPL_microlensing_event = (function() {
     // tE = 10; // tE = thetaE / mu
     Ml = 0.1; // solMass
     Ds = 8.0; // kpc: Ds =  Dl / (1 - 1/mu)
-    u0 = 0.1;
+    thetaY = 0.1;
     Dl = 7.0; // kpc: Dl = Ds * (1 - 1/mu)
     t0 = 0; // days
     mu = 7; // mas/yr  (milliarcseconds/year): mu = thetaE / tE
@@ -312,8 +313,8 @@ var PSPL_microlensing_event = (function() {
     DsSlider.value = Ds;
     DsReadout.innerHTML = Number(DsSlider.value).toFixed(2);
 
-    u0slider.value = u0;
-    u0readout.innerHTML = Number(u0slider.value).toFixed(3);
+    thetaYslider.value = thetaY;
+    thetaYreadout.innerHTML = Number(thetaYslider.value).toFixed(3);
 
     DlSlider.value = Dl;
     DlReadout.innerHTML = Number(DlSlider.value).toFixed(2);
@@ -349,10 +350,10 @@ var PSPL_microlensing_event = (function() {
       }
       // tE depends on thetaE depends on Drel depends on Ds
     }
-    else if (param === "u0") {
-      // if (u0slider.value == 0)
-      //   u0slider.value = 0.001;
-      u0 = Number(u0slider.value);
+    else if (param === "thetaY") {
+      // if (thetaYslider.value == 0)
+      //   thetaYslider.value = 0.001;
+      thetaY = Number(thetaYslider.value);
     }
     else if (param === "Dl") {
         // console.log(`Dl: ${Dl}, DlSlider.value: ${DlSlider.value}, Ds: ${Ds}, DlSlider.value < Ds: ${DlSlider.value < Ds}`)
@@ -379,11 +380,12 @@ var PSPL_microlensing_event = (function() {
     // updates Drel, then thetaE, then tE, each of which depends on the last,
     // and collectively depends on some of these base quantities;
     // not necessary for every option, but probably cleaner code this way
-
+    //
     updateDerivedQuantities();
     updateSliders();
     // console.log(`tE: ${tE}`);
-    PSPL_microlensing_event_lens_plane.redraw();
+    if (typeof PSPL_microlensing_event_lens_plane !== undefined)
+      PSPL_microlensing_event_lens_plane.redraw();
     plotLightcurve();
   }
 
@@ -423,7 +425,7 @@ var PSPL_microlensing_event = (function() {
     }
 
     updatePlotScaleAndRange(xWidth, yHeight, xInit, yInit);
-    plotLightcurve();
+    urve();
   }
 
   function updateGridRange(xStep, yStep) {
@@ -475,7 +477,7 @@ var PSPL_microlensing_event = (function() {
   }
 
   function clearGraph() {
-    lcurveContext.clearRect(graphLeftBorder, graphTopBorder, graphWidth, graphHeight);
+    context.clearRect(graphLeftBorder, graphTopBorder, graphWidth, graphHeight);
   }
 
   function xDayToPixel(xPlotDay) {
@@ -489,65 +491,65 @@ var PSPL_microlensing_event = (function() {
   }
 
   function drawAxes() {
-    lcurveContext.beginPath();
+    context.beginPath();
 
     // x axis
     // the -axisWidth/2 makes the x and y axes fully connect
     // at their intersection for all axis linewidths
-    lcurveContext.moveTo(graphLeftBorder - axisWidth/2, graphBottomBorder);
-    lcurveContext.lineTo(graphRightBorder + 15, graphBottomBorder);
+    context.moveTo(graphLeftBorder - axisWidth/2, graphBottomBorder);
+    context.lineTo(graphRightBorder + 15, graphBottomBorder);
 
     // y axis;
-    lcurveContext.moveTo(graphLeftBorder, graphBottomBorder);
-    lcurveContext.lineTo(graphLeftBorder, graphTopBorder - 15);
+    context.moveTo(graphLeftBorder, graphBottomBorder);
+    context.lineTo(graphLeftBorder, graphTopBorder - 15);
 
     // x axis arrow
     // NOTE: Doesn't look right for linewidth > 2
-    lcurveContext.moveTo(graphRightBorder + 15, graphBottomBorder);
-    lcurveContext.lineTo(graphRightBorder + 8, graphBottomBorder - 5);
-    lcurveContext.moveTo(graphRightBorder + 15, graphBottomBorder);
-    lcurveContext.lineTo(graphRightBorder + 8, graphBottomBorder + 5);
+    context.moveTo(graphRightBorder + 15, graphBottomBorder);
+    context.lineTo(graphRightBorder + 8, graphBottomBorder - 5);
+    context.moveTo(graphRightBorder + 15, graphBottomBorder);
+    context.lineTo(graphRightBorder + 8, graphBottomBorder + 5);
 
     // y axis arrow
     // NOTE: Doesn't look right for linewidth > 2
-    lcurveContext.moveTo(graphLeftBorder, graphTopBorder - 15);
-    lcurveContext.lineTo(graphLeftBorder - 5, graphTopBorder - 8);
-    lcurveContext.moveTo(graphLeftBorder, graphTopBorder - 15);
-    lcurveContext.lineTo(graphLeftBorder + 5, graphTopBorder - 8);
+    context.moveTo(graphLeftBorder, graphTopBorder - 15);
+    context.lineTo(graphLeftBorder - 5, graphTopBorder - 8);
+    context.moveTo(graphLeftBorder, graphTopBorder - 15);
+    context.lineTo(graphLeftBorder + 5, graphTopBorder - 8);
 
-    lcurveContext.strokeStyle = axisColor;
-    lcurveContext.lineWidth = axisWidth;
-    lcurveContext.stroke();
+    context.strokeStyle = axisColor;
+    context.lineWidth = axisWidth;
+    context.stroke();
   }
 
   function drawAxisLabels() {
     // x label
-    lcurveContext.font = axisLabelFont;
-    lcurveContext.textAlign = axisLabelAlign;
-    lcurveContext.textBaseline = axisLabelBaseline;
-    lcurveContext.fillStyle = axisLabelColor;
+    context.font = axisLabelFont;
+    context.textAlign = axisLabelAlign;
+    context.textBaseline = axisLabelBaseline;
+    context.fillStyle = axisLabelColor;
 
     if (centerLayout === true) {
       // x label
-      lcurveContext.fillText(xLabel, centerX, graphBottomTrailingBorder + axisLabelSpacing)
+      context.fillText(xLabel, centerX, graphBottomTrailingBorder + axisLabelSpacing)
 
       // y label
-      lcurveContext.save();
-      lcurveContext.translate(graphLeftTrailingBorder - 25, centerY);
-      lcurveContext.rotate(-Math.PI/2);
-      lcurveContext.textAlign = "center";
-      lcurveContext.fillText(yLabel, 0, 0);
-      lcurveContext.restore();
+      context.save();
+      context.translate(graphLeftTrailingBorder - 25, centerY);
+      context.rotate(-Math.PI/2);
+      context.textAlign = "center";
+      context.fillText(yLabel, 0, 0);
+      context.restore();
     }
     else {
       // x label
-      lcurveContext.textAlign = "left";
-      lcurveContext.fillText(xLabel, graphRightTrailingBorder + 20, graphBottomBorder);
+      context.textAlign = "left";
+      context.fillText(xLabel, graphRightTrailingBorder + 20, graphBottomBorder);
 
       // y label
-      lcurveContext.textBaseline = "bottom";
-      lcurveContext.textAlign = "center";
-      lcurveContext.fillText(yLabel, graphLeftBorder, graphTopTrailingBorder - 20);
+      context.textBaseline = "bottom";
+      context.textAlign = "center";
+      context.fillText(yLabel, graphLeftBorder, graphTopTrailingBorder - 20);
     }
   }
 
@@ -580,50 +582,50 @@ var PSPL_microlensing_event = (function() {
     // console.log("tE: " + tE);
     // console.log("dayWidth: " + dayWidth);
     // fill in canvas background
-    lcurveContext.fillStyle = canvasBackgroundColor;
-    lcurveContext.fillRect(0, 0, lcurveCanvas.width, lcurveCanvas.height);
+    context.fillStyle = canvasBackgroundColor;
+    context.fillRect(0, 0, canvas.width, canvas.height);
 
     // fill in graph background
-    lcurveContext.fillStyle = graphBackgroundColor;
-    lcurveContext.fillRect(graphLeftBorder, graphTopBorder, graphWidth, graphHeight);
+    context.fillStyle = graphBackgroundColor;
+    context.fillRect(graphLeftBorder, graphTopBorder, graphWidth, graphHeight);
 
     // draw vertical lines and x axis tick labels
-    lcurveContext.beginPath();
+    context.beginPath();
     for (var xPlotDay = xGridInitial; xPlotDay <= xGridFinal; xPlotDay+=xGridStep) {
       var xPlotPixel = xDayToPixel(xPlotDay);
-      lcurveContext.moveTo(xPlotPixel, graphTopTrailingBorder);
-      lcurveContext.lineTo(xPlotPixel, graphBottomTrailingBorder);
+      context.moveTo(xPlotPixel, graphTopTrailingBorder);
+      context.lineTo(xPlotPixel, graphBottomTrailingBorder);
 
       // tick text label
       var xTickLabel = xPlotDay;
-      lcurveContext.font = tickLabelFont;
-      lcurveContext.fillStyle = tickLabelColor;
-      lcurveContext.textAlign = tickLabelAlign;
-      lcurveContext.textBaseline = tickLabelBaseline;
-      lcurveContext.fillText(xTickLabel, xPlotPixel, graphBottomTrailingBorder + tickLabelSpacing);
+      context.font = tickLabelFont;
+      context.fillStyle = tickLabelColor;
+      context.textAlign = tickLabelAlign;
+      context.textBaseline = tickLabelBaseline;
+      context.fillText(xTickLabel, xPlotPixel, graphBottomTrailingBorder + tickLabelSpacing);
     }
 
     //draw horizontal lines and y axis tick label
     for (var yPlotMagnif = yGridInitial; yPlotMagnif <= yGridFinal; yPlotMagnif+=yGridStep) {
       var yPlotPixel = yMagnifToPixel(yPlotMagnif);
-      lcurveContext.moveTo(graphLeftTrailingBorder, yPlotPixel);
-      lcurveContext.lineTo(graphRightTrailingBorder, yPlotPixel);
+      context.moveTo(graphLeftTrailingBorder, yPlotPixel);
+      context.lineTo(graphRightTrailingBorder, yPlotPixel);
 
       var yTickLabel = yPlotMagnif;
-      lcurveContext.font = tickLabelFont;
-      lcurveContext.fillStyle = tickLabelColor;
-      lcurveContext.textAlign = "right";
-      lcurveContext.textBaseline = tickLabelBaseline;
-      lcurveContext.fillText(yTickLabel,graphLeftTrailingBorder - tickLabelSpacing,  yPlotPixel);
+      context.font = tickLabelFont;
+      context.fillStyle = tickLabelColor;
+      context.textAlign = "right";
+      context.textBaseline = tickLabelBaseline;
+      context.fillText(yTickLabel,graphLeftTrailingBorder - tickLabelSpacing,  yPlotPixel);
     }
-    lcurveContext.lineWidth = gridWidth;
-    lcurveContext.strokeStyle = gridColor;
-    lcurveContext.stroke();
+    context.lineWidth = gridWidth;
+    context.strokeStyle = gridColor;
+    context.stroke();
 
     // draw border
-    lcurveContext.strokeStyle = graphBorderColor;
-    lcurveContext.lineWidth = graphBorderWidth;
-    lcurveContext.strokeRect(graphLeftBorder, graphTopBorder, graphWidth, graphHeight);
+    context.strokeStyle = graphBorderColor;
+    context.lineWidth = graphBorderWidth;
+    context.strokeRect(graphLeftBorder, graphTopBorder, graphWidth, graphHeight);
 
     drawAxes();
     drawAxisLabels();
@@ -652,18 +654,18 @@ var PSPL_microlensing_event = (function() {
       magnif = magnifs[0];
     }
 
-    lcurveContext.save();
+    context.save();
       // set up clipping region as graph region, so that curve does not
       // extend beyond graph region
-      lcurveContext.beginPath();
-      lcurveContext.rect(graphLeftBorder, graphTopBorder, graphWidth, graphHeight);
-      lcurveContext.clip();
+      context.beginPath();
+      context.rect(graphLeftBorder, graphTopBorder, graphWidth, graphHeight);
+      context.clip();
 
       // prepare to draw curve and move to initial pixel coordinate
       var tPixel = xDayToPixel(tDay);
       var magnifPixel = yMagnifToPixel(magnif);
-      lcurveContext.beginPath();
-      lcurveContext.moveTo(tPixel, magnifPixel);
+      context.beginPath();
+      context.moveTo(tPixel, magnifPixel);
 
       // Iterate over remaining days and draw lines from each pixel coordinate
       // to the next
@@ -686,7 +688,7 @@ var PSPL_microlensing_event = (function() {
 
         var tPixel = xDayToPixel(tDay);
         var magnifPixel = yMagnifToPixel(magnif);
-        lcurveContext.lineTo(tPixel, magnifPixel);
+        context.lineTo(tPixel, magnifPixel);
       }
       // console.log(index);
       // if (!fromEquation) {
@@ -697,11 +699,11 @@ var PSPL_microlensing_event = (function() {
       //   console.log(tDay);
       //   console.log(dayWidth);
       // }
-      lcurveContext.lineJoin = "round";
-      lcurveContext.lineWidth = curveWidth;
-      lcurveContext.strokeStyle = curveColor;
-      lcurveContext.stroke();
-    lcurveContext.restore();
+      context.lineJoin = "round";
+      context.lineWidth = curveWidth;
+      context.strokeStyle = curveColor;
+      context.stroke();
+    context.restore();
   }
 
   function getCurveData() {
@@ -727,7 +729,7 @@ var PSPL_microlensing_event = (function() {
   }
 
   function getU(timeTerm) {
-    var u = Math.sqrt(u0*u0 + timeTerm*timeTerm); // unitless
+    var u = Math.sqrt(thetaY*thetaY + timeTerm*timeTerm); // unitless
     return u;
   }
 
@@ -749,8 +751,8 @@ var PSPL_microlensing_event = (function() {
   //   if (param == "Ds") {
   //     return Ds;
   //   }
-  //   else if (param == "u0") {
-  //     return u0;
+  //   else if (param == "thetaY") {
+  //     return thetaY;
   //   }
   //   else if (param == "Dl") {
   //     return Dl;
@@ -781,7 +783,7 @@ var PSPL_microlensing_event = (function() {
     // getters for variables we want to share
     get Ml() { return Ml; }, // base modeling parameters
     get Ds() { return Ds; }, // kpc
-    get u0() { return u0; }, // unitless (units of thetaE)
+    get thetaY() { return thetaY; }, // unitless (units of thetaE)
     get Dl() { return Dl; }, // kpc
     get t0() { return t0; }, // days
     get mu() { return mu; }, // mas/yr
