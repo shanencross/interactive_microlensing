@@ -31,6 +31,10 @@
     t<sub>E</sub> <input type="range" id="tEslider" min="0.001" max="365" step="0.001" value="110.5">
     <span id="tEreadout" style="display:inline-block;
                      width:3.8em; text-align:right;">110.500</span> days
+    &nbsp; &nbsp; &nbsp;
+    u<sub>0</sub> <input type="range" id="u0slider" min="-2" max="2" step="0.001" value="0.1">
+    <span id="u0readout" style="display:inline-block;
+                  width:2.3em; text-align:right;">0.100</span>
   </div>
 
   <div style="text-align:center; position:relative;">
@@ -45,8 +49,8 @@
                     width:2.3em; text-align:right;">6.50</span> kpc
   </div>
   <div style="text-align:center; position:relative;">
-    u<sub>0</sub> <input type="range" id="u0slider" min="-2" max="2" step="0.001" value="0.1">
-    <span id="u0readout" style="display:inline-block;
+    &theta;<sub>y</sub> <input type="range" id="thetaYslider" min="-2" max="2" step="0.001" value="0.1">
+    <span id="thetaYreadout" style="display:inline-block;
                    width:2.3em; text-align:right;">0.100</span>
 
     <!-- I know this sort of spacing is bad practice. Need to change this.
@@ -73,6 +77,10 @@
   </div>
 
   <div style="text-align:center; position:relative;">
+    <input type="checkbox" id="fixU0checkbox">Hold u0 fixed when changing other quantities
+  </div>
+
+  <div style="text-align:center; position:relative;">
     <p>Debug controls:</p>
     <input type="button" id="xLeft" value="x<--">
     <input type="button" id="xRight" value="x-->">
@@ -90,6 +98,7 @@
   <div style="text-align:center; position:relative;">
     <input type="button" id="resetGraph" value="Reset Range/Scale">
   </div>
+
   <!-- <script src="PSPL_microlensing_event_main.js"></script> -->
   <script src="PSPL_microlensing_event.js"></script>
   <script src="PSPL_microlensing_event_lens_plane.js"></script>

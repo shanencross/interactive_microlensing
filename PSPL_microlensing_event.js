@@ -55,7 +55,7 @@ var PSPL_microlensing_event = (function() {
   // base quantities set by user
   var Ml; // solMass
   var Ds; // kpc: Ds =  Dl / (1 - 1/mu)
-  var thetaY; // milliarcseconds
+  var thetaY; // milliarcseconds (mas)
   var Dl; // kpc: Dl = Ds * (1 - 1/mu)
   var t0; // days
   var mu; // mas/yr: mu = thetaE / tE; mu = Ds / (Ds - Dl) = 1/(1 - Dl/Ds)
@@ -65,6 +65,9 @@ var PSPL_microlensing_event = (function() {
   var tE; // days
   var Drel; // kpc
   var thetaE; // radians (or should we use milliarcsecond?)
+
+  // tracks whether u0 is to be held fixed while other quantities vary
+  var fixU0;
   initParams();
 
   // plot scale
@@ -146,6 +149,9 @@ var PSPL_microlensing_event = (function() {
   var tEslider = document.getElementById("tEslider");
   var tEreadout = document.getElementById("tEreadout");
 
+  var u0slider = document.getElementById("u0slider");
+  var u0readout = document.getElementById("tEreadout");
+
   var MlSlider = document.getElementById("MlSlider");
   var MlReadout = document.getElementById("MlReadout");
 
@@ -162,9 +168,10 @@ var PSPL_microlensing_event = (function() {
   var t0readout = document.getElementById("t0readout");
 
   var muSlider = document.getElementById("muSlider");
-  var muReadout = document.getElementById("muReadout")
+  var muReadout = document.getElementById("muReadout");
 
   var resetParamsButton = document.getElementById("resetParams");
+  var fixU0checkbox = document.getElementById("fixU0checkbox");
 
   // debug plot scale/range buttons
   var xLeftButton = document.getElementById("xLeft");
@@ -196,6 +203,9 @@ var PSPL_microlensing_event = (function() {
     tEslider.addEventListener("input", function() { updateParam("tE"); }, false);
     tEslider.addEventListener("change", function() { updateParam("tE"); }, false);
 
+    u0slider.addEventListener("input", function() { updateParam("u0"); }, false);
+    u0slider.addEventListener("change", function() { updateParam("u0"); }, false);
+
     MlSlider.addEventListener("input", function() { updateParam("Ml"); }, false);
     MlSlider.addEventListener("change", function() { updateParam("Ml"); }, false);
 
@@ -216,6 +226,9 @@ var PSPL_microlensing_event = (function() {
 
     // reset buttons
     resetParamsButton.addEventListener("click", resetParams, false);
+
+    // checkbox to hold u0 value fixed while varying other quantities besides thetaY
+    fixU0checkbox.addEventListener("change", function() { fixU0 = !fixU0; }, false);
 
     // debug plot range/scale and reset buttons
     xLeftButton.addEventListener("click", function() { updateGraph("xLeft"); }, false);
@@ -239,10 +252,11 @@ var PSPL_microlensing_event = (function() {
     // tE = 10; // tE = thetaE / mu
     Ml = 0.1; // solMass
     Ds = 8.0; // kpc: Ds =  Dl / (1 - 1/mu)
-    thetaY = 0.1;
+    thetaY = 0.1; // milliarcseconds (mas)
     Dl = 7.0; // kpc: Dl = Ds * (1 - 1/mu)
     t0 = 0; // days
     mu = 7; // mas/yr  (milliarcseconds/year): mu = thetaE / tE
+    fixU0 = false;
 
     // set derived quantities
     updateDerivedQuantities();
@@ -251,9 +265,16 @@ var PSPL_microlensing_event = (function() {
   function updateDerivedQuantities() {
     updateDrel();
     updateThetaE();
+    if (fixU0 === false)
+      updateU0();
     // console.log(`tE before: ${tE}`);
     updateTE();
     // console.log(`tE after: ${tE}`);
+  }
+
+  function updateU0() {
+    var thetaY_rad = thetaY * masToRad; // convert from mas to radians
+    u0 = thetaY_rad / thetaE;
   }
 
   function updateDrel() {
@@ -324,6 +345,10 @@ var PSPL_microlensing_event = (function() {
 
     muSlider.value = mu;
     muReadout.innerHTML = Number(muSlider.value).toFixed(2);
+
+    u0slider.value = u0;
+    u0readout.innerHTML = Number(u0slider.value).toFixed(3);
+    console.log("------------U0: " + u0 + "  -------------");
   }
 
   function resetParams() {
@@ -350,13 +375,10 @@ var PSPL_microlensing_event = (function() {
       }
       // tE depends on thetaE depends on Drel depends on Ds
     }
-    else if (param === "thetaY") {
-      // if (thetaYslider.value == 0)
-      //   thetaYslider.value = 0.001;
+    else if (param === "thetaY" && fixU0 === false) {
       thetaY = Number(thetaYslider.value);
     }
     else if (param === "Dl") {
-        // console.log(`Dl: ${Dl}, DlSlider.value: ${DlSlider.value}, Ds: ${Ds}, DlSlider.value < Ds: ${DlSlider.value < Ds}`)
       if (Number(DlSlider.value) < Ds) { // lens must be closer than source
         Dl = Number(DlSlider.value);
       }
@@ -375,6 +397,11 @@ var PSPL_microlensing_event = (function() {
     }
     else if (param === "tE") {
       console.log("Can't change tE yet (since it's a derived quantity)");
+    }
+    else if (param === "u0") {
+      u0 = Number(u0slider.value);
+      var thetaY_rad = u0 * thetaE; // thetaY in radians
+      thetaY = thetaY_rad / masToRad; // converted to milliarcseconds (mas)
     }
 
     // updates Drel, then thetaE, then tE, each of which depends on the last,
@@ -729,7 +756,7 @@ var PSPL_microlensing_event = (function() {
   }
 
   function getU(timeTerm) {
-    var u = Math.sqrt(thetaY*thetaY + timeTerm*timeTerm); // unitless
+    var u = Math.sqrt(u0*u0 + timeTerm*timeTerm); // unitless
     return u;
   }
 
@@ -783,7 +810,7 @@ var PSPL_microlensing_event = (function() {
     // getters for variables we want to share
     get Ml() { return Ml; }, // base modeling parameters
     get Ds() { return Ds; }, // kpc
-    get thetaY() { return thetaY; }, // unitless (units of thetaE)
+    get thetaY() { return thetaY; }, // milliarcseconds (mas)
     get Dl() { return Dl; }, // kpc
     get t0() { return t0; }, // days
     get mu() { return mu; }, // mas/yr
@@ -791,6 +818,7 @@ var PSPL_microlensing_event = (function() {
     get Drel() { return Drel; }, // derived modeling parameters
     get thetaE() { return thetaE; }, // radians
     get tE() { return tE; }, // days
+    get u0() { return u0; }, // unitless (units of thetaE)
 
     get thetaE_mas() { return thetaE / masToRad; }, // milliarcseconds (mas)
 
