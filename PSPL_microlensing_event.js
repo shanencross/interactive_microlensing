@@ -497,7 +497,7 @@ var PSPL_microlensing_event = (function() {
     }
 
     updatePlotScaleAndRange(xWidth, yHeight, xInit, yInit);
-    urve();
+    plotLightcurve();
   }
 
   function updateGridRange(xStep, yStep) {
