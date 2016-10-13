@@ -27,6 +27,21 @@
     <canvas id="lensPlaneCanvas" style="margin-left:10px; border:1px solid black;" width="550" height="400">
     </canvas>
   </div>
+
+  <div style="text-align:center; position:relative;">
+    <input type="button" id="stepBack" value="&#9194;">
+    <input type="button" id="play" value="&#9654;">
+    <input type="button" id="pause" value="&#9646;&#9646;">
+    <input type="button" id="stepForward" value="&#9193;">
+    <input type="button" id="timeReset" value="Reset">
+  </div>
+  
+   &nbsp;
+  <div style="text-align:center; position:relative;">
+    Time: <span id="timeReadout">0.0000</span> days
+  </div>
+
+
   <div style="text-align:center; position:relative;">
     t<sub>E</sub> <input type="range" id="tEslider" min="0.001" max="365" step="0.001" value="110.5">
     <span id="tEreadout" style="display:inline-block;
