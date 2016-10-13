@@ -82,7 +82,7 @@ var PSPL_microlensing_event = (function() {
   var xAxisFinalDay;
   var yAxisFinalMagnif;
 
-  var dayWidthDefault = 30; // const
+  var dayWidthDefault = 32; // const
   var magnifHeightDefault = 10; // const
   var xAxisInitialDayDefault = -16; // const
   var yAxisInitialMagnifDefault = 0.5; // const
