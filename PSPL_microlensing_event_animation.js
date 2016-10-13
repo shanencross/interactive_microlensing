@@ -1,11 +1,19 @@
 console.log("Executing PSPL_microlensing_event_animation.js");
 
 var PSPL_microlensing_event_animation = (function() {
+  var eventModule = PSPL_microlensing_event;
+  var lensPlaneModule = PSPL_microlensing_event_lens_plane;
+
   var testVar = 3;
   var frameIndex = 0;
   var time = 0;
   var timer;
   var running = false;
+
+  var minTime = eventModule.xAxisInitialDay;
+  var maxTime = eventModule.xAxisFinalDay;
+  var dt = eventModule.dt;
+  console.log(minTime + " " + dt + " " + maxTime);
 
   var timeReadout = document.getElementById("timeReadout");
   var stepBackButton = document.getElementById("stepBack");

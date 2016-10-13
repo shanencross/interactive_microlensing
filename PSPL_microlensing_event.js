@@ -82,7 +82,7 @@ var PSPL_microlensing_event = (function() {
   var xAxisFinalDay;
   var yAxisFinalMagnif;
 
-  var dayWidthDefault = 30; // const
+  var dayWidthDefault = 32; // const
   var magnifHeightDefault = 10; // const
   var xAxisInitialDayDefault = -16; // const
   var yAxisInitialMagnifDefault = 0.5; // const
@@ -746,7 +746,7 @@ var PSPL_microlensing_event = (function() {
       while (tDay < xAxisFinalDay) {
         // If calculating from equation, increment day by set amount and
         // calculate magnification
-        if (fromEquation) {
+        if (fromEquation === true) {
           tDay += dt;
           magnif = getMagnif(tDay);
         }
@@ -862,10 +862,14 @@ var PSPL_microlensing_event = (function() {
 
     get Drel() { return Drel; }, // derived modeling parameters
     get thetaE() { return thetaE; }, // radians
+    get thetaE_mas() { return thetaE / masToRad; }, // milliarcseconds (mas)
     get tE() { return tE; }, // days
     get u0() { return u0; }, // unitless (units of thetaE)
 
-    get thetaE_mas() { return thetaE / masToRad; }, // milliarcseconds (mas)
+    // used for animation
+    get dt() { return dt; }, // time step used for drawing curve (days)
+    get xAxisInitialDay() { return xAxisInitialDay; },
+    get xAxisFinalDay() { return xAxisFinalDay; },
 
     // getParam: getParam,
     getMagnif: getMagnif, // getting magnification for a given time;
