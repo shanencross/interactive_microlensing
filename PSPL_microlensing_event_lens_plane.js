@@ -158,7 +158,19 @@ var PSPL_microlensing_event_lens_plane = (function() {
 
   function init(animation=animationFlag, debug=debugFlag) {
     updateScaleAndRangeValues();
+    initSourcePos();
     redraw();
+  }
+
+  function initSourcePos(animation=animationFlag, debug=debugFlag) {
+    var sourcePosY = eventModule.thetaY;
+    sourcePos = {x: xAxisInitialThetaX, y: sourcePosY};
+
+    if (animation === false)
+      sourcePos.x = xAxisFinalThetaX;
+
+    if (debug === true)
+      sourcePos.x = lensPos.x - 1/4 *(thetaXwidth);
   }
 
   function redraw(animation=animationFlag, debug=debugFlag) {
@@ -192,34 +204,8 @@ var PSPL_microlensing_event_lens_plane = (function() {
     updateGridRange(xGridStepDefault, yGridStepDefault); // initialize gridline vars
   }
 
-  function updateDrawingValues(animation=animationFlag, debug=debugFlag) {
-
-    function getSourceThetaY() {
-      var RadToMillarcseconds = 206264806.24709633;
-      var u0 = eventModule.u0;
-      var thetaE_mas = eventModule.thetaE_mas; // thetaE in milliarcseconds
-      var sourceThetaY = u0 * thetaE_mas;
-      // var sourceThetaY = u0;
-      // var sourceThetaY = thetaYheight/2 + 5; // temp value
-      // var sourceThetaY = 0;
-      console.log(`sourceThetaY: ${sourceThetaY}`);
-      return sourceThetaY;
-    }
-
-    // source position
-    var sourceThetaY = getSourceThetaY();
-    sourcePos = {x: xAxisInitialThetaX, y: sourceThetaY}; // place source at start of path
-
-    if (animation === false) {
-      console.log("no animation");
-      sourcePos.x = xAxisFinalThetaX; // if not animated, immediately place source at end of path
-    }
-
-     // places source partway in between left/right canvas borders for debugging
-     // line and dashed line drawing
-    if (debug === true) {
-      sourcePos.x = lensPos.x - 1/4*thetaXwidth;
-    }
+  function updateDrawingValues() {
+    sourcePos.y = eventModule.thetaY;
 
     // convert position to pixel units
     sourcePixelPos = {x: thetaXtoPixel(sourcePos.x), y: thetaYtoPixel(sourcePos.y)};
@@ -543,6 +529,8 @@ var PSPL_microlensing_event_lens_plane = (function() {
   // public properties to be stored in module object,
   // accessible via module object by code executed after this script
   return {
+    get sourcePos() { return sourcePos; },
+    get xAxisInitialThetaX() { return xAxisInitialThetaX; },
     redraw: redraw,
   };
 })();

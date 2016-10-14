@@ -391,6 +391,13 @@ var PSPL_microlensing_event = (function() {
   }
 
   function updateParam(param) {
+    if (typeof PSPL_microlensing_event_animation !== undefined) {
+      if (PSPL_microlensing_event_animation.running === true) {
+        console.log("Can't modify paramters while animation is playing right now.")
+        return;
+      }
+    }
+
     if (param === "Ml") {
       Ml = Number(MlSlider.value);
       // tE depends on thetaE which depends on Ml
