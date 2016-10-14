@@ -115,6 +115,10 @@ var PSPL_microlensing_event = (function() {
   var gridWidth = 1;
   var curveColor = "blue";
   var curveWidth = 2;
+  var dashedCurveColor = "green";
+  var dashedCurveWidth = 2;
+  var dashedCurveLength = 8;
+  var dashedCurveSpacing = 10;
   var graphBorderColor = "grey";
   var graphBorderWidth = 1;
   var axisColor = "black";
@@ -192,9 +196,7 @@ var PSPL_microlensing_event = (function() {
 
   function init() {
     initListeners();
-    // plotLightcurve();
-    initPlot();
-    plotLightcurve_simple_3();
+    plotLightcurve();
     console.log(`tE: ${tE}`);
     console.log(`thetaE: ${thetaE}`);
     console.log(`Drel: ${Drel}`);
@@ -712,93 +714,15 @@ var PSPL_microlensing_event = (function() {
     drawAxisLabels();
   }
 
-  function plotLightcurveSegment(tDay, firstPoint=false, lastPoint=false) {
-    var magnif = getMagnif(tDay);
-    var tPixel = xDayToPixel(tDay);
-    var magnifPixel = yMagnifToPixel(magnif);
-
-    if (firstPoint === true) {
-      context.beginPath();
-      context.moveTo(tPixel, magnifPixel);
-    }
-
-    context.lineTo(tPixel, magnifPixel);
-    context.lineJoin = "round";
-    context.lineWidth = curveWidth;
-    context.strokeStyle = curveColor;
-    context.stroke();
-
+  function plotLightcurve(tDayFinal=xAxisFinalDay, inputData, fromEquation=fromEquationDefault) {
+    initPlot();
+    plotLightcurveAlone(xAxisFinalDay, inputData, fromEquation, dashedCurve=true);
+    plotLightcurveAlone(tDayFinal, inputData, fromEquation, dashedCurve=false);
   }
 
-  function plotLightcurve_simple() {
-
-    for (tDay = xAxisInitialDay+dt; tDay < xAxisFinalDay; tDay += dt) {
-      var isFirstPoint = false;
-      if (tDay === xAxisInitialDay)
-        isFirstPoint = true;
-
-      plotLightcurveSegment(tDay, firstPoint=isFirstPoint);
-    }
-  }
-
-  function plotLightcurveSegment_2(tDay, firstPoint=false, lastPoint=false) {
-    var magnif = getMagnif(tDay);
-    var tPixel = xDayToPixel(tDay);
-    var magnifPixel = yMagnifToPixel(magnif);
-
-    if (firstPoint === true) {
-      context.beginPath();
-      context.moveTo(tPixel, magnifPixel);
-    }
-
-    context.lineTo(tPixel, magnifPixel);
-    context.lineJoin = "round";
-    context.lineWidth = curveWidth;
-    context.strokeStyle = curveColor;
-    context.stroke();
-
-  }
-
-  function plotLightcurve_simple_2() {
-    for (tDay = xAxisInitialDay; tDay < xAxisFinalDay; tDay += dt) {
-      if (tDay === xAxisInitialDay)
-        firstPoint = true;
-      plotLightcurveSegment_2(tDay, firstPoint);
-    }
-  }
-
-  function plotLightcurveSegment_3(tDay, firstPoint=false, lastPoint=false) {
-    var magnif = getMagnif(tDay);
-    var tPixel = xDayToPixel(tDay);
-    var magnifPixel = yMagnifToPixel(magnif);
-
-    if (firstPoint === true) {
-      context.beginPath();
-      context.moveTo(tPixel, magnifPixel);
-    }
-
-    context.lineTo(tPixel, magnifPixel);
-    context.lineJoin = "round";
-    context.lineWidth = curveWidth;
-    context.strokeStyle = curveColor;
-    context.stroke();
-
-  }
-
-  function plotLightcurve_simple_3() {
-    for (tDay = xAxisInitialDay; tDay < xAxisFinalDay; tDay += dt) {
-      var isFirstPoint = false;
-      if (tDay === xAxisInitialDay)
-        isFirstPoint = true;
-
-      plotLightcurveSegment_3(tDay, firstPoint=isFirstPoint);
-    }
-  }
-
-  function plotLightcurve(inputData, fromEquation=fromEquationDefault) {
+  function plotLightcurveAlone(tDayFinal=xAxisFinalDay, inputData, fromEquation=fromEquationDefault, dashedCurve=false) {
     // console.log("fromEquation: " + fromEquation);
     // console.log("inputData: " + inputData);
-    initPlot();
     var tDay, magnif;
     if (fromEquation) {
       tDay = xAxisInitialDay;
@@ -825,6 +749,9 @@ var PSPL_microlensing_event = (function() {
       context.rect(graphLeftBorder, graphTopBorder, graphWidth, graphHeight);
       context.clip();
 
+      if (dashedCurve === true)
+        context.setLineDash([dashedCurveLength, dashedCurveSpacing]); // turn on dashed lines
+
       // prepare to draw curve and move to initial pixel coordinate
       var tPixel = xDayToPixel(tDay);
       var magnifPixel = yMagnifToPixel(magnif);
@@ -835,7 +762,7 @@ var PSPL_microlensing_event = (function() {
       // to the next
       if (!fromEquation) // Index tracks place in data arrays if reading in data
         var index = 0; //
-      while (tDay < xAxisFinalDay) {
+      while (tDay < tDayFinal) {
         // If calculating from equation, increment day by set amount and
         // calculate magnification
         if (fromEquation === true) {
@@ -863,10 +790,20 @@ var PSPL_microlensing_event = (function() {
       //   console.log(tDay);
       //   console.log(dayWidth);
       // }
-      context.lineJoin = "round";
-      context.lineWidth = curveWidth;
-      context.strokeStyle = curveColor;
+
+      if (dashedCurve === true) {
+        context.strokeStyle = dashedCurveColor;
+        context.lineWidth = dashedCurveWidth;
+      }
+      else {
+        context.lineJoin = "round";
+        context.lineWidth = curveWidth;
+        context.strokeStyle = curveColor;
+      }
       context.stroke();
+
+      if (dashedCurve === true)
+        context.setLineDash([]); // turn off dashed lines
     context.restore();
   }
 
@@ -932,10 +869,10 @@ var PSPL_microlensing_event = (function() {
     get dt() { return dt; }, // time step used for drawing curve (days)
     get xAxisInitialDay() { return xAxisInitialDay; },
     get xAxisFinalDay() { return xAxisFinalDay; },
+    plotLightcurve: plotLightcurve
 
-    // getParam: getParam,
-    plotLightcurveSegment: plotLightcurveSegment,
-    initPlot: initPlot,
+    // plotLightcurveSegment: plotLightcurveSegment,
+    // initPlot: initPlot,
     // context: context,
     // xDayToPixel: xDayToPixel,
     // getMagnif: getMagnif,

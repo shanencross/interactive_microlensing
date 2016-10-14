@@ -59,10 +59,10 @@ var PSPL_microlensing_event_lens_plane = (function() {
   var pathColor = "blue";;
   var pathWidth = 2;
 
-  var dashedPathColor = "teal";
-  var dashedPathWidth = 1;
-  var dashedPathLength = 5;
-  var dashedPathSpacing = 15
+  var dashedPathColor = "green";
+  var dashedPathWidth = 2;
+  var dashedPathLength = 8;
+  var dashedPathSpacing = 10
 
   var sourceColor = "teal";
   var sourceRadius = 2;
@@ -140,7 +140,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
 
   // debug flags
   var animationFlag = false;
-  var debugFlag = true;
+  var debugFlag = false;
   var centerLayoutFlag = false;
   var drawGridFlag = true;
   // if on, grid lines/ticks for that axis are created in steps starting from 0,
@@ -339,7 +339,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
       else
         context.ellipse(lensPixelPos.x, lensPixelPos.y, ringRadiusX, ringRadiusY, 0, 0, 2*Math.PI)
       context.strokeStyle = ringColor;
-      context.strokeWidth = ringWidth;
+      context.lineWidth = ringWidth;
       context.setLineDash([dashedRingLength, dashedRingSpacing]); // turn on dashed lines
       context.stroke();
       context.setLineDash([]); // turn off dashed-line drawing
@@ -364,7 +364,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
       context.lineTo(picRightBorder, sourcePixelPos.y);
       context.setLineDash([dashedPathLength, dashedPathSpacing]); // turn on dashed lines
       context.strokeStyle = dashedPathColor;
-      context.strokeWidth = dashedPathWidth;
+      context.lineWidth = dashedPathWidth;
       context.stroke();
       context.setLineDash([]); // turn off dashed lines
 
@@ -373,7 +373,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
       context.moveTo(picLeftBorder, sourcePixelPos.y);
       context.lineTo(sourcePixelPos.x, sourcePixelPos.y);
       context.strokeStyle = pathColor;
-      context.strokeWidth = pathWidth;
+      context.lineWidth = pathWidth;
       context.stroke();
     }
 

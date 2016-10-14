@@ -10,8 +10,8 @@ var PSPL_microlensing_event_animation = (function() {
   var timer;
   var running = false;
 
-  var minTime = -5;
-  var maxTime = 5;
+  var minTime = eventModule.xAxisInitialDay;
+  var maxTime = eventModule.xAxisFinalDay;
   var dt = eventModule.dt;
   console.log(minTime + " " + dt + " " + maxTime);
 
@@ -32,41 +32,25 @@ var PSPL_microlensing_event_animation = (function() {
   function run() {
     if (running === true) {
       timer = window.setTimeout(run, 1000/fps);
-      doStuff();
+      animateFrame();
     }
   }
 
-  function doStuff() {
+  function animateFrame() {
     console.log("doing stuff");
-    if (time >= maxTime) {
-        updatePlayback("timeReset");
+    if (time > maxTime) {
+        updatePlayback("pause");
         return;
     }
-    animateLightcurve();
-    animateSource();
+    eventModule.plotLightcurve(time);
+    animateFrameSource();
 
     time += dt;
     timeReadout.innerHTML = Number(time).toFixed(4);
     console.log("TIME: " + time);
   }
 
-  function animateLightcurve() {
-    eventModule.initPlot();
-    var isFirstPoint = false;
-    var isLastPoint = false;
-    if (almostEquals(time, minTime))
-      isFirstPoint = true;
-    else if (almostEquals(time, maxTime))
-      isLastPoint = true;
-    // eventModule.plotLightcurveSegment(time, firstPoint=isFirstPoint, lastPoint=isLastPoint);
-    eventModule.plotLightcurveSegment(time, firstPoint=isFirstPoint, lastPoint=isLastPoint);
-  }
-
-  function almostEquals(a, b, epsilon=(1e-12)) {
-    return (Math.abs(a - b) < epsilon);
-  }
-
-  function animateSource() {
+  function animateFrameSource() {
     var mu = eventModule.mu;
     var yearToDay = 365.25; // day/year; const
     var eqMu = mu / yearToDay; // convert mu to milliarcseconds/day
@@ -92,11 +76,14 @@ var PSPL_microlensing_event_animation = (function() {
       console.log("step back");
       if (time > minTime) {
         time -= 2*dt;
-        doStuff();
+        animateFrame();
       }
     }
     else if (command === "play") {
       console.log("play");
+      if (time > maxTime) {
+        updatePlayback("timeReset");
+      }
       running = true;
       run();
     }
@@ -106,13 +93,13 @@ var PSPL_microlensing_event_animation = (function() {
     }
     else if (command === "stepForward") {
       console.log("step forward");
-      doStuff();
+      animateFrame();
     }
     else if (command === "timeReset") {
       console.log("reset time");
       running = false;
       time = minTime - dt;
-      doStuff();
+      animateFrame();
     }
   }
 
