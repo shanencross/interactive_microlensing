@@ -26,7 +26,6 @@ var PSPL_microlensing_event_animation = (function() {
     time = minTime;
     timeReadout.innerHTML = Number(time).toFixed(4);
     initListeners();
-    run();
   }
 
   function run() {
@@ -107,5 +106,6 @@ var PSPL_microlensing_event_animation = (function() {
 
   return {
     get running() { return running; },
+    get time() { return time; },
   }
 })();

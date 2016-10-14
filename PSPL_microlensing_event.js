@@ -469,7 +469,11 @@ var PSPL_microlensing_event = (function() {
     // console.log(`tE: ${tE}`);
     if (typeof PSPL_microlensing_event_lens_plane !== undefined)
       PSPL_microlensing_event_lens_plane.redraw();
-    plotLightcurve();
+
+    if (typeof PSPL_microlensing_event_animation != undefined)
+      plotLightcurve(PSPL_microlensing_event_animation.time);
+    else
+      plotLightcurve();
   }
 
   function updateGraph(shift) {
