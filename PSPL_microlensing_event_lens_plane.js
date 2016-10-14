@@ -358,25 +358,23 @@ var PSPL_microlensing_event_lens_plane = (function() {
     }
 
     function drawSourcePath() {
-      context.beginPath();
-      context.moveTo(picLeftBorder, sourcePixelPos.y);
-      context.lineTo(sourcePixelPos.x, sourcePixelPos.y);
-
-      // solid line (path traveled so far)
-      context.strokeStyle = pathColor;
-      context.strokeWidth = pathWidth;
-      context.stroke();
-
       // dashed line (path yet to be travelled)
       context.beginPath();
-      context.moveTo(sourcePixelPos.x, sourcePixelPos.y);
+      context.moveTo(picLeftBorder, sourcePixelPos.y);
       context.lineTo(picRightBorder, sourcePixelPos.y);
       context.setLineDash([dashedPathLength, dashedPathSpacing]); // turn on dashed lines
       context.strokeStyle = dashedPathColor;
       context.strokeWidth = dashedPathWidth;
       context.stroke();
-
       context.setLineDash([]); // turn off dashed lines
+
+      // solid line (path traveled so far)
+      context.beginPath();
+      context.moveTo(picLeftBorder, sourcePixelPos.y);
+      context.lineTo(sourcePixelPos.x, sourcePixelPos.y);
+      context.strokeStyle = pathColor;
+      context.strokeWidth = pathWidth;
+      context.stroke();
     }
 
     // for animation, pointless to implement before animation
@@ -499,11 +497,20 @@ var PSPL_microlensing_event_lens_plane = (function() {
         context.lineTo(xLineEnd, yPixel);
 
         var yTickLabel = Number(thetaY).toFixed(2);
+
+        // catches if yTickLabel is set to "-0.00" due to rounding error and
+        // converts to "0.00";
+        // (note 0 === -0 in javascript)
+        if (Number(yTickLabel) === -0) {
+          yTickLabel = Number(0).toFixed(2);
+        }
         context.font = tickLabelFont;
         context.fillStyle = tickLabelColor;
         context.textAlign = "right";
         context.textBaseline = tickLabelBaseline;
         context.fillText(yTickLabel,picLeftTrailingBorder - tickLabelSpacing,  yPixel);
+
+        console.log(`thetaY: ${thetaY}`);
       }
       context.lineWidth = gridWidth;
       context.strokeStyle = gridColor;
@@ -512,6 +519,9 @@ var PSPL_microlensing_event_lens_plane = (function() {
 
     clearPic();
     drawBackgrounds();
+    drawBorder();
+    drawGridlinesAndTicks();
+    drawAxes();
     toggleClippingRegion(turnOn=true);
     drawLens();
     drawRing();
@@ -519,9 +529,6 @@ var PSPL_microlensing_event_lens_plane = (function() {
     drawSourcePath();
     drawUarrow();
     toggleClippingRegion(turnOn=false);
-    drawBorder();
-    drawGridlinesAndTicks();
-    drawAxes();
   }
 
   // executing script initialization
