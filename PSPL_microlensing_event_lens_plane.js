@@ -509,8 +509,6 @@ var PSPL_microlensing_event_lens_plane = (function() {
         context.textAlign = "right";
         context.textBaseline = tickLabelBaseline;
         context.fillText(yTickLabel,picLeftTrailingBorder - tickLabelSpacing,  yPixel);
-
-        console.log(`thetaY: ${thetaY}`);
       }
       context.lineWidth = gridWidth;
       context.strokeStyle = gridColor;

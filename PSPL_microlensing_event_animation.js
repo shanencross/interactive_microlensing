@@ -4,15 +4,15 @@ var PSPL_microlensing_event_animation = (function() {
   var eventModule = PSPL_microlensing_event;
   var lensPlaneModule = PSPL_microlensing_event_lens_plane;
 
+  var fps = 1000;
+
   var time;
   var timer;
   var running = false;
 
-  // var minTime = eventModule.xAxisInitialDay;
-  // var maxTime = eventModule.xAxisFinalDay;
-  var minTime = eventModule.xAxisInitialDay;
-  var maxTime = eventModule.xAxisFinalDay;
-  var dt = eventModule.dt * 10;
+  var minTime = -5;
+  var maxTime = 5;
+  var dt = eventModule.dt;
   console.log(minTime + " " + dt + " " + maxTime);
 
   var timeReadout = document.getElementById("timeReadout");
@@ -31,8 +31,8 @@ var PSPL_microlensing_event_animation = (function() {
 
   function run() {
     if (running === true) {
+      timer = window.setTimeout(run, 1000/fps);
       doStuff();
-      timer = window.setTimeout(run, 1000/30);
     }
   }
 
@@ -42,27 +42,39 @@ var PSPL_microlensing_event_animation = (function() {
         updatePlayback("timeReset");
         return;
     }
+    animateLightcurve();
+    animateSource();
 
+    time += dt;
+    timeReadout.innerHTML = Number(time).toFixed(4);
+    console.log("TIME: " + time);
+  }
+
+  function animateLightcurve() {
+    eventModule.initPlot();
+    var isFirstPoint = false;
+    var isLastPoint = false;
+    if (almostEquals(time, minTime))
+      isFirstPoint = true;
+    else if (almostEquals(time, maxTime))
+      isLastPoint = true;
+    // eventModule.plotLightcurveSegment(time, firstPoint=isFirstPoint, lastPoint=isLastPoint);
+    eventModule.plotLightcurveSegment(time, firstPoint=isFirstPoint, lastPoint=isLastPoint);
+  }
+
+  function almostEquals(a, b, epsilon=(1e-12)) {
+    return (Math.abs(a - b) < epsilon);
+  }
+
+  function animateSource() {
     var mu = eventModule.mu;
     var yearToDay = 365.25; // day/year; const
     var eqMu = mu / yearToDay; // convert mu to milliarcseconds/day
     console.log("mu: " + mu);
     var newSourcePosX = mu * time;
 
-    /*
-    thetaX = mu*time + thetaX_initial
-
-    thetaX_initial = mu*time_initial + thetaX_initial
-
-
-    */
-
     lensPlaneModule.sourcePos.x = newSourcePosX;
     lensPlaneModule.redraw();
-
-    time += dt;
-    timeReadout.innerHTML = Number(time).toFixed(4);
-    console.log("TIME: " + time);
   }
 
   function initListeners() {

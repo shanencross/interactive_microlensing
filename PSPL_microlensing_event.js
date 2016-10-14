@@ -192,7 +192,9 @@ var PSPL_microlensing_event = (function() {
 
   function init() {
     initListeners();
-    plotLightcurve();
+    // plotLightcurve();
+    initPlot();
+    plotLightcurve_simple_3();
     console.log(`tE: ${tE}`);
     console.log(`thetaE: ${thetaE}`);
     console.log(`Drel: ${Drel}`);
@@ -394,7 +396,7 @@ var PSPL_microlensing_event = (function() {
     if (typeof PSPL_microlensing_event_animation !== undefined) {
       if (PSPL_microlensing_event_animation.running === true) {
         console.log("Can't modify paramters while animation is playing right now.")
-        return;
+
       }
     }
 
@@ -710,6 +712,89 @@ var PSPL_microlensing_event = (function() {
     drawAxisLabels();
   }
 
+  function plotLightcurveSegment(tDay, firstPoint=false, lastPoint=false) {
+    var magnif = getMagnif(tDay);
+    var tPixel = xDayToPixel(tDay);
+    var magnifPixel = yMagnifToPixel(magnif);
+
+    if (firstPoint === true) {
+      context.beginPath();
+      context.moveTo(tPixel, magnifPixel);
+    }
+
+    context.lineTo(tPixel, magnifPixel);
+    context.lineJoin = "round";
+    context.lineWidth = curveWidth;
+    context.strokeStyle = curveColor;
+    context.stroke();
+
+  }
+
+  function plotLightcurve_simple() {
+
+    for (tDay = xAxisInitialDay+dt; tDay < xAxisFinalDay; tDay += dt) {
+      var isFirstPoint = false;
+      if (tDay === xAxisInitialDay)
+        isFirstPoint = true;
+
+      plotLightcurveSegment(tDay, firstPoint=isFirstPoint);
+    }
+  }
+
+  function plotLightcurveSegment_2(tDay, firstPoint=false, lastPoint=false) {
+    var magnif = getMagnif(tDay);
+    var tPixel = xDayToPixel(tDay);
+    var magnifPixel = yMagnifToPixel(magnif);
+
+    if (firstPoint === true) {
+      context.beginPath();
+      context.moveTo(tPixel, magnifPixel);
+    }
+
+    context.lineTo(tPixel, magnifPixel);
+    context.lineJoin = "round";
+    context.lineWidth = curveWidth;
+    context.strokeStyle = curveColor;
+    context.stroke();
+
+  }
+
+  function plotLightcurve_simple_2() {
+    for (tDay = xAxisInitialDay; tDay < xAxisFinalDay; tDay += dt) {
+      if (tDay === xAxisInitialDay)
+        firstPoint = true;
+      plotLightcurveSegment_2(tDay, firstPoint);
+    }
+  }
+
+  function plotLightcurveSegment_3(tDay, firstPoint=false, lastPoint=false) {
+    var magnif = getMagnif(tDay);
+    var tPixel = xDayToPixel(tDay);
+    var magnifPixel = yMagnifToPixel(magnif);
+
+    if (firstPoint === true) {
+      context.beginPath();
+      context.moveTo(tPixel, magnifPixel);
+    }
+
+    context.lineTo(tPixel, magnifPixel);
+    context.lineJoin = "round";
+    context.lineWidth = curveWidth;
+    context.strokeStyle = curveColor;
+    context.stroke();
+
+  }
+
+  function plotLightcurve_simple_3() {
+    for (tDay = xAxisInitialDay; tDay < xAxisFinalDay; tDay += dt) {
+      var isFirstPoint = false;
+      if (tDay === xAxisInitialDay)
+        isFirstPoint = true;
+
+      plotLightcurveSegment_3(tDay, firstPoint=isFirstPoint);
+    }
+  }
+
   function plotLightcurve(inputData, fromEquation=fromEquationDefault) {
     // console.log("fromEquation: " + fromEquation);
     // console.log("inputData: " + inputData);
@@ -826,36 +911,6 @@ var PSPL_microlensing_event = (function() {
     return magnif;
   }
 
-  // function getParam(param) {
-  //   if (param == "Ds") {
-  //     return Ds;
-  //   }
-  //   else if (param == "thetaY") {
-  //     return thetaY;
-  //   }
-  //   else if (param == "Dl") {
-  //     return Dl;
-  //   }
-  //   else if (param == "t0") {
-  //     return t0;
-  //   }
-  //   else if (param == "mu") {
-  //     return mu;
-  //   }
-  //   else if (param == "Drel") {
-  //     return Drel;
-  //   }
-  //   else if (param == "thetaE") {
-  //     return thetaE;
-  //   }
-  //   else if (param == "tE") {
-  //     return tE;
-  //   }
-  //   else {
-  //     console.log(`Error: ${param} is not a valid parameter.`)
-  //   }
-  // }
-
   // public properties to be stored in module object,
   // accessible via module object by code executed after this script
   return {
@@ -879,8 +934,11 @@ var PSPL_microlensing_event = (function() {
     get xAxisFinalDay() { return xAxisFinalDay; },
 
     // getParam: getParam,
-    getMagnif: getMagnif, // getting magnification for a given time;
-                          // probably want to store t and u values in arrays
-                          // and share those instead, honestly
+    plotLightcurveSegment: plotLightcurveSegment,
+    initPlot: initPlot,
+    // context: context,
+    // xDayToPixel: xDayToPixel,
+    // getMagnif: getMagnif,
+    // yMagnifToPixel: yMagnifToPixel,
   };
 })();
