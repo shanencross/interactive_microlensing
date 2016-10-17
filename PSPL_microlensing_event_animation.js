@@ -10,8 +10,8 @@ var PSPL_microlensing_event_animation = (function() {
   var timer;
   var running = false;
 
-  var minTime = -4; //eventModule.xAxisInitialDay;
-  var maxTime = 4; //eventModule.xAxisFinalDay;
+  var minTime = eventModule.xAxisInitialDay;
+  var maxTime = eventModule.xAxisFinalDay;
   var dt = eventModule.dt;
   console.log(minTime + " " + dt + " " + maxTime);
 
@@ -70,7 +70,7 @@ var PSPL_microlensing_event_animation = (function() {
     var yearToDay = 365.25; // day/year; const
     var eqMu = mu / yearToDay; // convert mu to milliarcseconds/day
     console.log("mu: " + mu);
-    var newSourcePosX = mu * (time - t0);
+    var newSourcePosX = eqMu * (time - t0);
 
     /*
 
@@ -90,14 +90,19 @@ var PSPL_microlensing_event_animation = (function() {
     timeResetButton.addEventListener("click", function() { updatePlayback("timeReset"); }, false);
   }
 
-  function updatePlayback(command="play") {
+  function updatePlayback(command="play", updateFrame=true) {
+    //setting updateFrame to false lets us modify the internal frame without
+    // actually updating the display, in case we want to issue multiple playback
+    // command before actually updating the displayed frame (like multiple
+    // steps backwards/forwards)
     window.clearTimeout(timer);
 
     if (command === "stepBack") {
       console.log("step back");
       if (time > minTime) {
         time -= 2*dt;
-        animateFrame();
+        if (updateFrame === true)
+          animateFrame();
       }
     }
     else if (command === "play") {
@@ -114,13 +119,15 @@ var PSPL_microlensing_event_animation = (function() {
     }
     else if (command === "stepForward") {
       console.log("step forward");
-      animateFrame();
+      if (updateFrame === true)
+        animateFrame();
     }
     else if (command === "timeReset") {
       console.log("reset time");
       running = false;
       time = minTime - dt;
-      animateFrame();
+      if (updateFrame === true)
+        animateFrame();
     }
   }
 
@@ -129,5 +136,8 @@ var PSPL_microlensing_event_animation = (function() {
   return {
     get running() { return running; },
     get time() { return time; },
+
+    updatePlayback: updatePlayback,
+    animateFrame: animateFrame,
   }
 })();

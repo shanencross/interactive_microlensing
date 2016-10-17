@@ -477,8 +477,13 @@ var PSPL_microlensing_event = (function() {
     if (typeof PSPL_microlensing_event_lens_plane !== undefined)
       PSPL_microlensing_event_lens_plane.redraw();
 
-    if (typeof PSPL_microlensing_event_animation != undefined)
+    if (typeof PSPL_microlensing_event_animation != undefined) {
       plotLightcurve(PSPL_microlensing_event_animation.time);
+
+      //redraw current animation frame
+      PSPL_microlensing_event_animation.updatePlayback("stepBack", updateFrame=false);
+      PSPL_microlensing_event_animation.updatePlayback("stepForward", updateFrame=true);
+    }
     else
       plotLightcurve();
   }

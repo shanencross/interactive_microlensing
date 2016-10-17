@@ -137,6 +137,9 @@ var PSPL_microlensing_event_lens_plane = (function() {
   //sort of derived variables? but not really? (canvas/context)
   canvas = document.getElementById("lensPlaneCanvas")
   context = canvas.getContext("2d");
+  thetaXreadout = document.getElementById("thetaXreadout"); // readout of current source thetaX position
+                                                            // mainly for debugging, but may keep
+
 
   // debug flags
   var animationFlag = false;
@@ -206,6 +209,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
 
   function updateDrawingValues() {
     sourcePos.y = eventModule.thetaY;
+    thetaXreadout.innerHTML = Number(sourcePos.x).toFixed(4); //update thetaX readout
 
     // convert position to pixel units
     sourcePixelPos = {x: thetaXtoPixel(sourcePos.x), y: thetaYtoPixel(sourcePos.y)};
