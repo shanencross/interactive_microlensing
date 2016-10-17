@@ -54,11 +54,12 @@ var PSPL_microlensing_event_animation = (function() {
     time += dt;
 
     // makes sure we display "0.00" instead of "-0.00" if 0 time has rounding error
+    var timeReadout = Number(time).toFixed(4);
     if (almostEquals(time, 0) === true) {
-      time = 0;
+      timeReadout = Number(0).toFixed(4);
     }
+    timeReadout.innerHTML = timeReadout; // update time readout
 
-    timeReadout.innerHTML = Number(time).toFixed(4);
     eventModule.plotLightcurve(time); // animate frame for lightcurve
     animateFrameSource();
     console.log("TIME: " + time);
