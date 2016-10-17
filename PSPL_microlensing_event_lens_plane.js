@@ -52,11 +52,11 @@ var PSPL_microlensing_event_lens_plane = (function() {
   var picBorderWidth = 1;
 
   var ringColor = "dimgrey";
-  var ringWidth = 1;
+  var ringWidth = 2;
   var dashedRingLength = 5;
   var dashedRingSpacing = 5;
 
-  var pathColor = "blue";;
+  var pathColor = "blue";
   var pathWidth = 2;
 
   var dashedPathColor = "green";
