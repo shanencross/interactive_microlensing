@@ -1,4 +1,4 @@
-console.log("Executing PSPL_microlensing_event.js");
+  console.log("Executing PSPL_microlensing_event.js");
 
 //NOTE: const keyword not compatible with IE -- should replace it with var and document what values are constant
 //NOTE update: const uses replaced with var, with comments marking them "const"
@@ -153,6 +153,8 @@ var PSPL_microlensing_event = (function() {
   var tEslider = document.getElementById("tEslider");
   var tEreadout = document.getElementById("tEreadout");
 
+  var thetaEreadout = document.getElementById("thetaEreadout");
+
   var u0slider = document.getElementById("u0slider");
   var u0readout = document.getElementById("u0readout");
 
@@ -232,7 +234,8 @@ var PSPL_microlensing_event = (function() {
     resetParamsButton.addEventListener("click", resetParams, false);
 
     // checkbox to hold u0 value fixed while varying other quantities besides thetaY
-    fixU0checkbox.addEventListener("change", function() { fixU0 = !fixU0; }, false);
+    fixU0checkbox.addEventListener("change", function() { fixU0 = !fixU0;
+                                                          console.log(`fixU0: ${fixU0}`); }, false);
 
     // debug plot range/scale and reset buttons
     xLeftButton.addEventListener("click", function() { updateGraph("xLeft"); }, false);
@@ -383,6 +386,10 @@ var PSPL_microlensing_event = (function() {
       muReadout.innerHTML += "+";
     }
 
+    // update thetaE readout (no slider)
+    var thetaE_mas = thetaE / masToRad;
+    console.log(`thetaE (mas): ${thetaE_mas}`);
+    thetaEreadout.innerHTML = Number(thetaE_mas).toFixed(4);
   }
 
   function resetParams() {
