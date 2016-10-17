@@ -10,8 +10,8 @@ var PSPL_microlensing_event_animation = (function() {
   var timer;
   var running = false;
 
-  var minTime = eventModule.xAxisInitialDay;
-  var maxTime = eventModule.xAxisFinalDay;
+  var minTime;
+  var maxTime;
   var dt = eventModule.dt;
   console.log(minTime + " " + dt + " " + maxTime);
 
@@ -25,7 +25,21 @@ var PSPL_microlensing_event_animation = (function() {
   var roundingErrorThreshold = 1e-12; // if values passed to almostEquals have a smaller difference
                                       // than this, they will pass as "almost" equal
 
+  function updateMinAndMaxTimes(min, max) {
+
+    // default to min/max values of lightcurve plot time axis
+    if (min === undefined)
+      min = eventModule.xAxisInitialDay;
+
+    if (max === undefined)
+      max = eventModule.xAxisFinalDay;
+
+    minTime = min;
+    maxTime = max;
+  }
+
   function init() {
+    updateMinAndMaxTimes();
     time = minTime;
     timeReadout.innerHTML = Number(time).toFixed(4);
     initListeners();
@@ -43,7 +57,11 @@ var PSPL_microlensing_event_animation = (function() {
   }
 
   function animateFrame() {
-    console.log("doing stuff");
+    console.log("animating frame");
+
+    // min/max times may have changed if lightcurve plot time axis scale/range has changed
+    updateMinAndMaxTimes();
+    // pause if we've reached the max time
     if ( (time >= maxTime) || (almostEquals(time, maxTime) === true) ) {
       console.log(`time ${time} is greater than or equal to (within rounding error threshold of ${roundingErrorThreshold}) maxTime ${maxTime}`);
       updatePlayback("pause");
@@ -54,14 +72,14 @@ var PSPL_microlensing_event_animation = (function() {
     time += dt;
 
     // makes sure we display "0.00" instead of "-0.00" if 0 time has rounding error
-    var timeReadout = Number(time).toFixed(4);
+    var newTimeReadout = Number(time).toFixed(4);
     if (almostEquals(time, 0) === true) {
-      timeReadout = Number(0).toFixed(4);
+      newTimeReadout = Number(0).toFixed(4);
     }
-    timeReadout.innerHTML = timeReadout; // update time readout
+    timeReadout.innerHTML = newTimeReadout; // update time readout
 
     eventModule.plotLightcurve(time); // animate frame for lightcurve
-    animateFrameSource();
+    animateFrameSource(); // animate frame for source movement on lens plane figure
     console.log("TIME: " + time);
   }
 

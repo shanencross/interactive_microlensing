@@ -209,14 +209,14 @@ var PSPL_microlensing_event_lens_plane = (function() {
 
   function updateDrawingValues() {
     sourcePos.y = eventModule.thetaY;
-    var thetaXreadout = Number(sourcePos.x).toFixed(4)
+    var newThetaXreadout = Number(sourcePos.x).toFixed(4)
 
     // makes sure "0.0000" is displayed instead of "-0.0000" if rounding error
     // occurs
-    if (Number(thetaXreadout) === -0) {
-      thetaXreadout = Number(0).toFixed(4);
+    if (Number(newThetaXreadout) === -0) {
+      newThetaXreadout = Number(0).toFixed(4);
     }
-    thetaXreadout.innerHTML = thetaXreadout;
+    thetaXreadout.innerHTML = newThetaXreadout;
 
     // convert position to pixel units
     sourcePixelPos = {x: thetaXtoPixel(sourcePos.x), y: thetaYtoPixel(sourcePos.y)};
