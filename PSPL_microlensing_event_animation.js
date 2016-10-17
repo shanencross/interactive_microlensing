@@ -10,8 +10,8 @@ var PSPL_microlensing_event_animation = (function() {
   var timer;
   var running = false;
 
-  var minTime = eventModule.xAxisInitialDay;
-  var maxTime = eventModule.xAxisFinalDay;
+  var minTime = -4; //eventModule.xAxisInitialDay;
+  var maxTime = 4; //eventModule.xAxisFinalDay;
   var dt = eventModule.dt;
   console.log(minTime + " " + dt + " " + maxTime);
 
@@ -21,6 +21,9 @@ var PSPL_microlensing_event_animation = (function() {
   var pauseButton = document.getElementById("pause");
   var stepForwardButton = document.getElementById("stepForward");
   var timeResetButton = document.getElementById("timeReset");
+
+  var roundingErrorThreshold = 1e-12; // if values passed to almostEquals have a smaller difference
+                                      // than this, they will pass as "almost" equal
 
   function init() {
     time = minTime;
@@ -35,26 +38,45 @@ var PSPL_microlensing_event_animation = (function() {
     }
   }
 
+  function almostEquals(a, b, epsilon=roundingErrorThreshold) {
+    return (Math.abs(a - b) < epsilon);
+  }
+
   function animateFrame() {
     console.log("doing stuff");
-    if (time > maxTime) {
-        updatePlayback("pause");
-        return;
+    if ( (time >= maxTime) || (almostEquals(time, maxTime) === true) ) {
+      console.log(`time ${time} is greater than or equal to (within rounding error threshold of ${roundingErrorThreshold}) maxTime ${maxTime}`);
+      updatePlayback("pause");
+      return;
     }
-    eventModule.plotLightcurve(time);
-    animateFrameSource();
+    console.log(`time ${time} is less than (within rounding error threshold of ${roundingErrorThreshold}) maxTime ${maxTime}`);
 
     time += dt;
+
+    // makes sure we display "0.00" instead of "-0.00" if 0 time has rounding error
+    if (almostEquals(time, 0) === true) {
+      time = 0;
+    }
+
     timeReadout.innerHTML = Number(time).toFixed(4);
+    eventModule.plotLightcurve(time); // animate frame for lightcurve
+    animateFrameSource();
     console.log("TIME: " + time);
   }
 
   function animateFrameSource() {
     var mu = eventModule.mu;
+    var t0 = eventModule.t0;
     var yearToDay = 365.25; // day/year; const
     var eqMu = mu / yearToDay; // convert mu to milliarcseconds/day
     console.log("mu: " + mu);
-    var newSourcePosX = mu * time;
+    var newSourcePosX = mu * (time - t0);
+
+    /*
+
+    newSourcePosX =
+
+    */
 
     lensPlaneModule.sourcePos.x = newSourcePosX;
     lensPlaneModule.redraw();
