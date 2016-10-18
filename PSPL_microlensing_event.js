@@ -274,6 +274,8 @@ var PSPL_microlensing_event = (function() {
     updateThetaE();
     if (fixU0 === false)
       updateU0();
+    else
+      updateThetaY();
     // console.log(`tE before: ${tE}`);
     updateTE();
     // console.log(`tE after: ${tE}`);
@@ -281,7 +283,12 @@ var PSPL_microlensing_event = (function() {
 
   function updateU0() {
     var thetaY_rad = thetaY * masToRad; // convert from mas to radians
-    u0 = thetaY_rad / thetaE;
+    u0 = thetaY_rad / thetaE; // unitless ("units" of thetaE)
+  }
+
+  function updateThetaY() {
+    var thetaE_mas = thetaE / masToRad ;// convert from radians to mas
+    thetaY = u0 * thetaE_mas; // mas
   }
 
   function updateDrel() {
@@ -458,8 +465,10 @@ var PSPL_microlensing_event = (function() {
        M = k3 * tE**2
        */
 
+       // NOTE: Pretty hacky way of doing this
+       // modify Ml accordingly of tE is changed, where
+       // Ml is propotional to tE^2
        Ml *= (tE/oldTE)*(tE/oldTE);
-
     }
     else if (param === "u0") {
       u0 = Number(u0slider.value);
@@ -481,8 +490,9 @@ var PSPL_microlensing_event = (function() {
       plotLightcurve(PSPL_microlensing_event_animation.time);
 
       //redraw current animation frame
-      PSPL_microlensing_event_animation.updatePlayback("stepBack", updateFrame=false);
-      PSPL_microlensing_event_animation.updatePlayback("stepForward", updateFrame=true);
+      PSPL_microlensing_event_animation.animateFrame();
+      // PSPL_microlensing_event_animation.updatePlayback("stepForward", updateFrame=true);
+      // PSPL_microlensing_event_animation.updatePlayback("redraw");
     }
     else
       plotLightcurve();

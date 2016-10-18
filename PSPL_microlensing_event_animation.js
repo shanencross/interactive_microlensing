@@ -13,6 +13,7 @@ var PSPL_microlensing_event_animation = (function() {
   var minTime;
   var maxTime;
   var dt = eventModule.dt;
+  var playbackStepSize = 0.1; // step size for "stepBack" and "stepForward" playback commands
   console.log(minTime + " " + dt + " " + maxTime);
 
   var timeReadout = document.getElementById("timeReadout");
@@ -48,12 +49,24 @@ var PSPL_microlensing_event_animation = (function() {
   function run() {
     if (running === true) {
       timer = window.setTimeout(run, 1000/fps);
+      updateTime(time+dt);
       animateFrame();
     }
   }
 
   function almostEquals(a, b, epsilon=roundingErrorThreshold) {
     return (Math.abs(a - b) < epsilon);
+  }
+
+  function updateTime(newTime) {
+    time = newTime;
+
+    // makes sure we display "0.00" instead of "-0.00" if 0 time has rounding error
+    var newTimeReadout = Number(time).toFixed(4);
+    if (almostEquals(time, 0) === true) {
+      newTimeReadout = Number(0).toFixed(4);
+    }
+    timeReadout.innerHTML = newTimeReadout; // update time readout
   }
 
   function animateFrame() {
@@ -68,15 +81,6 @@ var PSPL_microlensing_event_animation = (function() {
       return;
     }
     console.log(`time ${time} is less than (within rounding error threshold of ${roundingErrorThreshold}) maxTime ${maxTime}`);
-
-    time += dt;
-
-    // makes sure we display "0.00" instead of "-0.00" if 0 time has rounding error
-    var newTimeReadout = Number(time).toFixed(4);
-    if (almostEquals(time, 0) === true) {
-      newTimeReadout = Number(0).toFixed(4);
-    }
-    timeReadout.innerHTML = newTimeReadout; // update time readout
 
     eventModule.plotLightcurve(time); // animate frame for lightcurve
     animateFrameSource(); // animate frame for source movement on lens plane figure
@@ -119,7 +123,7 @@ var PSPL_microlensing_event_animation = (function() {
     if (command === "stepBack") {
       console.log("step back");
       if (time > minTime) {
-        time -= 2*dt;
+        updateTime(time - playbackStepSize);
         if (updateFrame === true)
           animateFrame();
       }
@@ -138,13 +142,14 @@ var PSPL_microlensing_event_animation = (function() {
     }
     else if (command === "stepForward") {
       console.log("step forward");
+      updateTime(time + playbackStepSize);
       if (updateFrame === true)
         animateFrame();
     }
     else if (command === "timeReset") {
       console.log("reset time");
       running = false;
-      time = minTime - dt;
+      updateTime(minTime);
       if (updateFrame === true)
         animateFrame();
     }
