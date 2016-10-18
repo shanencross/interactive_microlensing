@@ -52,17 +52,17 @@ var PSPL_microlensing_event_lens_plane = (function() {
   var picBorderWidth = 1;
 
   var ringColor = "dimgrey";
-  var ringWidth = 1;
+  var ringWidth = 2;
   var dashedRingLength = 5;
   var dashedRingSpacing = 5;
 
-  var pathColor = "blue";;
+  var pathColor = "blue";
   var pathWidth = 2;
 
-  var dashedPathColor = "teal";
-  var dashedPathWidth = 1;
-  var dashedPathLength = 5;
-  var dashedPathSpacing = 15
+  var dashedPathColor = "green";
+  var dashedPathWidth = 2;
+  var dashedPathLength = 8;
+  var dashedPathSpacing = 10
 
   var sourceColor = "teal";
   var sourceRadius = 2;
@@ -137,10 +137,13 @@ var PSPL_microlensing_event_lens_plane = (function() {
   //sort of derived variables? but not really? (canvas/context)
   canvas = document.getElementById("lensPlaneCanvas")
   context = canvas.getContext("2d");
+  thetaXreadout = document.getElementById("thetaXreadout"); // readout of current source thetaX position
+                                                            // mainly for debugging, but may keep
+
 
   // debug flags
   var animationFlag = false;
-  var debugFlag = true;
+  var debugFlag = false;
   var centerLayoutFlag = false;
   var drawGridFlag = true;
   // if on, grid lines/ticks for that axis are created in steps starting from 0,
@@ -158,7 +161,19 @@ var PSPL_microlensing_event_lens_plane = (function() {
 
   function init(animation=animationFlag, debug=debugFlag) {
     updateScaleAndRangeValues();
+    initSourcePos();
     redraw();
+  }
+
+  function initSourcePos(animation=animationFlag, debug=debugFlag) {
+    var sourcePosY = eventModule.thetaY;
+    sourcePos = {x: xAxisInitialThetaX, y: sourcePosY};
+
+    if (animation === false)
+      sourcePos.x = xAxisFinalThetaX;
+
+    if (debug === true)
+      sourcePos.x = lensPos.x - 1/4 *(thetaXwidth);
   }
 
   function redraw(animation=animationFlag, debug=debugFlag) {
@@ -192,34 +207,16 @@ var PSPL_microlensing_event_lens_plane = (function() {
     updateGridRange(xGridStepDefault, yGridStepDefault); // initialize gridline vars
   }
 
-  function updateDrawingValues(animation=animationFlag, debug=debugFlag) {
+  function updateDrawingValues() {
+    sourcePos.y = eventModule.thetaY; // update source thetaY
 
-    function getSourceThetaY() {
-      var RadToMillarcseconds = 206264806.24709633;
-      var u0 = eventModule.u0;
-      var thetaE_mas = eventModule.thetaE_mas; // thetaE in milliarcseconds
-      var sourceThetaY = u0 * thetaE_mas;
-      // var sourceThetaY = u0;
-      // var sourceThetaY = thetaYheight/2 + 5; // temp value
-      // var sourceThetaY = 0;
-      console.log(`sourceThetaY: ${sourceThetaY}`);
-      return sourceThetaY;
+    // makes sure "0.0000" is displayed instead of "-0.0000" if rounding error
+    // occurs
+    var newThetaXreadout = Number(sourcePos.x).toFixed(4)
+    if (Number(newThetaXreadout) === -0) {
+      newThetaXreadout = Number(0).toFixed(4);
     }
-
-    // source position
-    var sourceThetaY = getSourceThetaY();
-    sourcePos = {x: xAxisInitialThetaX, y: sourceThetaY}; // place source at start of path
-
-    if (animation === false) {
-      console.log("no animation");
-      sourcePos.x = xAxisFinalThetaX; // if not animated, immediately place source at end of path
-    }
-
-     // places source partway in between left/right canvas borders for debugging
-     // line and dashed line drawing
-    if (debug === true) {
-      sourcePos.x = lensPos.x - 1/4*thetaXwidth;
-    }
+    thetaXreadout.innerHTML = newThetaXreadout; // update source thetaX readout
 
     // convert position to pixel units
     sourcePixelPos = {x: thetaXtoPixel(sourcePos.x), y: thetaYtoPixel(sourcePos.y)};
@@ -353,7 +350,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
       else
         context.ellipse(lensPixelPos.x, lensPixelPos.y, ringRadiusX, ringRadiusY, 0, 0, 2*Math.PI)
       context.strokeStyle = ringColor;
-      context.strokeWidth = ringWidth;
+      context.lineWidth = ringWidth;
       context.setLineDash([dashedRingLength, dashedRingSpacing]); // turn on dashed lines
       context.stroke();
       context.setLineDash([]); // turn off dashed-line drawing
@@ -372,25 +369,23 @@ var PSPL_microlensing_event_lens_plane = (function() {
     }
 
     function drawSourcePath() {
-      context.beginPath();
-      context.moveTo(picLeftBorder, sourcePixelPos.y);
-      context.lineTo(sourcePixelPos.x, sourcePixelPos.y);
-
-      // solid line (path traveled so far)
-      context.strokeStyle = pathColor;
-      context.strokeWidth = pathWidth;
-      context.stroke();
-
       // dashed line (path yet to be travelled)
       context.beginPath();
-      context.moveTo(sourcePixelPos.x, sourcePixelPos.y);
+      context.moveTo(picLeftBorder, sourcePixelPos.y);
       context.lineTo(picRightBorder, sourcePixelPos.y);
       context.setLineDash([dashedPathLength, dashedPathSpacing]); // turn on dashed lines
       context.strokeStyle = dashedPathColor;
-      context.strokeWidth = dashedPathWidth;
+      context.lineWidth = dashedPathWidth;
       context.stroke();
-
       context.setLineDash([]); // turn off dashed lines
+
+      // solid line (path traveled so far)
+      context.beginPath();
+      context.moveTo(picLeftBorder, sourcePixelPos.y);
+      context.lineTo(sourcePixelPos.x, sourcePixelPos.y);
+      context.strokeStyle = pathColor;
+      context.lineWidth = pathWidth;
+      context.stroke();
     }
 
     // for animation, pointless to implement before animation
@@ -513,6 +508,13 @@ var PSPL_microlensing_event_lens_plane = (function() {
         context.lineTo(xLineEnd, yPixel);
 
         var yTickLabel = Number(thetaY).toFixed(2);
+
+        // catches if yTickLabel is set to "-0.00" due to rounding error and
+        // converts to "0.00";
+        // (note 0 === -0 in javascript)
+        if (Number(yTickLabel) === -0) {
+          yTickLabel = Number(0).toFixed(2);
+        }
         context.font = tickLabelFont;
         context.fillStyle = tickLabelColor;
         context.textAlign = "right";
@@ -526,6 +528,9 @@ var PSPL_microlensing_event_lens_plane = (function() {
 
     clearPic();
     drawBackgrounds();
+    drawBorder();
+    drawGridlinesAndTicks();
+    drawAxes();
     toggleClippingRegion(turnOn=true);
     drawLens();
     drawRing();
@@ -533,9 +538,6 @@ var PSPL_microlensing_event_lens_plane = (function() {
     drawSourcePath();
     drawUarrow();
     toggleClippingRegion(turnOn=false);
-    drawBorder();
-    drawGridlinesAndTicks();
-    drawAxes();
   }
 
   // executing script initialization
@@ -543,6 +545,8 @@ var PSPL_microlensing_event_lens_plane = (function() {
   // public properties to be stored in module object,
   // accessible via module object by code executed after this script
   return {
+    get sourcePos() { return sourcePos; },
+    get xAxisInitialThetaX() { return xAxisInitialThetaX; },
     redraw: redraw,
   };
 })();
