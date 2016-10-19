@@ -248,7 +248,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
 
   function updateLensedImages() {
     var thetaE_mas = eventModule.thetaE_mas;
-    var u0 = eventModule.u0;
+    // var u0 = eventModule.u0;
 
     lensedImages = {plus: {pos: undefined, pixelPos: undefined},
                     minus: {pos: undefined, pixelPos: undefined}};
@@ -258,10 +258,13 @@ var PSPL_microlensing_event_lens_plane = (function() {
     var minusLensedImageR = Math.abs( ( u - Math.sqrt(u*u + 4) ) / 2 ) * thetaE_mas;
 
     var sourcePosR = Math.sqrt(sourcePos.y*sourcePos.y + sourcePos.x*sourcePos.x);
-    var phi = Math.acos(sourcePos.x/sourcePosR);
+    var phi = Math.acos(sourcePos.x/sourcePosR) * sourcePos.y/Math.abs(sourcePos.y);
 
     lensedImages.plus.pos = {x: plusLensedImageR * Math.cos(phi), y: plusLensedImageR * Math.sin(phi)};
     lensedImages.minus.pos = {x: minusLensedImageR * Math.cos(Math.PI + phi), y: minusLensedImageR * Math.sin(Math.PI + phi)};
+
+
+
     console.log(`plusLensedImageR / thetaE_mas = ${plusLensedImageR / thetaE_mas}`);
     console.log(`minusLensedImageR / thetaE_mas = ${minusLensedImageR / thetaE_mas}`);
 
@@ -586,19 +589,24 @@ var PSPL_microlensing_event_lens_plane = (function() {
       // console.log("Lensed image pixel position (minus): " + String(lensedImages.minus.pixelPos.x) + ", " + String(lensedImages.minus.pixelPos.y));
 
       var lensedImageRadius = 2;
-      var lensedImageColor = "purple";
       var lensedImageLineWidth = 2;
-      var lensedImageOutlineColor = "purple";
+      var lensedImagePlusColor = "purple";
+      var lensedImagePlusOutlineColor = "purple";
 
-      context.fillStyle = lensedImageColor;
+      var lensedImageMinusColor = "olive";
+      var lensedImageMinusOutlineColor = "olive";
+
       context.lineWidth = lensedImageLineWidth;
-      context.strokeStyle = lensedImageOutlineColor;
+      context.fillStyle = lensedImagePlusColor;
+      context.strokeStyle = lensedImagePlusOutlineColor;
 
       context.beginPath();
       context.arc(lensedImages.plus.pixelPos.x, lensedImages.plus.pixelPos.y, lensedImageRadius, 0, 2*Math.PI, false);
       context.fill();
       context.stroke();
 
+      context.fillStyle = lensedImageMinusColor;
+      context.strokeStyle = lensedImageMinusOutlineColor;
       context.beginPath();
       context.arc(lensedImages.minus.pixelPos.x, lensedImages.minus.pixelPos.y, lensedImageRadius, 0, 2*Math.PI, false);
       context.fill();
