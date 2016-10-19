@@ -903,7 +903,12 @@ var PSPL_microlensing_event = (function() {
     get dt() { return dt; }, // time step used for drawing curve (days)
     get xAxisInitialDay() { return xAxisInitialDay; },
     get xAxisFinalDay() { return xAxisFinalDay; },
-    plotLightcurve: plotLightcurve
+    plotLightcurve: plotLightcurve,
+
+    // for debugging
+    getU: getU,
+    getTimeTerm: getTimeTerm,
+    getMagnif: getMagnif,
 
     // plotLightcurveSegment: plotLightcurveSegment,
     // initPlot: initPlot,

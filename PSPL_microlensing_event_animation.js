@@ -85,6 +85,10 @@ var PSPL_microlensing_event_animation = (function() {
     eventModule.plotLightcurve(time); // animate frame for lightcurve
     animateFrameSource(); // animate frame for source movement on lens plane figure
     console.log("TIME: " + time);
+    var u = eventModule.getU(eventModule.getTimeTerm(time));
+    var magnif = eventModule.getMagnif(time);
+    console.log("debugging u: " + String(u));
+    console.log("debugging magnif: " + String(magnif));
   }
 
   function animateFrameSource() {
@@ -144,9 +148,11 @@ var PSPL_microlensing_event_animation = (function() {
     }
     else if (command === "stepForward") {
       console.log("step forward");
-      updateTime(time + playbackControlStep);
-      if (updateFrame === true)
-        animateFrame();
+      if (time < maxTime && almostEquals(time, maxTime) === false) {
+        updateTime(time + playbackControlStep);
+        if (updateFrame === true)
+          animateFrame();
+      }
     }
     else if (command === "timeReset") {
       console.log("reset time");

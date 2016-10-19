@@ -254,15 +254,16 @@ var PSPL_microlensing_event_lens_plane = (function() {
                     minus: {pos: undefined, pixelPos: undefined}};
 
     var u = Math.sqrt(sourcePos.x*sourcePos.x + sourcePos.y*sourcePos.y) / thetaE_mas;
-    var plusLensedImageR = ( u + ( Math.sqrt(u*u + 4) / 2 ) ) * thetaE_mas;
-    var minusLensedImageR = Math.abs(( u - ( Math.sqrt(u*u + 4) / 2 ) ) * thetaE_mas);
+    var plusLensedImageR = ( ( u + Math.sqrt(u*u + 4) ) / 2 ) * thetaE_mas;
+    var minusLensedImageR = Math.abs( ( u - Math.sqrt(u*u + 4) ) / 2 ) * thetaE_mas;
 
     var sourcePosR = Math.sqrt(sourcePos.y*sourcePos.y + sourcePos.x*sourcePos.x);
     var phi = Math.acos(sourcePos.x/sourcePosR);
 
     lensedImages.plus.pos = {x: plusLensedImageR * Math.cos(phi), y: plusLensedImageR * Math.sin(phi)};
     lensedImages.minus.pos = {x: minusLensedImageR * Math.cos(Math.PI + phi), y: minusLensedImageR * Math.sin(Math.PI + phi)};
-    console.log(`Lensed Minus: ${Math.cos(Math.PI + phi)}`)
+    console.log(`plusLensedImageR / thetaE_mas = ${plusLensedImageR / thetaE_mas}`);
+    console.log(`minusLensedImageR / thetaE_mas = ${minusLensedImageR / thetaE_mas}`);
 
     // var sinPhi = u0 / u;
     // var cosPhi = Math.sqrt(1 - sinPhi*sinPhi);
@@ -359,7 +360,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
       // set up clipping region as picture region, so that curve does not
       // extend beyond picture region
 
-      // iOn flag tracks whether clipping was last turned on/off; off by default
+      // isOn flag tracks whether clipping was last turned on/off; off by default
       if (this.isOn === undefined) {
         this.isOn = false;
       }
