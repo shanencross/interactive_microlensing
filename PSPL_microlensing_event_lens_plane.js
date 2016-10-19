@@ -143,7 +143,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
 
 
   // debug flags
-  var animationFlag = false;
+  var animationFlag = true;
   var debugFlag = false;
   var centerLayoutFlag = false;
   var drawGridFlag = true;
@@ -168,7 +168,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
 
   function initSourcePos(animation=animationFlag, debug=debugFlag) {
     var sourcePosY = eventModule.thetaY;
-    sourcePos = {x: xAxisInitialThetaX, y: sourcePosY};
+    sourcePos = {x: getThetaX(eventModule.xAxisFinalDay), y: sourcePosY};
 
     if (animation === false)
       sourcePos.x = xAxisFinalThetaX;
@@ -244,6 +244,15 @@ var PSPL_microlensing_event_lens_plane = (function() {
   function thetaYtoPixel(yPicThetaY) {
     var yPixel = picBottomBorder - (yPicThetaY - yAxisInitialThetaY) * yPixelScale
     return yPixel;
+  }
+
+  function getThetaX(t) {
+    var mu = eventModule.mu;
+    var t0 = eventModule.t0;
+    var yearToDay = 365.25; // day/year; const
+    var eqMu = mu / yearToDay; // convert mu to milliarcseconds/day
+    var thetaX = eqMu * (t - t0);
+    return thetaX;
   }
 
   function updateLensedImages() {
@@ -620,12 +629,12 @@ var PSPL_microlensing_event_lens_plane = (function() {
     drawGridlinesAndTicks();
     drawAxes();
     toggleClippingRegion(turnOn=true);
-    drawLens();
     drawRing();
     drawSourcePath();
     drawSource();
     drawUarrow();
     drawLensedImages();
+    drawLens();
     toggleClippingRegion(turnOn=false);
   }
 
@@ -637,5 +646,6 @@ var PSPL_microlensing_event_lens_plane = (function() {
     get sourcePos() { return sourcePos; },
     get xAxisInitialThetaX() { return xAxisInitialThetaX; },
     redraw: redraw,
+    getThetaX: getThetaX,
   };
 })();

@@ -91,21 +91,10 @@ var PSPL_microlensing_event_animation = (function() {
     console.log("debugging magnif: " + String(magnif));
   }
 
+
+
   function animateFrameSource() {
-    var mu = eventModule.mu;
-    var t0 = eventModule.t0;
-    var yearToDay = 365.25; // day/year; const
-    var eqMu = mu / yearToDay; // convert mu to milliarcseconds/day
-    console.log("mu: " + mu);
-    var newSourcePosX = eqMu * (time - t0);
-
-    /*
-
-    newSourcePosX =
-
-    */
-
-    lensPlaneModule.sourcePos.x = newSourcePosX;
+    lensPlaneModule.sourcePos.x = lensPlaneModule.getThetaX(time);
     lensPlaneModule.redraw();
   }
 
