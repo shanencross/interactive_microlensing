@@ -258,7 +258,8 @@ var PSPL_microlensing_event_lens_plane = (function() {
     var minusLensedImageR = Math.abs( ( u - Math.sqrt(u*u + 4) ) / 2 ) * thetaE_mas;
 
     var sourcePosR = Math.sqrt(sourcePos.y*sourcePos.y + sourcePos.x*sourcePos.x);
-    var phi = Math.acos(sourcePos.x/sourcePosR) * sourcePos.y/Math.abs(sourcePos.y);
+    var thetaY_sign = sourcePos.y/Math.abs(sourcePos.y);
+    var phi = Math.acos(sourcePos.x/sourcePosR) * thetaY_sign;
 
     lensedImages.plus.pos = {x: plusLensedImageR * Math.cos(phi), y: plusLensedImageR * Math.sin(phi)};
     lensedImages.minus.pos = {x: minusLensedImageR * Math.cos(Math.PI + phi), y: minusLensedImageR * Math.sin(Math.PI + phi)};
