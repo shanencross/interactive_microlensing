@@ -741,12 +741,20 @@ var PSPL_microlensing_event = (function() {
   }
 
   function plotLightcurve(tDayFinal=xAxisFinalDay, inputData, fromEquation=fromEquationDefault) {
+    // Draw plot background, as well as both complete (dashed) lightcurve and
+    // partial (solid) lightcurve up to a given time
+
+    // draw plot with axes, etc.
     initPlot();
+    // draw complete lightcurve across entire time axis as dashed line
     plotLightcurveAlone(xAxisFinalDay, inputData, fromEquation, dashedCurve=true);
+    // draw lightcurve up to the time argument as solid line
     plotLightcurveAlone(tDayFinal, inputData, fromEquation, dashedCurve=false);
   }
 
   function plotLightcurveAlone(tDayFinal=xAxisFinalDay, inputData, fromEquation=fromEquationDefault, dashedCurve=false) {
+    // draw a single lightcurve (dashed or solid) up to a given time
+
     // console.log("fromEquation: " + fromEquation);
     // console.log("inputData: " + inputData);
     var tDay, magnif;

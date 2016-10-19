@@ -133,6 +133,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
   var lensPixelPos;
   var ringRadiusX;
   var ringRadiusY;
+  var lensedImages;
 
   //sort of derived variables? but not really? (canvas/context)
   canvas = document.getElementById("lensPlaneCanvas")
@@ -225,6 +226,9 @@ var PSPL_microlensing_event_lens_plane = (function() {
 
     // lens pixel position
     lensPixelPos = {x:thetaXtoPixel(lensPos.x), y: thetaYtoPixel(lensPos.y)};
+
+    // lensed image positions;
+    updateLensedImages(); // debug test values
   }
 
   function thetaXtoPixel(xPicThetaX) {
@@ -240,6 +244,53 @@ var PSPL_microlensing_event_lens_plane = (function() {
   function thetaYtoPixel(yPicThetaY) {
     var yPixel = picBottomBorder - (yPicThetaY - yAxisInitialThetaY) * yPixelScale
     return yPixel;
+  }
+
+  function updateLensedImages() {
+    var thetaE_mas = eventModule.thetaE_mas;
+    var u0 = eventModule.u0;
+
+    lensedImages = {plus: {pos: undefined, pixelPos: undefined},
+                    minus: {pos: undefined, pixelPos: undefined}};
+
+    var u = Math.sqrt(sourcePos.x*sourcePos.x + sourcePos.y*sourcePos.y) / thetaE_mas;
+    var plusLensedImageR = ( u + ( Math.sqrt(u*u + 4) / 2 ) ) * thetaE_mas;
+    var minusLensedImageR = Math.abs(( u - ( Math.sqrt(u*u + 4) / 2 ) ) * thetaE_mas);
+
+    var sourcePosR = Math.sqrt(sourcePos.y*sourcePos.y + sourcePos.x*sourcePos.x);
+    var phi = Math.acos(sourcePos.x/sourcePosR);
+
+    lensedImages.plus.pos = {x: plusLensedImageR * Math.cos(phi), y: plusLensedImageR * Math.sin(phi)};
+    lensedImages.minus.pos = {x: minusLensedImageR * Math.cos(Math.PI + phi), y: minusLensedImageR * Math.sin(Math.PI + phi)};
+    console.log(`Lensed Minus: ${Math.cos(Math.PI + phi)}`)
+
+    // var sinPhi = u0 / u;
+    // var cosPhi = Math.sqrt(1 - sinPhi*sinPhi);
+    //
+    // if (sourcePos.x < 0) {
+    //   // sinPhi *= -1;
+    //   cosPhi *= -1;
+    // }
+    //
+    // lensedImages.plus.pos = {x: plusLensedImageR * cosPhi, y: plusLensedImageR * sinPhi};
+    // lensedImages.minus.pos = {x: Math.abs(minusLensedImageR * cosPhi), y: Math.abs(minusLensedImageR * sinPhi)};
+    //
+    //
+    // // if the x coordinate for the plus and minus images have the same sign,
+    // // give the minus image x the opposite sign
+    // if (lensedImages.plus.pos.x * lensedImages.minus.pos.x > 0)
+    //   lensedImages.minus.pos.x *= -1;
+    //
+    // // if the y coordinate for the plus and minus images have the same sign,
+    // // give the minus image y the opposite sign
+    // if (lensedImages.plus.pos.y * lensedImages.minus.pos.y > 0)
+    //   lensedImages.minus.pos.y *= -1;
+
+    lensedImages.plus.pixelPos = {x: thetaXtoPixel(lensedImages.plus.pos.x),
+                                  y: thetaYtoPixel(lensedImages.plus.pos.y)};
+    lensedImages.minus.pixelPos = {x: thetaXtoPixel(lensedImages.minus.pos.x),
+                                   y: thetaYtoPixel(lensedImages.minus.pos.y)};
+
   }
 
   function updateGridRange(xStep, yStep, centerXgridOnZero=centerXgridOnZeroFlag,
@@ -526,6 +577,33 @@ var PSPL_microlensing_event_lens_plane = (function() {
       context.stroke();
     }
 
+    function drawLensedImages() {
+      console.log("Lensed image mas position (plus): " + String(lensedImages.plus.pos.x) + ", " + String(lensedImages.plus.pos.y));
+      console.log("Lensed image mas position (minus): " + String(lensedImages.minus.pos.x) + ", " + String(lensedImages.minus.pos.y));
+
+      // console.log("Lensed image pixel position (plus): " + String(lensedImages.plus.pixelPos.x) + ", " + String(lensedImages.plus.pixelPos.y));
+      // console.log("Lensed image pixel position (minus): " + String(lensedImages.minus.pixelPos.x) + ", " + String(lensedImages.minus.pixelPos.y));
+
+      var lensedImageRadius = 2;
+      var lensedImageColor = "purple";
+      var lensedImageLineWidth = 2;
+      var lensedImageOutlineColor = "purple";
+
+      context.fillStyle = lensedImageColor;
+      context.lineWidth = lensedImageLineWidth;
+      context.strokeStyle = lensedImageOutlineColor;
+
+      context.beginPath();
+      context.arc(lensedImages.plus.pixelPos.x, lensedImages.plus.pixelPos.y, lensedImageRadius, 0, 2*Math.PI, false);
+      context.fill();
+      context.stroke();
+
+      context.beginPath();
+      context.arc(lensedImages.minus.pixelPos.x, lensedImages.minus.pixelPos.y, lensedImageRadius, 0, 2*Math.PI, false);
+      context.fill();
+      context.stroke();
+    }
+
     clearPic();
     drawBackgrounds();
     drawBorder();
@@ -534,9 +612,10 @@ var PSPL_microlensing_event_lens_plane = (function() {
     toggleClippingRegion(turnOn=true);
     drawLens();
     drawRing();
-    drawSource();
     drawSourcePath();
+    drawSource();
     drawUarrow();
+    drawLensedImages();
     toggleClippingRegion(turnOn=false);
   }
 

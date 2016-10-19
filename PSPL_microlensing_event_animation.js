@@ -4,7 +4,7 @@ var PSPL_microlensing_event_animation = (function() {
   var eventModule = PSPL_microlensing_event;
   var lensPlaneModule = PSPL_microlensing_event_lens_plane;
 
-  var fps = 1000;
+  var fps = 60; // frames rendered per second (ideally; runs slow in non-Chrome browsers now)
 
   var time;
   var timer;
@@ -12,9 +12,9 @@ var PSPL_microlensing_event_animation = (function() {
 
   var minTime;
   var maxTime;
-  var dt = eventModule.dt;
-  var playbackStepSize = 0.1; // step size for "stepBack" and "stepForward" playback commands
-  console.log(minTime + " " + dt + " " + maxTime);
+  var animationStep = 0.1; // (days) time step per frame of animation
+  var playbackControlStep = 0.1; // (days) time step for "stepBack" and "stepForward" playback commands
+  console.log(minTime + " " + animationStep + " " + maxTime);
 
   var timeReadout = document.getElementById("timeReadout");
   var stepBackButton = document.getElementById("stepBack");
@@ -49,7 +49,7 @@ var PSPL_microlensing_event_animation = (function() {
   function run() {
     if (running === true) {
       timer = window.setTimeout(run, 1000/fps);
-      updateTime(time+dt);
+      updateTime(time+animationStep);
       animateFrame();
     }
   }
@@ -123,15 +123,17 @@ var PSPL_microlensing_event_animation = (function() {
     if (command === "stepBack") {
       console.log("step back");
       if (time > minTime) {
-        updateTime(time - playbackStepSize);
+        updateTime(time - playbackControlStep);
         if (updateFrame === true)
           animateFrame();
       }
     }
     else if (command === "play") {
       console.log("play");
-      if (time > maxTime) {
+      console.log(time);
+      if (time >= maxTime || almostEquals(time, maxTime) === true) {
         updatePlayback("timeReset");
+        console.log("At or past max time, resetting");
       }
       running = true;
       run();
@@ -142,7 +144,7 @@ var PSPL_microlensing_event_animation = (function() {
     }
     else if (command === "stepForward") {
       console.log("step forward");
-      updateTime(time + playbackStepSize);
+      updateTime(time + playbackControlStep);
       if (updateFrame === true)
         animateFrame();
     }
