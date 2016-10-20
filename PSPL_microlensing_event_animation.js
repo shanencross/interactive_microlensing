@@ -91,9 +91,8 @@ var PSPL_microlensing_event_animation = (function() {
     console.log("debugging magnif: " + String(magnif));
   }
 
-
-
   function animateFrameSource() {
+    // update source thetaX position for new time
     lensPlaneModule.sourcePos.x = lensPlaneModule.getThetaX(time);
     lensPlaneModule.redraw();
   }

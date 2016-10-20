@@ -65,7 +65,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
   var dashedPathSpacing = 10
 
   var sourceColor = "teal";
-  var sourceRadius = 2;
+  var sourceRadius = 4;
   var sourceOutlineWidth = 2;
   var sourceOutlineColor = sourceColor;
 
@@ -82,6 +82,13 @@ var PSPL_microlensing_event_lens_plane = (function() {
 
   var gridColor = "grey";
   var gridWidth = 1;
+
+  var lensedImageRadius = 2;
+  var lensedImageLineWidth = 2;
+  var lensedImagePlusColor = "purple";
+  var lensedImagePlusOutlineColor = "purple";
+  var lensedImageMinusColor = "olive";
+  var lensedImageMinusOutlineColor = "olive";
 
   //base variables (tick labels)
   var tickLabelFont = "8pt Arial";
@@ -140,7 +147,6 @@ var PSPL_microlensing_event_lens_plane = (function() {
   context = canvas.getContext("2d");
   thetaXreadout = document.getElementById("thetaXreadout"); // readout of current source thetaX position
                                                             // mainly for debugging, but may keep
-
 
   // debug flags
   var animationFlag = true;
@@ -228,7 +234,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
     lensPixelPos = {x:thetaXtoPixel(lensPos.x), y: thetaYtoPixel(lensPos.y)};
 
     // lensed image positions;
-    updateLensedImages(); // debug test values
+    lensedImages = getLensedImages(sourcePos);
   }
 
   function thetaXtoPixel(xPicThetaX) {
@@ -255,56 +261,33 @@ var PSPL_microlensing_event_lens_plane = (function() {
     return thetaX;
   }
 
-  function updateLensedImages() {
+  function getLensedImages(thetaPos=sourcePos) {
     var thetaE_mas = eventModule.thetaE_mas;
     // var u0 = eventModule.u0;
 
-    lensedImages = {plus: {pos: undefined, pixelPos: undefined},
-                    minus: {pos: undefined, pixelPos: undefined}};
+    var images = {plus: {pos: undefined, pixelPos: undefined},
+                  minus: {pos: undefined, pixelPos: undefined}};
 
-    var u = Math.sqrt(sourcePos.x*sourcePos.x + sourcePos.y*sourcePos.y) / thetaE_mas;
+    var u = Math.sqrt(thetaPos.x*thetaPos.x + thetaPos.y*thetaPos.y) / thetaE_mas;
     var plusLensedImageR = ( ( u + Math.sqrt(u*u + 4) ) / 2 ) * thetaE_mas;
+    console.log("Lensed images: " + String(Math.sqrt(thetaPos.x*thetaPos.y + thetaPos.y*thetaPos.y) / thetaE_mas));
+    console.log("lensed x: " + String(thetaPos.x));
+    console.log("lensed y: " + String(thetaPos.y));
+    console.log("lensed thetaE_mas: " + String(thetaE_mas));
     var minusLensedImageR = Math.abs( ( u - Math.sqrt(u*u + 4) ) / 2 ) * thetaE_mas;
 
-    var sourcePosR = Math.sqrt(sourcePos.y*sourcePos.y + sourcePos.x*sourcePos.x);
-    var thetaY_sign = sourcePos.y/Math.abs(sourcePos.y);
-    var phi = Math.acos(sourcePos.x/sourcePosR) * thetaY_sign;
+    var thetaR = Math.sqrt(thetaPos.y*thetaPos.y + thetaPos.x*thetaPos.x);
+    var thetaYsign = thetaPos.y/Math.abs(thetaPos.y);
+    var phi = Math.acos(thetaPos.x/thetaR) * thetaYsign;
 
-    lensedImages.plus.pos = {x: plusLensedImageR * Math.cos(phi), y: plusLensedImageR * Math.sin(phi)};
-    lensedImages.minus.pos = {x: minusLensedImageR * Math.cos(Math.PI + phi), y: minusLensedImageR * Math.sin(Math.PI + phi)};
+    images.plus.pos = {x: plusLensedImageR * Math.cos(phi), y: plusLensedImageR * Math.sin(phi)};
+    images.minus.pos = {x: minusLensedImageR * Math.cos(Math.PI + phi), y: minusLensedImageR * Math.sin(Math.PI + phi)};
 
-
-
-    console.log(`plusLensedImageR / thetaE_mas = ${plusLensedImageR / thetaE_mas}`);
-    console.log(`minusLensedImageR / thetaE_mas = ${minusLensedImageR / thetaE_mas}`);
-
-    // var sinPhi = u0 / u;
-    // var cosPhi = Math.sqrt(1 - sinPhi*sinPhi);
-    //
-    // if (sourcePos.x < 0) {
-    //   // sinPhi *= -1;
-    //   cosPhi *= -1;
-    // }
-    //
-    // lensedImages.plus.pos = {x: plusLensedImageR * cosPhi, y: plusLensedImageR * sinPhi};
-    // lensedImages.minus.pos = {x: Math.abs(minusLensedImageR * cosPhi), y: Math.abs(minusLensedImageR * sinPhi)};
-    //
-    //
-    // // if the x coordinate for the plus and minus images have the same sign,
-    // // give the minus image x the opposite sign
-    // if (lensedImages.plus.pos.x * lensedImages.minus.pos.x > 0)
-    //   lensedImages.minus.pos.x *= -1;
-    //
-    // // if the y coordinate for the plus and minus images have the same sign,
-    // // give the minus image y the opposite sign
-    // if (lensedImages.plus.pos.y * lensedImages.minus.pos.y > 0)
-    //   lensedImages.minus.pos.y *= -1;
-
-    lensedImages.plus.pixelPos = {x: thetaXtoPixel(lensedImages.plus.pos.x),
-                                  y: thetaYtoPixel(lensedImages.plus.pos.y)};
-    lensedImages.minus.pixelPos = {x: thetaXtoPixel(lensedImages.minus.pos.x),
-                                   y: thetaYtoPixel(lensedImages.minus.pos.y)};
-
+    images.plus.pixelPos = {x: thetaXtoPixel(images.plus.pos.x),
+                                  y: thetaYtoPixel(images.plus.pos.y)};
+    images.minus.pixelPos = {x: thetaXtoPixel(images.minus.pos.x),
+                                   y: thetaYtoPixel(images.minus.pos.y)};
+    return images;
   }
 
   function updateGridRange(xStep, yStep, centerXgridOnZero=centerXgridOnZeroFlag,
@@ -591,20 +574,12 @@ var PSPL_microlensing_event_lens_plane = (function() {
       context.stroke();
     }
 
-    function drawLensedImages() {
+    function drawPointLensedImages() {
       console.log("Lensed image mas position (plus): " + String(lensedImages.plus.pos.x) + ", " + String(lensedImages.plus.pos.y));
       console.log("Lensed image mas position (minus): " + String(lensedImages.minus.pos.x) + ", " + String(lensedImages.minus.pos.y));
 
       // console.log("Lensed image pixel position (plus): " + String(lensedImages.plus.pixelPos.x) + ", " + String(lensedImages.plus.pixelPos.y));
       // console.log("Lensed image pixel position (minus): " + String(lensedImages.minus.pixelPos.x) + ", " + String(lensedImages.minus.pixelPos.y));
-
-      var lensedImageRadius = 2;
-      var lensedImageLineWidth = 2;
-      var lensedImagePlusColor = "purple";
-      var lensedImagePlusOutlineColor = "purple";
-
-      var lensedImageMinusColor = "olive";
-      var lensedImageMinusOutlineColor = "olive";
 
       context.lineWidth = lensedImageLineWidth;
       context.fillStyle = lensedImagePlusColor;
@@ -623,6 +598,17 @@ var PSPL_microlensing_event_lens_plane = (function() {
       context.stroke();
     }
 
+    function drawFullLensedImages() {
+
+      context.lineWidth = lensedImageLineWidth;
+      context.fillStyle = "fuchsia";
+      context.strokeStyle = "fuchsia";
+      context.beginPath();
+      context.arc(lensedImages.plus.pixelPos.x+4, lensedImages.plus.pixelPos.y, lensedImageRadius, 0, 2*Math.PI, false);
+      context.fill();
+      context.stroke();
+    }
+
     clearPic();
     drawBackgrounds();
     drawBorder();
@@ -633,7 +619,8 @@ var PSPL_microlensing_event_lens_plane = (function() {
     drawSourcePath();
     drawSource();
     drawUarrow();
-    drawLensedImages();
+    drawPointLensedImages();
+    // drawFullLensedImages();
     drawLens();
     toggleClippingRegion(turnOn=false);
   }
