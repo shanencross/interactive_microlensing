@@ -613,7 +613,6 @@ var PSPL_microlensing_event_lens_plane = (function() {
     drawBackgrounds();
     drawBorder();
     drawGridlinesAndTicks();
-    drawAxes();
     toggleClippingRegion(turnOn=true);
     drawRing();
     drawSourcePath();
@@ -623,6 +622,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
     // drawFullLensedImages();
     drawLens();
     toggleClippingRegion(turnOn=false);
+    drawAxes();
   }
 
   // executing script initialization

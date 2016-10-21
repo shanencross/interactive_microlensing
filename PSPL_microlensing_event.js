@@ -735,21 +735,22 @@ var PSPL_microlensing_event = (function() {
     context.strokeStyle = graphBorderColor;
     context.lineWidth = graphBorderWidth;
     context.strokeRect(graphLeftBorder, graphTopBorder, graphWidth, graphHeight);
-
-    drawAxes();
-    drawAxisLabels();
   }
 
   function plotLightcurve(tDayFinal=xAxisFinalDay, inputData, fromEquation=fromEquationDefault) {
     // Draw plot background, as well as both complete (dashed) lightcurve and
     // partial (solid) lightcurve up to a given time
 
-    // draw plot with axes, etc.
+    // draw plot with gridlines, etc. (no axes or axis labels yet).
     initPlot();
     // draw complete lightcurve across entire time axis as dashed line
     plotLightcurveAlone(xAxisFinalDay, inputData, fromEquation, dashedCurve=true);
     // draw lightcurve up to the time argument as solid line
     plotLightcurveAlone(tDayFinal, inputData, fromEquation, dashedCurve=false);
+    // draw axes and their labels;
+    // goes last because axes are IN FRONT of lightcurve
+    drawAxes();
+    drawAxisLabels();
   }
 
   function plotLightcurveAlone(tDayFinal=xAxisFinalDay, inputData, fromEquation=fromEquationDefault, dashedCurve=false) {
