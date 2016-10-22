@@ -85,8 +85,8 @@ var PSPL_microlensing_event_lens_plane = (function() {
 
   var lensedImageRadius = 2;
   var lensedImageLineWidth = 2;
-  var lensedImagePlusColor = "purple";
-  var lensedImagePlusOutlineColor = "purple";
+  var lensedImagePlusColor = "navy";
+  var lensedImagePlusOutlineColor = "navy";
   var lensedImageMinusColor = "olive";
   var lensedImageMinusOutlineColor = "olive";
 
@@ -138,17 +138,25 @@ var PSPL_microlensing_event_lens_plane = (function() {
   var sourcePos; // x value: time (days); y value: thetaY
   var sourcePixelPos; // pixel x and y values
   var lensPixelPos;
-  var ringRadiusX;
-  var ringRadiusY;
+  var ringRadius = {x: undefined, y: undefined}
   var lensedImages;
   var sourceOutline;
   var lensedImageOutlines;
 
   //sort of derived variables? but not really? (canvas/context)
-  canvas = document.getElementById("lensPlaneCanvas")
-  context = canvas.getContext("2d");
-  thetaXreadout = document.getElementById("thetaXreadout"); // readout of current source thetaX position
-                                                            // mainly for debugging, but may keep
+  var canvas = document.getElementById("lensPlaneCanvas")
+  var context = canvas.getContext("2d");
+  var thetaXreadout = document.getElementById("thetaXreadout"); // readout of current source thetaX position
+                                                                // mainly for debugging, but may keep
+  var imageShapeCheckbox = document.getElementById("imageShapeCheckbox");
+
+  // if on, display shapes for the lensed images, not just points;
+  // toggled by checkbox
+  var displayImageShapeFlag = true;
+
+  var fractionDefault = 15; // number of points into which source outline is divided
+                           // i.e. a value of 8 would divide the outline into 8
+                           // evenly spaced points
 
   // debug flags
   var animationFlag = true;
@@ -170,9 +178,15 @@ var PSPL_microlensing_event_lens_plane = (function() {
   // because we NEED parameters intialized first to do drawing and scaling
 
   function init(animation=animationFlag, debug=debugFlag) {
+    initListeners();
     updateScaleAndRangeValues();
     initSourcePos();
     redraw();
+  }
+
+  function initListeners() {
+   imageShapeCheckbox.addEventListener("change", function() { displayImageShapeFlag = !displayImageShapeFlag;
+                                                          console.log(`displayImageShapeFlag: ${displayImageShapeFlag}`); }, false);
   }
 
   function initSourcePos(animation=animationFlag, debug=debugFlag) {
@@ -230,8 +244,8 @@ var PSPL_microlensing_event_lens_plane = (function() {
 
     // convert position to pixel units
     sourcePixelPos = {x: thetaXtoPixel(sourcePos.x), y: thetaYtoPixel(sourcePos.y)};
-    ringRadiusX = eventModule.thetaE_mas * xPixelScale;
-    ringRadiusY = eventModule.thetaE_mas * yPixelScale;
+    ringRadius.x = eventModule.thetaE_mas * xPixelScale;
+    ringRadius.y = eventModule.thetaE_mas * yPixelScale;
 
     // lens pixel position
     lensPixelPos = {x:thetaXtoPixel(lensPos.x), y: thetaYtoPixel(lensPos.y)};
@@ -271,7 +285,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
     return thetaX;
   }
 
-  function getCircleOutline(radiusPixels=sourceRadius, thetaPos=sourcePos, fraction=8) {
+  function getCircleOutline(radiusPixels=sourceRadius, thetaPos=sourcePos, fraction=fractionDefault) {
     // get points (in mas units) for outline of a circle, given its pixel radius
     // and theta position; defaults to getting source outline
 
@@ -314,8 +328,8 @@ var PSPL_microlensing_event_lens_plane = (function() {
     var thetaYsign = thetaPos.y/Math.abs(thetaPos.y);
     var phi = Math.acos(thetaPos.x/thetaR) * thetaYsign;
 
-    images.plus.pos = {x: plusLensedImageR * Math.cos(phi), y: plusLensedImageR * Math.sin(phi)};
-    images.minus.pos = {x: minusLensedImageR * Math.cos(Math.PI + phi), y: minusLensedImageR * Math.sin(Math.PI + phi)};
+    images.plus.pos = {x: lensPos.x + plusLensedImageR * Math.cos(phi), y: lensPos.y + plusLensedImageR * Math.sin(phi)};
+    images.minus.pos = {x: lensPos.x + minusLensedImageR * Math.cos(Math.PI + phi), y: lensPos.y + minusLensedImageR * Math.sin(Math.PI + phi)};
 
     images.plus.pixelPos = {x: thetaXtoPixel(images.plus.pos.x),
                                   y: thetaYtoPixel(images.plus.pos.y)};
@@ -439,9 +453,9 @@ var PSPL_microlensing_event_lens_plane = (function() {
       context.beginPath();
       // ellipse not compatible with firefox
       if (firefoxCompatibility === true)
-        context.arc(centerX, centerY, ringRadiusX, 0, 2*Math.PI, false);
+        context.arc(centerX, centerY, ringRadius.x, 0, 2*Math.PI, false);
       else
-        context.ellipse(lensPixelPos.x, lensPixelPos.y, ringRadiusX, ringRadiusY, 0, 0, 2*Math.PI)
+        context.ellipse(lensPixelPos.x, lensPixelPos.y, ringRadius.x, ringRadius.y, 0, 0, 2*Math.PI)
       context.strokeStyle = ringColor;
       context.lineWidth = ringWidth;
       context.setLineDash([dashedRingLength, dashedRingSpacing]); // turn on dashed lines
@@ -451,13 +465,25 @@ var PSPL_microlensing_event_lens_plane = (function() {
 
     // use this for when implementing animation;
     // for now, should be at end of path, if we bother placing it
-    function drawSource() {
-      context.beginPath();
-      context.arc(sourcePixelPos.x, sourcePixelPos.y, sourceRadius, 0, 2*Math.PI, false);
-      context.fillStyle = sourceColor;
-      context.fill();
+    function drawSource(useOutline=false) {
+      // set aesthetics
       context.lineWidth = sourceOutlineWidth;
       context.strokeStyle = sourceOutlineColor;
+      context.fillStyle = sourceColor;
+
+      // draw source
+      context.beginPath();
+      if (useOutline === true) {
+        context.moveTo(thetaXtoPixel(sourceOutline[0].x), thetaYtoPixel(sourceOutline[0].y));
+        for (var i=1; i<sourceOutline.length; i++) {
+          context.lineTo(thetaXtoPixel(sourceOutline[i].x), thetaYtoPixel(sourceOutline[i].y));
+        }
+      }
+
+      else {
+        context.arc(sourcePixelPos.x, sourcePixelPos.y, sourceRadius, 0, 2*Math.PI, false);
+        context.fill();
+      }
       context.stroke();
     }
 
@@ -643,43 +669,55 @@ var PSPL_microlensing_event_lens_plane = (function() {
       context.stroke();
     }
 
-    function drawFullLensedImages() {
+    function drawFullLensedImage(sign="plus") {
+      // draw either a plus or minus lensed image
 
-      console.log("draw fulllensedimages");
-
-      // set aesthetics
-      context.lineWidth = lensedImageLineWidth;
-      context.strokeStyle = "fuchsia";
-      context.fillStyle = "navy";
-
-      // draw "+" lensed image
-      context.beginPath();
-      // draw line through each point in outline array
-      context.moveTo(lensedImageOutlines.plus[0].pixelPos.x,
-                     lensedImageOutlines.plus[0].pixelPos.y)
-      for (var index=1; index<lensedImageOutlines.plus.length; index++) {
-        var plusPointPixelPos = lensedImageOutlines.plus[index].pixelPos;
-        context.lineTo(plusPointPixelPos.x, plusPointPixelPos.y);
+      // set aesthetics and select plus or minus outlines object
+      if (sign === "plus") {
+        context.strokeStyle = "fuchsia";
+        context.fillStyle = "purple";
+        var outlines = lensedImageOutlines.plus;
       }
-      context.closePath();
-      context.fill();
-      context.stroke();
-
+      else if (sign=== "minus") {
       context.strokeStyle = "lime";
-      context.fillStyle = "aqua";
+      context.fillStyle = "green";
+      var outlines = lensedImageOutlines.minus;
+      }
+      else {
+        console.log(`sign ${sign} is in valid. Must be "plus" or "minus"`)
+        return;
+      }
 
-      // draw "-" lensed image
-      context.beginPath();
+      context.lineWidth = lensedImageLineWidth;
+
       // draw line through each point in outline array
-      context.moveTo(lensedImageOutlines.minus[0].pixelPos.x,
-                     lensedImageOutlines.minus[0].pixelPos.y);
-      for (var index=1; index<lensedImageOutlines.minus.length; index++) {
-        var minusPointPixelPos = lensedImageOutlines.minus[index].pixelPos;
-        context.lineTo(minusPointPixelPos.x, minusPointPixelPos.y);
+      context.beginPath();
+      context.moveTo(outlines[0].pixelPos.x,
+                     outlines[0].pixelPos.y)
+
+      var debug = false; // debug flag testing something
+      for (var index=1; index<outlines.length; index++) {
+        var pixelPos = outlines[index].pixelPos;
+
+        var lensDistX = pixelPos.x - thetaXtoPixel(lensPos.x);
+        var lensDistY = pixelPos.y - thetaYtoPixel(lensPos.y);
+        var lensDistR = Math.sqrt(lensDistX*lensDistX + lensDistY*lensDistY);
+
+        // assumes ring x radius and y radius are equal
+        if (lensDistR > ringRadius.x || debug===false) {
+          context.lineTo(pixelPos.x, pixelPos.y);
+        }
       }
       context.closePath();
       context.fill();
       context.stroke();
+    }
+
+    function drawFullLensedImages() {
+      // draw both plus and minus lensed images
+      console.log("draw full lensed images");
+      drawFullLensedImage("plus"); // draw plus image
+      drawFullLensedImage("minus"); // draw minus image
     }
 
     clearPic();
@@ -689,9 +727,10 @@ var PSPL_microlensing_event_lens_plane = (function() {
     toggleClippingRegion(turnOn=true);
     drawRing();
     drawSourcePath();
-    drawSource();
+    drawSource(useOutline=false);
     drawUarrow();
-    drawFullLensedImages();
+    if (displayImageShapeFlag === true)
+      drawFullLensedImages();
     drawPointLensedImages();
     drawLens();
     toggleClippingRegion(turnOn=false);
