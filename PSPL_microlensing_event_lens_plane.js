@@ -154,7 +154,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
   // toggled by checkbox
   var displayImageShapeFlag = true;
 
-  var fractionDefault = 15; // number of points into which source outline is divided
+  var fractionDefault = 5; // number of points into which source outline is divided
                            // i.e. a value of 8 would divide the outline into 8
                            // evenly spaced points
 
@@ -254,10 +254,16 @@ var PSPL_microlensing_event_lens_plane = (function() {
     lensedImages = getLensedImages(sourcePos);
 
     // lensed image outlines;
-    // NOTE: This hammers the the performance signifcantly right now
+    // NOTE: This hammers the the dperformance signifcantly right now
     if (drawFullLensedImagesFlag === true) {
       sourceOutline = getCircleOutline(radiusPixels=sourceRadius, thetaPos=sourcePos);
       lensedImageOutlines = getLensedImageOutlines(sourceOutline);
+      if (lensedImageOutlines.plus.length === sourceOutline.length) {
+        console.log(`lensedImageOutlines plus length !== sourceOutline length: ${lensedImageOutlines.plus.length} !== ${sourceOutline.length}`);
+        for (i in lensedImageOutlines.plus) {
+          console.log(`lensedImageOutlines plus: (${lensedImageOutlines.plus[i].pos.x}, ${lensedImageOutlines.plus[i].pos.y})`);
+        }
+      }
     }
   }
 
@@ -289,12 +295,17 @@ var PSPL_microlensing_event_lens_plane = (function() {
     // get points (in mas units) for outline of a circle, given its pixel radius
     // and theta position; defaults to getting source outline
 
+    // NOTE: Hacky -- fix
+    function almostEquals(a, b, epsilon=1e-12) {
+      return (Math.abs(a - b) < epsilon);
+    }
+
     // NOTE: Assumes xPixelScale = yPixelScale, or if not prioritizes xPixelScale;
     // should probably have some kind of check on this
     var radius_mas = radiusPixels / xPixelScale;
 
     var outline = [];
-    for (var radians=0; radians<2*Math.PI; radians += 2*Math.PI/fraction) {
+    for (var radians=0; (radians<2*Math.PI && almostEquals(radians, 2*Math.PI) === false); radians += 2*Math.PI/fraction) {
       var xOffset = radius_mas * Math.cos(radians);
       var yOffset = radius_mas * Math.sin(radians);
 
@@ -318,15 +329,17 @@ var PSPL_microlensing_event_lens_plane = (function() {
 
     var u = Math.sqrt(thetaPos.x*thetaPos.x + thetaPos.y*thetaPos.y) / thetaE_mas;
     var plusLensedImageR = ( ( u + Math.sqrt(u*u + 4) ) / 2 ) * thetaE_mas;
-    console.log("Lensed images: " + String(Math.sqrt(thetaPos.x*thetaPos.y + thetaPos.y*thetaPos.y) / thetaE_mas));
+    console.log("Lensed images: " + String(u));
     console.log("lensed x: " + String(thetaPos.x));
     console.log("lensed y: " + String(thetaPos.y));
     console.log("lensed thetaE_mas: " + String(thetaE_mas));
     var minusLensedImageR = Math.abs( ( u - Math.sqrt(u*u + 4) ) / 2 ) * thetaE_mas;
+    console.log("minusLensedImageR: " + String(minusLensedImageR));
 
     var thetaR = Math.sqrt(thetaPos.y*thetaPos.y + thetaPos.x*thetaPos.x);
     var thetaYsign = thetaPos.y/Math.abs(thetaPos.y);
     var phi = Math.acos(thetaPos.x/thetaR) * thetaYsign;
+    console.log("phi: " + String(phi));
 
     images.plus.pos = {x: lensPos.x + plusLensedImageR * Math.cos(phi), y: lensPos.y + plusLensedImageR * Math.sin(phi)};
     images.minus.pos = {x: lensPos.x + minusLensedImageR * Math.cos(Math.PI + phi), y: lensPos.y + minusLensedImageR * Math.sin(Math.PI + phi)};
@@ -335,6 +348,15 @@ var PSPL_microlensing_event_lens_plane = (function() {
                                   y: thetaYtoPixel(images.plus.pos.y)};
     images.minus.pixelPos = {x: thetaXtoPixel(images.minus.pos.x),
                                    y: thetaYtoPixel(images.minus.pos.y)};
+
+    console.log(`DebugImages: (thetaPos.x, thetaPos.y): (${thetaPos.x}, ${thetaPos.y})`);
+    console.log(`DebugImages: (lensPos.x, lensPos.y): (${lensPos.x}, ${lensPos.y})`);
+
+    if (Number(thetaPos.x) >= Number(lensPos.x)) {
+      console.log("DebugImages: Point at lens position");
+      console.log("DebugImages: images.plus.pixelPos.x: " + String(images.plus.pixelPos.x));
+      console.log("DebugImages: images.plus.pixelPos.y: " + String(images.plus.pixelPos.y));
+    }
     return images;
   }
 
@@ -678,7 +700,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
         context.fillStyle = "purple";
         var outlines = lensedImageOutlines.plus;
       }
-      else if (sign=== "minus") {
+      else if (sign === "minus") {
       context.strokeStyle = "lime";
       context.fillStyle = "green";
       var outlines = lensedImageOutlines.minus;
@@ -691,12 +713,13 @@ var PSPL_microlensing_event_lens_plane = (function() {
       context.lineWidth = lensedImageLineWidth;
 
       // draw line through each point in outline array
-      context.beginPath();
-      context.moveTo(outlines[0].pixelPos.x,
-                     outlines[0].pixelPos.y)
+      // context.beginPath();
+      context.moveTo(outlines[outlines.length-1].pixelPos.x,
+                     outlines[outlines.length-1].pixelPos.y)
 
       var debug = false; // debug flag testing something
-      for (var index=1; index<outlines.length; index++) {
+      for (var index=0; index<outlines.length; index++) {
+        context.beginPath(); // debug
         var pixelPos = outlines[index].pixelPos;
 
         var lensDistX = pixelPos.x - thetaXtoPixel(lensPos.x);
@@ -705,12 +728,14 @@ var PSPL_microlensing_event_lens_plane = (function() {
 
         // assumes ring x radius and y radius are equal
         if (lensDistR > ringRadius.x || debug===false) {
-          context.lineTo(pixelPos.x, pixelPos.y);
+          // context.lineTo(pixelPos.x, pixelPos.y);
+          context.arc(pixelPos.x, pixelPos.y, 2, 0, 2*Math.PI);
+          context.fill(); // debug
         }
       }
-      context.closePath();
-      context.fill();
-      context.stroke();
+      // context.closePath();
+      // context.fill();
+      // context.stroke();
     }
 
     function drawFullLensedImages() {
