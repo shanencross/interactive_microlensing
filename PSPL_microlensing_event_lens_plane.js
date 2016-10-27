@@ -319,20 +319,26 @@ var PSPL_microlensing_event_lens_plane = (function() {
     return (Math.abs(a - b) < epsilon);
   }
 
-  function getCircleOutline(radius=sourceRadius, thetaPos=sourcePos, fraction=fractionDefault) {
+  function getCircleOutline(radius=sourceRadius, thetaPos=sourcePos, fraction=fractionDefault,
+                            initialAngle, finalAngle) {
     // get points (in mas units) for outline of a circle, given its pixel radius
     // and theta position; defaults to getting source outline
-
 
     // NOTE: Assumes xPixelScale = yPixelScale, or if not prioritizes xPixelScale;
     // should probably have some kind of check on this
     // var radius_mas = radiusPixels / xPixelScale;
 
+    if (initialAngle === undefined)
+      initialAngle = 0;
+
+    if (finalAngle === undefined)
+      finalAngle = 2*Math.PI;
+
     var radius_mas = radius;
     console.log(`ro: ${radius_mas}`);
 
     var outline = [];
-    for (var radians=0; (radians<2*Math.PI && almostEquals(radians, 2*Math.PI) === false); radians += 2*Math.PI/fraction) {
+    for (var radians=initialAngle; (radians<finalAngle && almostEquals(radians, finalAngle) === false); radians += finalAngle/fraction) {
       var xOffset = radius_mas * Math.cos(radians);
       var yOffset = radius_mas * Math.sin(radians);
 
@@ -381,7 +387,8 @@ var PSPL_microlensing_event_lens_plane = (function() {
     return images;
   }
 
-  function getLensedImageOutlines(sourceOutline, checkLensOverlapPoints=false) {
+  function getLensedImageOutlines(sourceOutline, checkLensOverlapPoints=false,
+                                  fraction=fractionDefault) {
     var outlines = {plus: [], minus: []};
 
     if (checkLensOverlapPoints === true) {
@@ -391,14 +398,40 @@ var PSPL_microlensing_event_lens_plane = (function() {
         var deltaX = sourcePoint.x - lensPos.x;
         var deltaY = sourcePoint.y - lensPos.y;
         var distR = Math.sqrt(deltaX*deltaX + deltaY*deltaY);
-        if (almostEquals(distR, 0, epsilon=1/xPixelScale) === false) {
+        if (almostEquals(distR, 0, epsilon=5/xPixelScale) === true && index > 0) {
+          var prevSourcePoint = sourceOutline[index-1];
+          var prevPhi = Math.atan(prevSourcePoint.y/prevSourcePoint.x);
+          var phi = Math.atan(sourcePoint.y/sourcePoint.x);
+
+          // top-left or bottom-left quadrant
+          if (prevSourcePoint.x < 0)
+            prevPhi += Math.PI;
+          if (sourcePoint.x < 0)
+            phi += Math.PI;
+
+          // bottom-right quadrant
+          if (prevSourcePoint.x > 0 && prevSourcePoint.y < 0 )
+            prevPhi += 2*Math.PI;
+          if (sourcePoint.x > 0 && sourcePoint.y < 0)
+            phi += 2*Math.PI;
+
+          var theta = Math.atan(sourcePoint.y/sourcePoint.x)
+          var subSourceOutline = getCircleOutline(sourceRadius, sourcePoint, fraction, prevPhi, phi);
+          // if (subSourceOutline.length > 0)
+          //   window.alert(subSourceOutline.length);
+          for (subIndex in subSourceOutline) {
+            // window.alert("I'm here 1");
+            var subSourcePoint = subSourceOutline[subIndex];
+            // window.alert("I'm here 2");
+            var subImages = getLensedImages(subSourcePoint);
+            outlines.plus.push(subImages.plus);
+            outlines.minus.push(subImages.minus);
+          }
+        }
+        else {
           var images = getLensedImages(sourcePoint);
           outlines.plus.push(images.plus);
           outlines.minus.push(images.minus);
-        }
-        else {
-
-          // console.log("Lens/source overlap!");
         }
       }
     }
