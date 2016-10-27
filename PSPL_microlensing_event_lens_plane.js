@@ -65,7 +65,8 @@ var PSPL_microlensing_event_lens_plane = (function() {
   var dashedPathSpacing = 10
 
   var sourceColor = "teal";
-  var sourceRadius = 1/75 * 4; // mas; 1/75 (0.013333...) mas = 4 pixels
+  // initialized elsewhere in function
+  var sourceRadius;
   var sourceOutlineWidth = 2;
   var sourceOutlineColor = sourceColor;
 
@@ -149,6 +150,8 @@ var PSPL_microlensing_event_lens_plane = (function() {
   var thetaXreadout = document.getElementById("thetaXreadout"); // readout of current source thetaX position
                                                                 // mainly for debugging, but may keep
   var imageShapeCheckbox = document.getElementById("imageShapeCheckbox");
+  var rhoSlider = document.getElementById("rhoSlider");
+  var rhoReadout = document.getElementById("rhoReadout");
 
   // if on, display shapes for the lensed images, not just points;
   // toggled by checkbox
@@ -181,12 +184,31 @@ var PSPL_microlensing_event_lens_plane = (function() {
     initListeners();
     updateScaleAndRangeValues();
     initSourcePos();
+    initRho();
     redraw();
   }
 
   function initListeners() {
    imageShapeCheckbox.addEventListener("change", function() { displayImageShapeFlag = !displayImageShapeFlag;
                                                           console.log(`displayImageShapeFlag: ${displayImageShapeFlag}`); }, false);
+  rhoSlider.addEventListener("input", function() { updateRho(); }, false);
+  rhoSlider.addEventListener("change", function() { updateRho(); }, false);
+  }
+
+  function initRho() {
+    sourceRadius = 1/75 * 4;
+    updateRhoSlider();
+  }
+
+  function updateRhoSlider() {
+    rhoSlider.value = sourceRadius; // source radisu in mas
+    rhoReadout.innerHTML = Number(rhoSlider.value).toFixed(4);
+  }
+
+  function updateRho() {
+    sourceRadius = rhoSlider.value; // source radisu in mas
+    updateRhoSlider();
+    redraw();
   }
 
   function initSourcePos(animation=animationFlag, debug=debugFlag) {
@@ -899,5 +921,6 @@ var PSPL_microlensing_event_lens_plane = (function() {
     get xAxisInitialThetaX() { return xAxisInitialThetaX; },
     redraw: redraw,
     getThetaX: getThetaX,
+    initRho: initRho,
   };
 })();

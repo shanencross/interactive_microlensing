@@ -405,6 +405,7 @@ var PSPL_microlensing_event = (function() {
     updateSliders();
     plotLightcurve();
     if (typeof PSPL_microlensing_event_lens_plane !== undefined)
+      PSPL_microlensing_event_lens_plane.initRho(noRedraw=false);
       PSPL_microlensing_event_lens_plane.redraw();
   }
 
