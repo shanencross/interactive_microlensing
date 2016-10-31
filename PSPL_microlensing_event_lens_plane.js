@@ -157,7 +157,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
   // toggled by checkbox
   var displayImageShapeFlag = true;
 
-  var fractionDefault = 500; // number of points into which source outline is divided
+  var fractionDefault = 50; // number of points into which source outline is divided
                            // i.e. a value of 8 would divide the outline into 8
                            // evenly spaced points
 
@@ -175,6 +175,9 @@ var PSPL_microlensing_event_lens_plane = (function() {
   // replaces context.ellipse with context.arc since firefox doesn't support ellipse;
   // however, y-scaling of ring won't be correct if x/y aspect ratio is not square;
   var firefoxCompatibilityFlag = true;
+  // add more points to outline if source is close to lens
+  var lensProximityCheckFlag = true;
+  var clippingImageFlag = false;
 
   // called from PSPL_microlensing_event.js (or whichever script holds the parameter
   // values) after initializations and slider updates),
@@ -201,7 +204,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
   }
 
   function updateRhoSlider() {
-    rhoSlider.value = sourceRadius; // source radisu in mas
+    rhoSlider.value = sourceRadius; // source radius in mas
     rhoReadout.innerHTML = Number(rhoSlider.value).toFixed(4);
   }
 
@@ -279,7 +282,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
     // NOTE: This hammers the the dperformance signifcantly right now
     if (drawFullLensedImagesFlag === true) {
       sourceOutline = getCircleOutline(radius=sourceRadius, thetaPos=sourcePos);
-      lensedImageOutlines = getLensedImageOutlines(sourceOutline, checkLensOverlapPoints=true);
+      lensedImageOutlines = getLensedImageOutlines(sourceOutline, checkLensOverlapPoints=false);
       // if (lensedImageOutlines.plus.length === sourceOutline.length) {
       //   console.log(`lensedImageOutlines plus length !== sourceOutline length: ${lensedImageOutlines.plus.length} !== ${sourceOutline.length}`);
       //   for (i in lensedImageOutlines.plus) {
@@ -320,13 +323,9 @@ var PSPL_microlensing_event_lens_plane = (function() {
   }
 
   function getCircleOutline(radius=sourceRadius, thetaPos=sourcePos, fraction=fractionDefault,
-                            initialAngle, finalAngle) {
+                            initialAngle, finalAngle, recurring=false) {
     // get points (in mas units) for outline of a circle, given its pixel radius
     // and theta position; defaults to getting source outline
-
-    // NOTE: Assumes xPixelScale = yPixelScale, or if not prioritizes xPixelScale;
-    // should probably have some kind of check on this
-    // var radius_mas = radiusPixels / xPixelScale;
 
     if (initialAngle === undefined)
       initialAngle = 0;
@@ -334,23 +333,40 @@ var PSPL_microlensing_event_lens_plane = (function() {
     if (finalAngle === undefined)
       finalAngle = 2*Math.PI;
 
-    var radius_mas = radius;
-    console.log(`ro: ${radius_mas}`);
+    if (recurring === undefined)
+      recurring = false;
 
     var outline = [];
-    for (var radians=initialAngle; (radians<finalAngle && almostEquals(radians, finalAngle) === false); radians += finalAngle/fraction) {
-      var xOffset = radius_mas * Math.cos(radians);
-      var yOffset = radius_mas * Math.sin(radians);
+    var deltaRadians = (finalAngle - initialAngle)/fraction;
+    for (var radians=initialAngle; (radians<finalAngle && almostEquals(radians, finalAngle) === false); radians += deltaRadians) {
+      var xOffset = radius * Math.cos(radians);
+      var yOffset = radius * Math.sin(radians);
 
       var point = {x: thetaPos.x + xOffset, y: thetaPos.y + yOffset}
-      outline.push(point);
+
+      var deltaX = point.x - lensPos.x;
+      var deltaY = point.y - lensPos.y;
+      var distR = Math.sqrt(deltaX*deltaX + deltaY*deltaY);
+
+      if (almostEquals(distR, 0, epsilon=10/xPixelScale) === true && recurring === false && lensProximityCheckFlag===true) {
+        var nextRadians = radians + deltaRadians;
+        // var halfwayRadians = (radians + nextRadians)/2;
+        // var quarterRadians = (radians + halfwayRadians)/2;
+        // var threeQuartersRadian = (halfwayRadians + nextRadians)/2;
+        // var subOutline = getCircleOutline(radius, thetaPos, fraction, quarterRadian, threeQuartersRadian, true);
+        var subOutline = getCircleOutline(radius, thetaPos, fraction, radians, nextRadians, true);
+        outline = outline.concat(subOutline);
+      }
+      else { // not close enough to center, or on a recursion iteration, or lens proximity check flag is off
+        outline.push(point);
+      }
     }
 
-    console.log("outline:");
-    for (var index in outline) {
-      // console.log(`Outline point: (${outline[index].x}, ${outline[index].y})`)
-    }
     return outline;
+  }
+
+  function getNextOutlineAngle() {
+
   }
 
   function getLensedImages(thetaPos=sourcePos) {
@@ -360,28 +376,40 @@ var PSPL_microlensing_event_lens_plane = (function() {
     var images = {plus: {pos: undefined, pixelPos: undefined},
                   minus: {pos: undefined, pixelPos: undefined}};
 
-    var u = Math.sqrt(thetaPos.x*thetaPos.x + thetaPos.y*thetaPos.y) / thetaE_mas;
+    var thetaR = Math.sqrt(thetaPos.x*thetaPos.x + thetaPos.y*thetaPos.y);
+    var u = thetaR / thetaE_mas;
     var plusLensedImageR = ( ( u + Math.sqrt(u*u + 4) ) / 2 ) * thetaE_mas;
-    // console.log("Lensed images: " + String(u));
-    // console.log("lensed x: " + String(thetaPos.x));
-    // console.log("lensed y: " + String(thetaPos.y));
-    // console.log("lensed thetaE_mas: " + String(thetaE_mas));
     // var minusLensedImageR = Math.abs( ( u - Math.sqrt(u*u + 4) ) / 2 ) * thetaE_mas;
     var minusLensedImageR = 1/plusLensedImageR * thetaE_mas*thetaE_mas;
-    // console.log("minusLensedImageR: " + String(minusLensedImageR));
 
-    var thetaR = Math.sqrt(thetaPos.y*thetaPos.y + thetaPos.x*thetaPos.x);
-    var thetaYsign = thetaPos.y/Math.abs(thetaPos.y);
+
+    if (thetaPos.y >= 0)
+      var thetaYsign = 1;
+    else // thetaY is negative
+      var thetaYsign = -1;
+
     var phi = Math.acos(thetaPos.x/thetaR) * thetaYsign;
-    // console.log("phi: " + String(phi));
 
-    images.plus.pos = {x: lensPos.x + plusLensedImageR * Math.cos(phi), y: lensPos.y + plusLensedImageR * Math.sin(phi)};
-    images.minus.pos = {x: lensPos.x + minusLensedImageR * Math.cos(Math.PI + phi), y: lensPos.y + minusLensedImageR * Math.sin(Math.PI + phi)};
+    // var phi = Math.atan(thetaPos.y/thetaPos.x);
+    //
+    // // top-left or bottom-left quadrant
+    // if (thetaPos.x < 0)
+    //   phi += Math.PI;
+    //
+    // // bottom-right quadrant
+    // if (thetaPos.x > 0 && thetaPos.y < 0)
+    //   phi += 2*Math.PI;
+
+
+    images.plus.pos = {x: lensPos.x + plusLensedImageR * Math.cos(phi),
+                       y: lensPos.y + plusLensedImageR * Math.sin(phi)};
+    images.minus.pos = {x: lensPos.x + minusLensedImageR * Math.cos(Math.PI + phi),
+                        y: lensPos.y + minusLensedImageR * Math.sin(Math.PI + phi)};
 
     images.plus.pixelPos = {x: thetaXtoPixel(images.plus.pos.x),
-                                  y: thetaYtoPixel(images.plus.pos.y)};
+                            y: thetaYtoPixel(images.plus.pos.y)};
     images.minus.pixelPos = {x: thetaXtoPixel(images.minus.pos.x),
-                                   y: thetaYtoPixel(images.minus.pos.y)};
+                             y: thetaYtoPixel(images.minus.pos.y)};
 
 
     return images;
@@ -398,32 +426,47 @@ var PSPL_microlensing_event_lens_plane = (function() {
         var deltaX = sourcePoint.x - lensPos.x;
         var deltaY = sourcePoint.y - lensPos.y;
         var distR = Math.sqrt(deltaX*deltaX + deltaY*deltaY);
-        if (almostEquals(distR, 0, epsilon=5/xPixelScale) === true && index > 0) {
+
+        // if source point is overlapping or close to overlapping lens center,
+        // generate more outline points
+        if (almostEquals(distR, 0, epsilon=10/xPixelScale) === true && index > 0) {
           var prevSourcePoint = sourceOutline[index-1];
-          var prevPhi = Math.atan(prevSourcePoint.y/prevSourcePoint.x);
-          var phi = Math.atan(sourcePoint.y/sourcePoint.x);
+
+          // source points in coordinate system centered at source's position
+          sourcePointCentered = {x: sourcePoint.x - sourcePos.x,
+                                 y: sourcePoint.y - sourcePos.y};
+
+          prevSourcePointCentered = {x: prevSourcePoint.x - sourcePos.x,
+                                    y: prevSourcePoint.y - sourcePos.y};
+
+          // get angles from source enter to source points
+          var prevPhi = Math.atan( (prevSourcePointCentered.y)/prevSourcePointCentered.x);
+          var phi = Math.atan(sourcePointCentered.y/sourcePointCentered.x);
 
           // top-left or bottom-left quadrant
-          if (prevSourcePoint.x < 0)
+          if (prevSourcePointCentered.x < 0)
             prevPhi += Math.PI;
-          if (sourcePoint.x < 0)
+          if (sourcePointCentered.x < 0)
             phi += Math.PI;
 
           // bottom-right quadrant
-          if (prevSourcePoint.x > 0 && prevSourcePoint.y < 0 )
+          if (prevSourcePointCentered.x > 0 && prevSourcePointCentered.y < 0 )
             prevPhi += 2*Math.PI;
-          if (sourcePoint.x > 0 && sourcePoint.y < 0)
+          if (sourcePointCentered.x > 0 && sourcePointCentered.y < 0)
             phi += 2*Math.PI;
 
-          var theta = Math.atan(sourcePoint.y/sourcePoint.x)
           var subSourceOutline = getCircleOutline(sourceRadius, sourcePoint, fraction, prevPhi, phi);
+          console.log(`subSource: phi rangs from ${prevPhi} to ${phi} radians`);
+
           // if (subSourceOutline.length > 0)
           //   window.alert(subSourceOutline.length);
           for (subIndex in subSourceOutline) {
-            // window.alert("I'm here 1");
+            // console.log(`subSource: (${(subSourceOutline[subIndex].x)}, ${(subSourceOutline[subIndex].y)}) mas`);
+            // console.log(`subSource: (${thetaXtoPixel(subSourceOutline[subIndex].x)}, ${thetaYtoPixel(subSourceOutline[subIndex].y)}) degrees`);s
             var subSourcePoint = subSourceOutline[subIndex];
-            // window.alert("I'm here 2");
+
             var subImages = getLensedImages(subSourcePoint);
+
             outlines.plus.push(subImages.plus);
             outlines.minus.push(subImages.minus);
           }
@@ -572,19 +615,15 @@ var PSPL_microlensing_event_lens_plane = (function() {
 
       // draw source
       if (useOutline === true) {
-        // context.moveTo(thetaXtoPixel(sourceOutline[0].x), thetaYtoPixel(sourceOutline[0].y));
-        // for (var i=1; i<sourceOutline.length; i++) {
-        //   context.lineTo(thetaXtoPixel(sourceOutline[i].x), thetaYtoPixel(sourceOutline[i].y));
-        // }
         for (i in sourceOutline) {
           context.beginPath();
-          context.arc(thetaXtoPixel(sourceOutline[i].x), thetaYtoPixel(sourceOutline[i].y), 1, 0, 2*Math.PI, false);
+          context.arc(thetaXtoPixel(sourceOutline[i].x), thetaYtoPixel(sourceOutline[i].y), 2, 0, 2*Math.PI, false);
           context.fill();
         }
       }
       else {
         context.beginPath();
-        var radiusPixels = thetaXtoPixel(sourceRadius);
+        var radiusPixels = sourceRadius * xPixelScale;
         context.arc(sourcePixelPos.x, sourcePixelPos.y, radiusPixels, 0, 2*Math.PI, false);
         context.fill();
         context.stroke();
@@ -780,7 +819,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
       context.stroke();
     }
 
-    function drawFullLensedImage(sign="plus", debug=false, arcDebug=false) {
+    function drawFullLensedImage(sign="plus", debug=false, arcDebug=false, fillOn=false) {
       // draw either a plus or minus lensed image
 
       // set aesthetics and select plus or minus outlines object
@@ -887,16 +926,17 @@ var PSPL_microlensing_event_lens_plane = (function() {
       // context.closePath();
       if (debug === false && arcDebug === false) {
         context.closePath();
-        // context.fill();
+        if (fillOn === true)
+          context.fill();
         context.stroke();
       }
     }
 
-    function drawFullLensedImages(debug=false, arcDebug=false) {
+    function drawFullLensedImages(debug=false, arcDebug=false, fillOn=false) {
       // draw both plus and minus lensed images
       console.log("draw full lensed images");
-      drawFullLensedImage("plus", debug, arcDebug); // draw plus image
-      drawFullLensedImage("minus", debug, arcDebug); // draw minus image
+      drawFullLensedImage("plus", debug, arcDebug, fillOn); // draw plus image
+      drawFullLensedImage("minus", debug, arcDebug, fillOn); // draw minus image
     }
 
     clearPic();
@@ -910,40 +950,25 @@ var PSPL_microlensing_event_lens_plane = (function() {
     drawUarrow();
     if (displayImageShapeFlag === true) {
       //
-      // context.save();
-      // clipRevert(circlePath.bind(null, lensPixelPos.x, lensPixelPos.y, ringRadius.x));
+      if (clippingImageFlag === true) {
+        context.save();
+        context.beginPath();
+        context.rect(0, 0, canvas.width, context.canvas.height);
+        context.arc(lensPixelPos.x, lensPixelPos.y, ringRadius.x, 0, Math.PI * 2, true);
+        context.clip();
+      }
       // drawFullLensedImages(debug=false, arcDebug=true);
-      drawFullLensedImages(debug=false, arcDebug=false);
+      drawFullLensedImages(debug=false, arcDebug=false, fillOn=true);
       drawFullLensedImages(debug=true);
       // drawFullLensedImages(debug=true);
-      // context.restore();
+      if (clippingImageFlag === true)
+        context.restore();
     }
-    drawPointLensedImages();
+    // drawPointLensedImages();
     drawLens();
     toggleClippingRegion(turnOn=false);
     drawAxes();
   }
-
-
-  function circlePath(x, y, r) {
-      context.arc(x, y, r, 0, Math.PI * 2, true);
-  }
-
-  // clips the canvas with the invert of provided path function
-  // if pathFunction is an array, remove clips defined by all functions
-  function clipRevert(pathFunction) {
-      context.beginPath();
-      context.rect(0, 0, canvas.width, context.canvas.height);
-      if (Array.isArray(pathFunction)) pathFunction.forEach(execute);
-      else pathFunction();
-      context.clip();
-  }
-
-
-  function execute(fn) {
-      return fn();
-  }
-
 
   // executing script initialization
   init();
