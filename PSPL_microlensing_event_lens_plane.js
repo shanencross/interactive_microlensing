@@ -337,7 +337,6 @@ var PSPL_microlensing_event_lens_plane = (function() {
       recurring = false;
 
     var outline = [];
-    var deltaRadians = (finalAngle - initialAngle)/fraction;
     for (var radians=initialAngle; (radians<finalAngle && almostEquals(radians, finalAngle) === false); radians += deltaRadians) {
       var xOffset = radius * Math.cos(radians);
       var yOffset = radius * Math.sin(radians);
@@ -348,7 +347,14 @@ var PSPL_microlensing_event_lens_plane = (function() {
       var deltaY = point.y - lensPos.y;
       var distR = Math.sqrt(deltaX*deltaX + deltaY*deltaY);
 
-      if (almostEquals(distR, 0, epsilon=10/xPixelScale) === true && recurring === false && lensProximityCheckFlag===true) {
+      var subFraction = fraction + 1/ Math.log(distR + 1);
+      if (subFraction > 360) {
+        subFraction = 360;
+      }
+      console.log(`subFraction: ${subFraction}`);
+      var deltaRadians = (finalAngle - initialAngle)/subFraction;
+
+      if (recurring === false && lensProximityCheckFlag===true) {
         var nextRadians = radians + deltaRadians;
         // var halfwayRadians = (radians + nextRadians)/2;
         // var quarterRadians = (radians + halfwayRadians)/2;
