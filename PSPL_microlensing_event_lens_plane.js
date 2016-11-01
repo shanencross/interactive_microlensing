@@ -157,7 +157,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
   // toggled by checkbox
   var displayImageShapeFlag = true;
 
-  var fractionDefault = 50; // number of points into which source outline is divided
+  var fractionDefault = 360; // number of points into which source outline is divided
                            // i.e. a value of 8 would divide the outline into 8
                            // evenly spaced points
 
@@ -176,7 +176,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
   // however, y-scaling of ring won't be correct if x/y aspect ratio is not square;
   var firefoxCompatibilityFlag = true;
   // add more points to outline if source is close to lens
-  var lensProximityCheckFlag = true;
+  var lensProximityCheckFlag = false;
   var clippingImageFlag = false;
 
   // called from PSPL_microlensing_event.js (or whichever script holds the parameter
@@ -834,14 +834,14 @@ var PSPL_microlensing_event_lens_plane = (function() {
         var outlines = lensedImageOutlines.plus;
       }
       else if (sign === "minus") {
-      context.strokeStyle = "lime";
-      context.fillStyle = "green";
+        context.strokeStyle = "lime";
+        context.fillStyle = "green";
 
-      if (arcDebug === true) {
-        context.strokeStyle = "green";
-        context.fillStyle = "lime";
-      }
-      var outlines = lensedImageOutlines.minus;
+        if (arcDebug === true) {
+          context.strokeStyle = "green";
+          context.fillStyle = "lime";
+        }
+        var outlines = lensedImageOutlines.minus;
       }
       else {
         console.log(`sign ${sign} is in valid. Must be "plus" or "minus"`)
@@ -871,9 +871,6 @@ var PSPL_microlensing_event_lens_plane = (function() {
         // var lensDistX = pixelPos.x - thetaXtoPixel(lensPos.x);
         // var lensDistY = pixelPos.y - thetaYtoPixel(lensPos.y);
         // var lensDistR = Math.sqrt(lensDistX*lensDistX + lensDistY*lensDistY);
-
-        if (debug === true)
-          context.beginPath(); // debug
 
         if (debug === false) {
           if (index > 0) {
@@ -914,13 +911,14 @@ var PSPL_microlensing_event_lens_plane = (function() {
             }
           }
         }
-        else {
+        else { // if (debug === true)
+          context.beginPath(); // debug
           if (sign==="plus")
             context.fillStyle = "black";
           if (sign==="minus")
             context.fillStyle = "grey";
           context.arc(pixelPos.x, pixelPos.y, 1, 0, 2*Math.PI);
-          context.fill(); // debug
+          context.fill();
         }
       }
       // context.closePath();
@@ -957,8 +955,8 @@ var PSPL_microlensing_event_lens_plane = (function() {
         context.arc(lensPixelPos.x, lensPixelPos.y, ringRadius.x, 0, Math.PI * 2, true);
         context.clip();
       }
-      // drawFullLensedImages(debug=false, arcDebug=true);
-      drawFullLensedImages(debug=false, arcDebug=false, fillOn=true);
+      drawFullLensedImages(debug=false, arcDebug=true);
+      // drawFullLensedImages(debug=false, arcDebug=false, fillOn=true);
       drawFullLensedImages(debug=true);
       // drawFullLensedImages(debug=true);
       if (clippingImageFlag === true)
