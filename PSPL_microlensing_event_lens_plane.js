@@ -157,7 +157,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
   // toggled by checkbox
   var displayImageShapeFlag = true;
 
-  var fractionDefault = 50; // number of points into which source outline is divided
+  var fractionDefault = 5; // number of points into which source outline is divided
                            // i.e. a value of 8 would divide the outline into 8
                            // evenly spaced points
 
@@ -322,6 +322,37 @@ var PSPL_microlensing_event_lens_plane = (function() {
     return (Math.abs(a - b) < epsilon);
   }
 
+
+
+
+/*
+function getCircleOutline(radius, thetaPos, fraction, initialAngle, finalAngle, recurring=false):
+
+  var deltaAngle = (finalAngle - initialAngle)/fraction;
+  for (angle = initialAngle; angle < finalAngle; angle += deltaAngle)
+    point = {x: thetaPos.x + radius*Math.cos(angle),
+             y: thetaPos.y + radius*Math.sin(angle)};
+
+    var distX = point.x - lensPos.x;
+    var distY = point.y - lensPos.y;
+    var distR = Math.sqrt(distX*distX + distY*distY);
+
+    subDeltaAngle = deltaAngle + 1/Math.log(distR + 1);
+
+
+
+
+*/
+
+
+
+
+
+
+
+
+
+
   function getCircleOutline(radius=sourceRadius, thetaPos=sourcePos, fraction=fractionDefault,
                             initialAngle, finalAngle, recurring=false) {
     // get points (in mas units) for outline of a circle, given its pixel radius
@@ -336,31 +367,50 @@ var PSPL_microlensing_event_lens_plane = (function() {
     if (recurring === undefined)
       recurring = false;
 
+    var deltaAngle = (finalAngle - initialAngle)/fraction;
     var outline = [];
-    for (var radians=initialAngle; (radians<finalAngle && almostEquals(radians, finalAngle) === false); radians += deltaRadians) {
-      var xOffset = radius * Math.cos(radians);
-      var yOffset = radius * Math.sin(radians);
+    console.log(`deltaAngle: ${deltaAngle * 180/Math.PI} degree(s)`);
+    for (var angle=initialAngle; (angle<finalAngle && almostEquals(angle, finalAngle) === false); angle += deltaAngle) {
+      var xOffset = radius * Math.cos(angle);
+      var yOffset = radius * Math.sin(angle);
 
-      var point = {x: thetaPos.x + xOffset, y: thetaPos.y + yOffset}
+      var point = {x: thetaPos.x + xOffset, y: thetaPos.y + yOffset};
 
       var deltaX = point.x - lensPos.x;
       var deltaY = point.y - lensPos.y;
       var distR = Math.sqrt(deltaX*deltaX + deltaY*deltaY);
 
-      var subFraction = fraction + 1/ Math.log(distR + 1);
-      if (subFraction > 360) {
-        subFraction = 360;
+      //
+      // fraction = 8
+      // deltaAngle = 2*Math.PI/fraction = 2*Math.PI/8
+      //
+      // fraction = 2*math.PI/deltaAngle
+
+
+      var subDeltaAngle = deltaAngle - 0.001/Math.log(distR+1);
+      console.log(`subDeltaAngle (original): ${subDeltaAngle * 180/Math.PI} degree(s)`);
+      var subDeltaAngleMin = 1 * Math.PI/180;
+      if (subDeltaAngle < subDeltaAngleMin)
+      {
+        subDeltaAngle = subDeltaAngleMin;
       }
-      console.log(`subFraction: ${subFraction}`);
-      var deltaRadians = (finalAngle - initialAngle)/subFraction;
+
+      // var subFraction = (finalAngle - initialAngle)/subDeltaAngle;
+      // if (subFraction > 360) {
+      //   subFraction = 360;
+      //   subDeltaAngle = (finalAngle - initialAngle)/subFraction;
+      // }
+      // console.log(`subFraction: ${subFraction}`);
+      console.log(`subDeltaAngle: ${subDeltaAngle * 180/Math.PI} degree(s)`);
+
 
       if (recurring === false && lensProximityCheckFlag===true) {
-        var nextRadians = radians + deltaRadians;
-        // var halfwayRadians = (radians + nextRadians)/2;
-        // var quarterRadians = (radians + halfwayRadians)/2;
-        // var threeQuartersRadian = (halfwayRadians + nextRadians)/2;
+        var nextAngle = angle + subDeltaAngle;
+        // var halfwayAngle = (angle + nextAngle)/2;
+        // var quarterAngle = (angle + halfwayAngle)/2;
+        // var threeQuartersRadian = (halfwayAngle + nextAngle)/2;
         // var subOutline = getCircleOutline(radius, thetaPos, fraction, quarterRadian, threeQuartersRadian, true);
-        var subOutline = getCircleOutline(radius, thetaPos, fraction, radians, nextRadians, true);
+        var subOutline = getCircleOutline(radius, thetaPos, fraction, angle, nextAngle, true);
         outline = outline.concat(subOutline);
       }
       else { // not close enough to center, or on a recursion iteration, or lens proximity check flag is off
