@@ -415,78 +415,24 @@ var PSPL_microlensing_event_lens_plane = (function() {
     return images;
   }
 
-  function getLensedImageOutlines(sourceOutline, checkLensOverlapPoints=false,
-                                  fraction=fractionDefault) {
+  function getLensedImageOutlines(sourceOutline, fraction=fractionDefault) {
     var outlines = {plus: [], minus: []};
 
-    if (checkLensOverlapPoints === true) {
-      for (index in sourceOutline) {
-        var sourcePoint = sourceOutline[index];
-        // console.log(`checkLensOverlapPoints: sourcePoint.x, lensPos.x: ${sourcePoint.x}, ${lensPos.x}`);
-        var deltaX = sourcePoint.x - lensPos.x;
-        var deltaY = sourcePoint.y - lensPos.y;
-        var distR = Math.sqrt(deltaX*deltaX + deltaY*deltaY);
+    for (var index=0; index<sourceOutline.length; index++) {
+      var sourcePoint = sourceOutline[index];
+      var images = getLensedImages(sourcePoint);
+      if (index > 0) {
+        var prevPlusImagePos = outlines.plus[outlines.plus.length-1].pos;
+        var plusImagePos = images.pos;
+        /*
+        if a line is drawn from the previous plus image to to the current plus
+        image, does that line intersect the interior of the einstein ring?
 
-        // if source point is overlapping or close to overlapping lens center,
-        // generate more outline points
-        if (almostEquals(distR, 0, epsilon=10/xPixelScale) === true && index > 0) {
-          var prevSourcePoint = sourceOutline[index-1];
-
-          // source points in coordinate system centered at source's position
-          sourcePointCentered = {x: sourcePoint.x - sourcePos.x,
-                                 y: sourcePoint.y - sourcePos.y};
-
-          prevSourcePointCentered = {x: prevSourcePoint.x - sourcePos.x,
-                                    y: prevSourcePoint.y - sourcePos.y};
-
-          // get angles from source enter to source points
-          var prevPhi = Math.atan( (prevSourcePointCentered.y)/prevSourcePointCentered.x);
-          var phi = Math.atan(sourcePointCentered.y/sourcePointCentered.x);
-
-          // top-left or bottom-left quadrant
-          if (prevSourcePointCentered.x < 0)
-            prevPhi += Math.PI;
-          if (sourcePointCentered.x < 0)
-            phi += Math.PI;
-
-          // bottom-right quadrant
-          if (prevSourcePointCentered.x > 0 && prevSourcePointCentered.y < 0 )
-            prevPhi += 2*Math.PI;
-          if (sourcePointCentered.x > 0 && sourcePointCentered.y < 0)
-            phi += 2*Math.PI;
-
-          var subSourceOutline = getCircleOutline(sourceRadius, sourcePoint, fraction, prevPhi, phi);
-          console.log(`subSource: phi rangs from ${prevPhi} to ${phi} radians`);
-
-          // if (subSourceOutline.length > 0)
-          //   window.alert(subSourceOutline.length);
-          for (subIndex in subSourceOutline) {
-            // console.log(`subSource: (${(subSourceOutline[subIndex].x)}, ${(subSourceOutline[subIndex].y)}) mas`);
-            // console.log(`subSource: (${thetaXtoPixel(subSourceOutline[subIndex].x)}, ${thetaYtoPixel(subSourceOutline[subIndex].y)}) degrees`);s
-            var subSourcePoint = subSourceOutline[subIndex];
-
-            var subImages = getLensedImages(subSourcePoint);
-
-            outlines.plus.push(subImages.plus);
-            outlines.minus.push(subImages.minus);
-          }
-        }
-        else {
-          var images = getLensedImages(sourcePoint);
-          outlines.plus.push(images.plus);
-          outlines.minus.push(images.minus);
-        }
+        */
       }
-    }
-    else {
-      for (var index=0; index<sourceOutline.length; index++) {
-        var sourcePoint = sourceOutline[index];
-        // var sourcePoint = sourceOutline[0];
-        var images = getLensedImages(sourcePoint);
-        // images = {plus: {pos: {x:0, y:0}, pixelPos: {x:0, y:0}}, minus: {pos: {x:0, y:0}, pixelPos: {x:0, y:0}}};
-        outlines.plus.push(images.plus);
-        outlines.minus.push(images.minus);
-      }
+
+      outlines.plus.push(images.plus);
+      outlines.minus.push(images.minus);
     }
     return outlines;
   }
@@ -617,7 +563,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
       if (useOutline === true) {
         for (i in sourceOutline) {
           context.beginPath();
-          context.arc(thetaXtoPixel(sourceOutline[i].x), thetaYtoPixel(sourceOutline[i].y), 2, 0, 2*Math.PI, false);
+          context.arc(thetaXtoPixel(sourceOutline[i].x), thetaYtoPixel(sourceOutline[i].y), 1, 0, 2*Math.PI, false);
           context.fill();
         }
       }
@@ -951,14 +897,13 @@ var PSPL_microlensing_event_lens_plane = (function() {
       if (clippingImageFlag === true) {
         context.save();
         context.beginPath();
-        context.rect(0, 0, canvas.width, context.canvas.height);
+        context.rect(0, 0, canvas.width, canvas.height);
         context.arc(lensPixelPos.x, lensPixelPos.y, ringRadius.x, 0, Math.PI * 2, true);
         context.clip();
       }
       drawFullLensedImages(debug=false, arcDebug=true);
       // drawFullLensedImages(debug=false, arcDebug=false, fillOn=true);
       drawFullLensedImages(debug=true);
-      // drawFullLensedImages(debug=true);
       if (clippingImageFlag === true)
         context.restore();
     }
