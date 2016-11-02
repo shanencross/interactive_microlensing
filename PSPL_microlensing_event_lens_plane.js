@@ -161,7 +161,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
                            // i.e. a value of 8 would divide the outline into 8
                            // evenly spaced points
 
-  var subFractionDefault = 10;
+  var subFractionDefault = 50;
 
   // debug flags
   var animationFlag = true;
@@ -352,7 +352,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
       var deltaY = point.y - lensPos.y;
       var distR = Math.sqrt(deltaX*deltaX + deltaY*deltaY);
 
-      if (almostEquals(distR, 0, epsilon=1/xPixelScale) === true && recurring === false && lensProximityCheckFlag===true) {
+      if (almostEquals(distR, 0, epsilon=10/xPixelScale) === true && recurring === false && lensProximityCheckFlag===true) {
         var nextAngle = angle + deltaAngle;
         // var halfwayAngle = (angle + nextAngle)/2;
         // var quarterAngle = (angle + halfwayAngle)/2;
