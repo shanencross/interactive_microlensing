@@ -66,7 +66,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
 
   var sourceColor = "teal";
   // initialized elsewhere in function
-  var sourceRadius;
+  var sourceRadius; // mas
   var sourceOutlineWidth = 2;
   var sourceOutlineColor = sourceColor;
 
@@ -157,9 +157,11 @@ var PSPL_microlensing_event_lens_plane = (function() {
   // toggled by checkbox
   var displayImageShapeFlag = true;
 
-  var fractionDefault = 50; // number of points into which source outline is divided
+  var fractionDefault = 360; // number of points into which source outline is divided
                            // i.e. a value of 8 would divide the outline into 8
                            // evenly spaced points
+
+  var subFractionDefault = 10;
 
   // debug flags
   var animationFlag = true;
@@ -199,7 +201,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
   }
 
   function initRho() {
-    sourceRadius = 1/75 * 4;
+    sourceRadius = 1/75 * 4; // source radius in mas
     updateRhoSlider();
   }
 
@@ -282,7 +284,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
     // NOTE: This hammers the the dperformance signifcantly right now
     if (drawFullLensedImagesFlag === true) {
       sourceOutline = getCircleOutline(radius=sourceRadius, thetaPos=sourcePos);
-      lensedImageOutlines = getLensedImageOutlines(sourceOutline, checkLensOverlapPoints=false);
+      lensedImageOutlines = getLensedImageOutlines(sourceOutline);
       // if (lensedImageOutlines.plus.length === sourceOutline.length) {
       //   console.log(`lensedImageOutlines plus length !== sourceOutline length: ${lensedImageOutlines.plus.length} !== ${sourceOutline.length}`);
       //   for (i in lensedImageOutlines.plus) {
@@ -322,7 +324,9 @@ var PSPL_microlensing_event_lens_plane = (function() {
     return (Math.abs(a - b) < epsilon);
   }
 
-  function getCircleOutline(radius=sourceRadius, thetaPos=sourcePos, fraction=fractionDefault,
+  function getCircleOutline(radius=sourceRadius, thetaPos=sourcePos,
+                            fraction=fractionDefault,
+                            subFraction=subFractionDefault,
                             initialAngle, finalAngle, recurring=false) {
     // get points (in mas units) for outline of a circle, given its pixel radius
     // and theta position; defaults to getting source outline
@@ -337,10 +341,10 @@ var PSPL_microlensing_event_lens_plane = (function() {
       recurring = false;
 
     var outline = [];
-    var deltaRadians = (finalAngle - initialAngle)/fraction;
-    for (var radians=initialAngle; (radians<finalAngle && almostEquals(radians, finalAngle) === false); radians += deltaRadians) {
-      var xOffset = radius * Math.cos(radians);
-      var yOffset = radius * Math.sin(radians);
+    var deltaAngle = (finalAngle - initialAngle)/fraction;
+    for (var angle=initialAngle; (angle<finalAngle && almostEquals(angle, finalAngle) === false); angle += deltaAngle) {
+      var xOffset = radius * Math.cos(angle);
+      var yOffset = radius * Math.sin(angle);
 
       var point = {x: thetaPos.x + xOffset, y: thetaPos.y + yOffset}
 
@@ -348,13 +352,16 @@ var PSPL_microlensing_event_lens_plane = (function() {
       var deltaY = point.y - lensPos.y;
       var distR = Math.sqrt(deltaX*deltaX + deltaY*deltaY);
 
-      if (almostEquals(distR, 0, epsilon=10/xPixelScale) === true && recurring === false && lensProximityCheckFlag===true) {
-        var nextRadians = radians + deltaRadians;
-        // var halfwayRadians = (radians + nextRadians)/2;
-        // var quarterRadians = (radians + halfwayRadians)/2;
-        // var threeQuartersRadian = (halfwayRadians + nextRadians)/2;
+      if (almostEquals(distR, 0, epsilon=1/xPixelScale) === true && recurring === false && lensProximityCheckFlag===true) {
+        var nextAngle = angle + deltaAngle;
+        // var halfwayAngle = (angle + nextAngle)/2;
+        // var quarterAngle = (angle + halfwayAngle)/2;
+        // var threeQuartersRadian = (halfwayAngle + nextAngle)/2;
         // var subOutline = getCircleOutline(radius, thetaPos, fraction, quarterRadian, threeQuartersRadian, true);
-        var subOutline = getCircleOutline(radius, thetaPos, fraction, radians, nextRadians, true);
+
+        // var subFraction2 = (nextAngle - angle)/(2*Math.PI/subFraction);
+        // console.log(`subFraction2: ${subFraction2}`);
+        var subOutline = getCircleOutline(radius, thetaPos, subFraction, subFraction, angle, nextAngle, true);
         outline = outline.concat(subOutline);
       }
       else { // not close enough to center, or on a recursion iteration, or lens proximity check flag is off
@@ -363,10 +370,6 @@ var PSPL_microlensing_event_lens_plane = (function() {
     }
 
     return outline;
-  }
-
-  function getNextOutlineAngle() {
-
   }
 
   function getLensedImages(thetaPos=sourcePos) {
@@ -415,78 +418,16 @@ var PSPL_microlensing_event_lens_plane = (function() {
     return images;
   }
 
-  function getLensedImageOutlines(sourceOutline, checkLensOverlapPoints=false,
-                                  fraction=fractionDefault) {
+  function getLensedImageOutlines(sourceOutline) {
     var outlines = {plus: [], minus: []};
 
-    if (checkLensOverlapPoints === true) {
-      for (index in sourceOutline) {
-        var sourcePoint = sourceOutline[index];
-        // console.log(`checkLensOverlapPoints: sourcePoint.x, lensPos.x: ${sourcePoint.x}, ${lensPos.x}`);
-        var deltaX = sourcePoint.x - lensPos.x;
-        var deltaY = sourcePoint.y - lensPos.y;
-        var distR = Math.sqrt(deltaX*deltaX + deltaY*deltaY);
-
-        // if source point is overlapping or close to overlapping lens center,
-        // generate more outline points
-        if (almostEquals(distR, 0, epsilon=10/xPixelScale) === true && index > 0) {
-          var prevSourcePoint = sourceOutline[index-1];
-
-          // source points in coordinate system centered at source's position
-          sourcePointCentered = {x: sourcePoint.x - sourcePos.x,
-                                 y: sourcePoint.y - sourcePos.y};
-
-          prevSourcePointCentered = {x: prevSourcePoint.x - sourcePos.x,
-                                    y: prevSourcePoint.y - sourcePos.y};
-
-          // get angles from source enter to source points
-          var prevPhi = Math.atan( (prevSourcePointCentered.y)/prevSourcePointCentered.x);
-          var phi = Math.atan(sourcePointCentered.y/sourcePointCentered.x);
-
-          // top-left or bottom-left quadrant
-          if (prevSourcePointCentered.x < 0)
-            prevPhi += Math.PI;
-          if (sourcePointCentered.x < 0)
-            phi += Math.PI;
-
-          // bottom-right quadrant
-          if (prevSourcePointCentered.x > 0 && prevSourcePointCentered.y < 0 )
-            prevPhi += 2*Math.PI;
-          if (sourcePointCentered.x > 0 && sourcePointCentered.y < 0)
-            phi += 2*Math.PI;
-
-          var subSourceOutline = getCircleOutline(sourceRadius, sourcePoint, fraction, prevPhi, phi);
-          console.log(`subSource: phi rangs from ${prevPhi} to ${phi} radians`);
-
-          // if (subSourceOutline.length > 0)
-          //   window.alert(subSourceOutline.length);
-          for (subIndex in subSourceOutline) {
-            // console.log(`subSource: (${(subSourceOutline[subIndex].x)}, ${(subSourceOutline[subIndex].y)}) mas`);
-            // console.log(`subSource: (${thetaXtoPixel(subSourceOutline[subIndex].x)}, ${thetaYtoPixel(subSourceOutline[subIndex].y)}) degrees`);s
-            var subSourcePoint = subSourceOutline[subIndex];
-
-            var subImages = getLensedImages(subSourcePoint);
-
-            outlines.plus.push(subImages.plus);
-            outlines.minus.push(subImages.minus);
-          }
-        }
-        else {
-          var images = getLensedImages(sourcePoint);
-          outlines.plus.push(images.plus);
-          outlines.minus.push(images.minus);
-        }
-      }
-    }
-    else {
-      for (var index=0; index<sourceOutline.length; index++) {
-        var sourcePoint = sourceOutline[index];
-        // var sourcePoint = sourceOutline[0];
-        var images = getLensedImages(sourcePoint);
-        // images = {plus: {pos: {x:0, y:0}, pixelPos: {x:0, y:0}}, minus: {pos: {x:0, y:0}, pixelPos: {x:0, y:0}}};
-        outlines.plus.push(images.plus);
-        outlines.minus.push(images.minus);
-      }
+    for (var index=0; index<sourceOutline.length; index++) {
+      var sourcePoint = sourceOutline[index];
+      // var sourcePoint = sourceOutline[0];
+      var images = getLensedImages(sourcePoint);
+      // images = {plus: {pos: {x:0, y:0}, pixelPos: {x:0, y:0}}, minus: {pos: {x:0, y:0}, pixelPos: {x:0, y:0}}};
+      outlines.plus.push(images.plus);
+      outlines.minus.push(images.minus);
     }
     return outlines;
   }
@@ -616,8 +557,9 @@ var PSPL_microlensing_event_lens_plane = (function() {
       // draw source
       if (useOutline === true) {
         for (i in sourceOutline) {
+          context.fillStyle = "SpringGreen";
           context.beginPath();
-          context.arc(thetaXtoPixel(sourceOutline[i].x), thetaYtoPixel(sourceOutline[i].y), 2, 0, 2*Math.PI, false);
+          context.arc(thetaXtoPixel(sourceOutline[i].x), thetaYtoPixel(sourceOutline[i].y), 1, 0, 2*Math.PI, false);
           context.fill();
         }
       }
@@ -819,30 +761,31 @@ var PSPL_microlensing_event_lens_plane = (function() {
       context.stroke();
     }
 
-    function drawFullLensedImage(sign="plus", debug=false, arcDebug=false, fillOn=false) {
+    function drawFullLensedImage(sign="plus", debug=false, fillOn=false) {
       // draw either a plus or minus lensed image
 
       // set aesthetics and select plus or minus outlines object
+      context.lineWidth = lensedImageLineWidth;
       if (sign === "plus") {
         context.strokeStyle = "fuchsia";
         context.fillStyle = "purple";
 
-        if (arcDebug === true) {
-          context.strokeStyle = "purple"
-          context.fillStyle = "fuchsia";
+        if (debug === true) {
+          context.fillStyle = "black";
         }
         var outlines = lensedImageOutlines.plus;
       }
-      else if (sign === "minus") {
-      context.strokeStyle = "lime";
-      context.fillStyle = "green";
 
-      if (arcDebug === true) {
-        context.strokeStyle = "green";
-        context.fillStyle = "lime";
+      else if (sign === "minus") {
+        context.strokeStyle = "lime";
+        context.fillStyle = "green";
+
+        if (debug === true) {
+          context.fillStyle = "DarkGrey";
+        }
+        var outlines = lensedImageOutlines.minus;
       }
-      var outlines = lensedImageOutlines.minus;
-      }
+
       else {
         console.log(`sign ${sign} is in valid. Must be "plus" or "minus"`)
         return;
@@ -852,91 +795,103 @@ var PSPL_microlensing_event_lens_plane = (function() {
         return;
       }
 
-      context.lineWidth = lensedImageLineWidth;
-
       // draw line through each point in outline array
       if (debug === false) {
         context.beginPath();
-        var index = 1;
-        context.moveTo(outlines[index-1].pixelPos.x, outlines[index-1].pixelPos.y);
-      }
-      else {
-        var index = 0;
-        context.moveTo(outlines[index].pixelPos.x, outlines[index].pixelPos.y);
+        context.moveTo(outlines[0].pixelPos.x, outlines[0].pixelPos.y);
       }
 
-      for (index; index<outlines.length; index++) {
+      for (var index = 0; index<outlines.length; index++) {
         var pixelPos = outlines[index].pixelPos;
-        var pos = outlines[index].pos;
-        // var lensDistX = pixelPos.x - thetaXtoPixel(lensPos.x);
-        // var lensDistY = pixelPos.y - thetaYtoPixel(lensPos.y);
-        // var lensDistR = Math.sqrt(lensDistX*lensDistX + lensDistY*lensDistY);
-
-        if (debug === true)
-          context.beginPath(); // debug
 
         if (debug === false) {
-          if (index > 0) {
-            var prevPixelPos = outlines[index-1].pixelPos;
-            var deltaX = pixelPos.x - prevPixelPos.x;
-            var deltaY = pixelPos.y - prevPixelPos.y;
-            var dist = Math.sqrt(deltaX*deltaX + deltaY*deltaY);
-
-            var prevPos = outlines[index-1].pos;
-
-            if (dist > 1 && arcDebug === true) {
-              var prevPhi = Math.atan(prevPos.y/prevPos.x);
-              var phi = Math.atan(pos.y/pos.x);
-
-              // top-left or bottom-left quadrant
-              if (prevPos.x < 0)
-                prevPhi += Math.PI;
-              if (pos.x < 0)
-                phi += Math.PI;
-
-              // bottom-right quadrant
-              if (prevPos.x > 0 && prevPos.y < 0 )
-                prevPhi += 2*Math.PI;
-              if (pos.x > 0 && pos.y < 0)
-                phi += 2*Math.PI;
-
-              context.beginPath();
-              context.arc(lensPixelPos.x, lensPixelPos.y, ringRadius.x, phi, prevPhi);
-              // console.log(`crazy images (x, mas): ${prevPos.x}, ${pos.x}`);
-              // console.log(`crazy images (y, mas): ${prevPos.y}, ${pos.y}`);
-              // console.log(`crazy images (phi, degrees): ${prevPhi*180/Math.PI}, ${phi*180/Math.PI}`);
-              context.stroke();
-            }
-            else if (dist < 1 || arcDebug === false) {
-              // console.log(`crazy images (dist, pixels): ${dist}`);
-              // context.moveTo(prevPixelPos.x, prevPixelPos.y);
-              context.lineTo(pixelPos.x, pixelPos.y);
-            }
-          }
+          context.lineTo(pixelPos.x, pixelPos.y);
         }
         else {
-          if (sign==="plus")
-            context.fillStyle = "black";
-          if (sign==="minus")
-            context.fillStyle = "grey";
+          context.beginPath();
           context.arc(pixelPos.x, pixelPos.y, 1, 0, 2*Math.PI);
-          context.fill(); // debug
+          context.fill();
         }
       }
       // context.closePath();
-      if (debug === false && arcDebug === false) {
+      if (debug === false) {
         context.closePath();
+        context.stroke();
         if (fillOn === true)
           context.fill();
-        context.stroke();
       }
     }
 
-    function drawFullLensedImages(debug=false, arcDebug=false, fillOn=false) {
+    function drawCombinedImage(fillOn=true) {
+
+      context.lineWidth = lensedImageLineWidth;
+      context.strokeStyle = "aqua";
+      context.fillStyle = "navy";
+
+      outerOutlines = lensedImageOutlines.plus;
+      innerOutlines = lensedImageOutlines.minus;
+
+      if (outerOutlines === undefined || outerOutlines.length === 0 ||
+          innerOutlines === undefined || innerOutlines.length === 0) {
+        return;
+      }
+
+      context.beginPath();
+      context.moveTo(innerOutlines[0].pixelPos.x, innerOutlines[0].pixelPos.y);
+      for (var i=1; i<innerOutlines.length; i++) {
+        var pixelPos = innerOutlines[i].pixelPos;
+        context.lineTo(pixelPos.x, pixelPos.y);
+      }
+      context.closePath();
+      // context.lineTo(innerOutlines[0].pixelPos.x, innerOutlines[0].pixelPos.y);
+
+      // context.moveTo(innerOutlines[0].pixelPos.x, innerOutlines[0].pixelPos.y);
+      var outerConnectionIndex = outerOutlines.length-1;
+      context.lineTo(outerOutlines[outerConnectionIndex].pixelPos.x, outerOutlines[outerConnectionIndex].pixelPos.y);
+      var seenStartBefore=false;
+      var loop = true;
+      for (var j=outerConnectionIndex; loop===true; j--) {
+        if (j < 0) {
+          j = outerOutlines.length + j;
+        }
+
+        if (j === outerConnectionIndex)  {
+          if (seenStartBefore === true) {
+            loop = false;
+          }
+          else { // seenStartBefore === false
+            seenStartBefore = true;
+          }
+        }
+
+        // console.log(`j value: ${j}`);
+        var pixelPos = outerOutlines[j].pixelPos;
+        context.lineTo(pixelPos.x, pixelPos.y);
+      }
+      context.lineTo(outerOutlines[outerOutlines.length-1].pixelPos.x, outerOutlines[outerOutlines.length-1].pixelPos.y);
+
+      // context.stroke();
+      if (fillOn === true)
+        context.fill();
+    }
+
+    function drawFullLensedImages  (debug=false, fillOn=false) {
       // draw both plus and minus lensed images
-      console.log("draw full lensed images");
-      drawFullLensedImage("plus", debug, arcDebug, fillOn); // draw plus image
-      drawFullLensedImage("minus", debug, arcDebug, fillOn); // draw minus image
+
+      sourceLensDistX = sourcePos.x - lensPos.x;
+      sourceLensDistY = sourcePos.y - lensPos.y;
+      sourceLensDist = Math.sqrt(sourceLensDistX * sourceLensDistX +
+                                 sourceLensDistY * sourceLensDistY);
+
+      if (sourceLensDist <= sourceRadius && debug === false) {
+        console.log("draw combination of full lensed images");
+        drawCombinedImage(fillOn);
+      }
+      else {
+        console.log("draw full lensed images");
+        drawFullLensedImage("plus", debug, fillOn); // draw plus image
+        drawFullLensedImage("minus", debug, fillOn); // draw minus image
+      }
     }
 
     clearPic();
@@ -944,8 +899,8 @@ var PSPL_microlensing_event_lens_plane = (function() {
     drawBorder();
     drawGridlinesAndTicks();
     toggleClippingRegion(turnOn=true);
-    drawRing();
     drawSourcePath();
+    drawSource();
     drawSource(useOutline=true);
     drawUarrow();
     if (displayImageShapeFlag === true) {
@@ -957,8 +912,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
         context.arc(lensPixelPos.x, lensPixelPos.y, ringRadius.x, 0, Math.PI * 2, true);
         context.clip();
       }
-      // drawFullLensedImages(debug=false, arcDebug=true);
-      drawFullLensedImages(debug=false, arcDebug=false, fillOn=true);
+      drawFullLensedImages(debug=false, fillOn=true);
       drawFullLensedImages(debug=true);
       // drawFullLensedImages(debug=true);
       if (clippingImageFlag === true)
@@ -966,6 +920,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
     }
     // drawPointLensedImages();
     drawLens();
+    drawRing();
     toggleClippingRegion(turnOn=false);
     drawAxes();
   }
