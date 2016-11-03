@@ -761,7 +761,8 @@ var PSPL_microlensing_event_lens_plane = (function() {
       context.stroke();
     }
 
-    function drawFullLensedImage(sign="plus", debug=false, fillOn=false) {
+    function drawFullLensedImage(sign="plus", debug=false, fillOn=true,
+                                 strokeOn=false) {
       // draw either a plus or minus lensed image
 
       // set aesthetics and select plus or minus outlines object
@@ -816,13 +817,48 @@ var PSPL_microlensing_event_lens_plane = (function() {
       // context.closePath();
       if (debug === false) {
         context.closePath();
-        context.stroke();
+
+        if (strokeOn === true)
+          context.stroke();
         if (fillOn === true)
           context.fill();
       }
     }
 
-    function drawCombinedImage(fillOn=true) {
+    function drawCombinedImage(fillOn=true, strokeOn=false) {
+
+      function drawInnerOutline() {
+        context.moveTo(innerOutlines[0].pixelPos.x, innerOutlines[0].pixelPos.y);
+        for (var i=1; i<innerOutlines.length; i++) {
+          var pixelPos = innerOutlines[i].pixelPos;
+          context.lineTo(pixelPos.x, pixelPos.y);
+        }
+        context.closePath();
+      }
+
+      function drawOuterOutline(outerConnectionIndex) {
+        var seenStartBefore=false;
+        var loop = true;
+        for (var j=outerConnectionIndex; loop===true; j--) {
+          if (j < 0) {
+            j = outerOutlines.length + j;
+          }
+
+          if (j === outerConnectionIndex)  {
+            if (seenStartBefore === true) {
+              loop = false;
+            }
+            else { // seenStartBefore === false
+              seenStartBefore = true;
+            }
+          }
+
+          var pixelPos = outerOutlines[j].pixelPos;
+          context.lineTo(pixelPos.x, pixelPos.y);
+        }
+        context.lineTo(outerOutlines[outerOutlines.length-1].pixelPos.x,
+                       outerOutlines[outerOutlines.length-1].pixelPos.y);
+      }
 
       context.lineWidth = lensedImageLineWidth;
       context.strokeStyle = "aqua";
@@ -836,46 +872,42 @@ var PSPL_microlensing_event_lens_plane = (function() {
         return;
       }
 
-      context.beginPath();
-      context.moveTo(innerOutlines[0].pixelPos.x, innerOutlines[0].pixelPos.y);
-      for (var i=1; i<innerOutlines.length; i++) {
-        var pixelPos = innerOutlines[i].pixelPos;
-        context.lineTo(pixelPos.x, pixelPos.y);
-      }
-      context.closePath();
-      // context.lineTo(innerOutlines[0].pixelPos.x, innerOutlines[0].pixelPos.y);
+      if (fillOn === true) {
+        // connect inner outline to outer outline and set outer path start
 
-      // context.moveTo(innerOutlines[0].pixelPos.x, innerOutlines[0].pixelPos.y);
-      var outerConnectionIndex = outerOutlines.length-1;
-      context.lineTo(outerOutlines[outerConnectionIndex].pixelPos.x, outerOutlines[outerConnectionIndex].pixelPos.y);
-      var seenStartBefore=false;
-      var loop = true;
-      for (var j=outerConnectionIndex; loop===true; j--) {
-        if (j < 0) {
-          j = outerOutlines.length + j;
-        }
+        // draw inner outline
+        context.beginPath();
+        drawInnerOutline();
 
-        if (j === outerConnectionIndex)  {
-          if (seenStartBefore === true) {
-            loop = false;
-          }
-          else { // seenStartBefore === false
-            seenStartBefore = true;
-          }
-        }
+        // set outer outline start
+        var outerConnectionIndex = outerOutlines.length-1;
+        // connect inner outline to outer outline start
+        context.lineTo(outerOutlines[outerConnectionIndex].pixelPos.x, outerOutlines[outerConnectionIndex].pixelPos.y);
+        drawOuterOutline(outerConnectionIndex);
 
-        // console.log(`j value: ${j}`);
-        var pixelPos = outerOutlines[j].pixelPos;
-        context.lineTo(pixelPos.x, pixelPos.y);
-      }
-      context.lineTo(outerOutlines[outerOutlines.length-1].pixelPos.x, outerOutlines[outerOutlines.length-1].pixelPos.y);
-
-      // context.stroke();
-      if (fillOn === true)
         context.fill();
+      }
+
+      if (strokeOn === true) {
+        // draw separate outline for outer and inner outlines
+
+        // draw and display inner outline
+        context.beginPath();
+        drawInnerOutline();
+        context.stroke();
+
+        // draw and display outer outline as separate path
+        context.beginPath();
+        // set outer path start point
+        var outerConnectionIndex = outerOutlines.length-1;
+        // move to outer outline start, without connecting inner outline
+        context.moveTo(outerOutlines[outerConnectionIndex].pixelPos.x, outerOutlines[outerConnectionIndex].pixelPos.y);
+        drawOuterOutline(outerConnectionIndex);
+        context.stroke();
+      }
     }
 
-    function drawFullLensedImages  (debug=false, fillOn=false) {
+    function drawFullLensedImages(debug=false, fillOn=false, strokeOn=false) {
       // draw both plus and minus lensed images
 
       sourceLensDistX = sourcePos.x - lensPos.x;
@@ -885,12 +917,12 @@ var PSPL_microlensing_event_lens_plane = (function() {
 
       if (sourceLensDist <= sourceRadius && debug === false) {
         console.log("draw combination of full lensed images");
-        drawCombinedImage(fillOn);
+        drawCombinedImage(fillOn, strokeOn);
       }
       else {
         console.log("draw full lensed images");
-        drawFullLensedImage("plus", debug, fillOn); // draw plus image
-        drawFullLensedImage("minus", debug, fillOn); // draw minus image
+        drawFullLensedImage("plus", debug, fillOn, strokeOn); // draw plus image
+        drawFullLensedImage("minus", debug, fillOn, strokeOn); // draw minus image
       }
     }
 
@@ -901,7 +933,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
     toggleClippingRegion(turnOn=true);
     drawSourcePath();
     drawSource();
-    drawSource(useOutline=true);
+    // drawSource(useOutline=true);
     drawUarrow();
     if (displayImageShapeFlag === true) {
       //
@@ -912,8 +944,8 @@ var PSPL_microlensing_event_lens_plane = (function() {
         context.arc(lensPixelPos.x, lensPixelPos.y, ringRadius.x, 0, Math.PI * 2, true);
         context.clip();
       }
-      drawFullLensedImages(debug=false, fillOn=true);
-      drawFullLensedImages(debug=true);
+      drawFullLensedImages(debug=false, fillOn=true, strokeOn=true);
+      // drawFullLensedImages(debug=true);
       // drawFullLensedImages(debug=true);
       if (clippingImageFlag === true)
         context.restore();
