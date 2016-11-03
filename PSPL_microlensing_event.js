@@ -148,6 +148,7 @@ var PSPL_microlensing_event = (function() {
   // or from an input of time/magnification arrays
   var fromEquationDefault = true; // const
   var centerLayout = false; // const
+  var finiteSourceFlagDefault = true;
 
   // parameter sliders and their readouts
   var tEslider = document.getElementById("tEslider");
@@ -404,16 +405,15 @@ var PSPL_microlensing_event = (function() {
     initParams();
     updateSliders();
     plotLightcurve();
-    if (typeof PSPL_microlensing_event_lens_plane !== undefined)
+    if (typeof PSPL_microlensing_event_lens_plane !== "undefined")
       PSPL_microlensing_event_lens_plane.initRho(noRedraw=false);
       PSPL_microlensing_event_lens_plane.redraw();
   }
 
   function updateParam(param) {
-    if (typeof PSPL_microlensing_event_animation !== undefined) {
+    if (typeof PSPL_microlensing_event_animation !== "undefined") {
       if (PSPL_microlensing_event_animation.running === true) {
         console.log("Can't modify paramters while animation is playing right now.")
-
       }
     }
 
@@ -484,10 +484,10 @@ var PSPL_microlensing_event = (function() {
     updateDerivedQuantities();
     updateSliders();
     // console.log(`tE: ${tE}`);
-    if (typeof PSPL_microlensing_event_lens_plane !== undefined)
+    if (typeof PSPL_microlensing_event_lens_plane !== "undefined")
       PSPL_microlensing_event_lens_plane.redraw();
 
-    if (typeof PSPL_microlensing_event_animation != undefined) {
+    if (typeof PSPL_microlensing_event_animation != "undefined") {
       plotLightcurve(PSPL_microlensing_event_animation.time);
 
       //redraw current animation frame
@@ -544,7 +544,7 @@ var PSPL_microlensing_event = (function() {
 
     // if new step values are passed in, update grid step values;
     // otherwise leave grid steps unchanged when updating grid
-    if ( !(xStep === undefined) && !(yStep === undefined)) {
+    if ( xStep !== undefined && yStep !== undefined) {
       xGridStep = xStep;
       yGridStep = yStep;
     }
@@ -877,10 +877,16 @@ var PSPL_microlensing_event = (function() {
     return magnif;
   }
 
-  function getMagnif(t) {
+  function getMagnif(t, finiteSourceFlag=finiteSourceFlagDefault) {
     var timeTerm = getTimeTerm(t); // unitless
     var u = getU(timeTerm); // unitless
     var magnif = getMagnifFromU(u); // unitless
+
+    if (finiteSourceFlag === true &&
+        typeof PSPL_microlensing_event_finite_source !== "undefined") {
+      magnif *= PSPL_microlensing_event_finite_source.getFiniteSourceFactor(u);
+    }
+
     return magnif;
   }
 
