@@ -213,6 +213,8 @@ var PSPL_microlensing_event_lens_plane = (function() {
   function updateRho() {
     sourceRadius = rhoSlider.value; // source radisu in mas
     updateRhoSlider();
+    eventModule.updateCurveData();
+    eventModule.plotLightcurve();
     redraw();
   }
 
@@ -962,8 +964,9 @@ var PSPL_microlensing_event_lens_plane = (function() {
   // public properties to be stored in module object,
   // accessible via module object by code executed after this script
   return {
-    get sourcePos() { return sourcePos; },
-    get xAxisInitialThetaX() { return xAxisInitialThetaX; },
+    get sourcePos() { return sourcePos; }, // mas
+    get xAxisInitialThetaX() { return xAxisInitialThetaX; }, // mas
+    get sourceRadius() { return sourceRadius; }, // mas
     redraw: redraw,
     getThetaX: getThetaX,
     initRho: initRho,

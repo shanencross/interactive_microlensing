@@ -146,7 +146,7 @@ var PSPL_microlensing_event = (function() {
   // flag for whether graph is generated from calculating
   // magnifications for a range of times from an equation,
   // or from an input of time/magnification arrays
-  var fromEquationDefault = true; // const
+  var fromEquationDefault = false; // const
   var centerLayout = false; // const
   var finiteSourceFlagDefault = true;
 
@@ -404,6 +404,9 @@ var PSPL_microlensing_event = (function() {
     // reset lense curve parameters to defaults and redraw curve
     initParams();
     updateSliders();
+
+    if (finiteSourceFlagDefault === true)
+      updateCurveData();
     plotLightcurve();
     if (typeof PSPL_microlensing_event_lens_plane !== "undefined")
       PSPL_microlensing_event_lens_plane.initRho(noRedraw=false);
@@ -483,7 +486,11 @@ var PSPL_microlensing_event = (function() {
     //
     updateDerivedQuantities();
     updateSliders();
-    // console.log(`tE: ${tE}`);
+
+    if (finiteSourceFlagDefault === true) {
+      updateCurveData();
+    }
+
     if (typeof PSPL_microlensing_event_lens_plane !== "undefined")
       PSPL_microlensing_event_lens_plane.redraw();
 
@@ -535,6 +542,8 @@ var PSPL_microlensing_event = (function() {
     }
 
     updatePlotScaleAndRange(xWidth, yHeight, xInit, yInit);
+    if (finiteSourceFlagDefault == true)
+      updateCurveData();
     plotLightcurve();
   }
 
@@ -754,6 +763,8 @@ var PSPL_microlensing_event = (function() {
     drawAxisLabels();
   }
 
+  var lightcurveData = undefined;
+
   function plotLightcurveAlone(tDayFinal=xAxisFinalDay, inputData, fromEquation=fromEquationDefault, dashedCurve=false) {
     // draw a single lightcurve (dashed or solid) up to a given time
 
@@ -765,12 +776,17 @@ var PSPL_microlensing_event = (function() {
       magnif = getMagnif(tDay);
     }
     else {
-      var curveData;
-      if (inputData === undefined) {
-        curveData = getCurveData();
-      }
-      else {
+      if (inputData !== undefined) {
         curveData = inputData;
+      }
+      else { // no input parameter given
+        if (lightcurveData !== undefined) { // module lightcurve variable already initialized
+          curveData = lightcurveData; // use module variable in function
+        }
+        else { // module lightcurve variable not initialized yet
+          updateCurveData(); // initialize module variable
+          curveData = lightcurveData; // use newly initialized module variable in function
+        }
       }
       var times = curveData.times;
       var magnifs = curveData.magnifs;
@@ -843,7 +859,7 @@ var PSPL_microlensing_event = (function() {
     context.restore();
   }
 
-  function getCurveData() {
+  function updateCurveData() {
     var times = [];
     var magnifs = [];
 
@@ -855,7 +871,7 @@ var PSPL_microlensing_event = (function() {
       magnifs.push(magnif);
     }
     var curveData = {times:times, magnifs:magnifs};
-    return curveData;
+    lightcurveData = curveData;
   }
 
   // functions to calculate magnification from parameters for a given time
@@ -917,6 +933,7 @@ var PSPL_microlensing_event = (function() {
     getU: getU,
     getTimeTerm: getTimeTerm,
     getMagnif: getMagnif,
+    updateCurveData: updateCurveData,
 
     // plotLightcurveSegment: plotLightcurveSegment,
     // initPlot: initPlot,
