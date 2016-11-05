@@ -149,6 +149,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
   var context = canvas.getContext("2d");
   var thetaXreadout = document.getElementById("thetaXreadout"); // readout of current source thetaX position
                                                                 // mainly for debugging, but may keep
+  var rhoNormalizedReadout = document.getElementById("rhoNormalizedReadout");
   var imageShapeCheckbox = document.getElementById("imageShapeCheckbox");
   var rhoSlider = document.getElementById("rhoSlider");
   var rhoReadout = document.getElementById("rhoReadout");
@@ -270,6 +271,12 @@ var PSPL_microlensing_event_lens_plane = (function() {
       newThetaXreadout = Number(0).toFixed(4);
     }
     thetaXreadout.innerHTML = newThetaXreadout; // update source thetaX readout
+
+    var newRhoNormalizedReadout = Number(sourceRadius / eventModule.thetaE_mas).toFixed(4);
+    if (Number(newRhoNormalizedReadout) === -0) {
+      newRhoNormalizedReadout = Number(0).toFixed(4);
+    }
+    rhoNormalizedReadout.innerHTML = newRhoNormalizedReadout;
 
     // convert position to pixel units
     sourcePixelPos = {x: thetaXtoPixel(sourcePos.x), y: thetaYtoPixel(sourcePos.y)};
