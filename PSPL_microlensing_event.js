@@ -143,7 +143,7 @@ var PSPL_microlensing_event = (function() {
   // or from an input of time/magnification arrays
   var fromEquationDefault = false; // const
   var centerLayout = false; // const
-  var finiteSourceFlagDefault = true;
+  var finiteSourceFlag = true;
 
   // parameter sliders and their readouts
   var tEslider = document.getElementById("tEslider");
@@ -199,7 +199,9 @@ var PSPL_microlensing_event = (function() {
     // initialize plot scale/range vars
     updatePlotScaleAndRange(dayWidthDefault, magnifHeightDefault,
                             xAxisInitialDayDefault, yAxisInitialMagnifDefault);
-    plotLightcurve();
+
+    // display lightcurve after all modules have been loaded
+    window.onload = plotLightcurve;
     console.log(`tE: ${tE}`);
     console.log(`thetaE: ${thetaE}`);
     console.log(`Drel: ${Drel}`);
@@ -406,10 +408,10 @@ var PSPL_microlensing_event = (function() {
     initParams();
     updateSliders();
 
-    if (finiteSourceFlagDefault === true)
+    if (finiteSourceFlag === true)
       updateCurveData();
     if (typeof PSPL_microlensing_event_lens_plane !== "undefined") {
-      PSPL_microlensing_event_lens_plane.initRho(noRedraw=false);
+      PSPL_microlensing_event_lens_plane.initSourceRadius(noRedraw=false);
       PSPL_microlensing_event_lens_plane.redraw();
     }
     plotLightcurve();
@@ -489,9 +491,7 @@ var PSPL_microlensing_event = (function() {
     updateDerivedQuantities();
     updateSliders();
 
-    if (finiteSourceFlagDefault === true) {
-      updateCurveData();
-    }
+    updateCurveData();
 
     if (typeof PSPL_microlensing_event_lens_plane !== "undefined")
       PSPL_microlensing_event_lens_plane.redraw();
@@ -544,8 +544,7 @@ var PSPL_microlensing_event = (function() {
     }
 
     updatePlotScaleAndRange(xWidth, yHeight, xInit, yInit);
-    if (finiteSourceFlagDefault == true)
-      updateCurveData();
+    updateCurveData();
     plotLightcurve();
   }
 
@@ -894,7 +893,7 @@ var PSPL_microlensing_event = (function() {
     return magnif;
   }
 
-  function getMagnif(t, finiteSourceFlag=finiteSourceFlagDefault) {
+  function getMagnif(t) {
     var timeTerm = getTimeTerm(t); // unitless
     var u = getU(timeTerm); // unitless
     var magnif = getMagnifFromU(u); // unitless

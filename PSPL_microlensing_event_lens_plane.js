@@ -149,10 +149,10 @@ var PSPL_microlensing_event_lens_plane = (function() {
   var context = canvas.getContext("2d");
   var thetaXreadout = document.getElementById("thetaXreadout"); // readout of current source thetaX position
                                                                 // mainly for debugging, but may keep
-  var rhoNormalizedReadout = document.getElementById("rhoNormalizedReadout");
+  var sourceRadiusNormalizedReadout = document.getElementById("sourceRadiusNormalizedReadout");
   var imageShapeCheckbox = document.getElementById("imageShapeCheckbox");
-  var rhoSlider = document.getElementById("rhoSlider");
-  var rhoReadout = document.getElementById("rhoReadout");
+  var sourceRadiusSlider = document.getElementById("sourceRadiusSlider");
+  var sourceRadiusReadout = document.getElementById("sourceRadiusReadout");
 
   // if on, display shapes for the lensed images, not just points;
   // toggled by checkbox
@@ -190,30 +190,30 @@ var PSPL_microlensing_event_lens_plane = (function() {
     initListeners();
     updateScaleAndRangeValues();
     initSourcePos();
-    initRho();
+    initSourceRadius();
     redraw();
   }
 
   function initListeners() {
    imageShapeCheckbox.addEventListener("change", function() { displayImageShapeFlag = !displayImageShapeFlag;
                                                           console.log(`displayImageShapeFlag: ${displayImageShapeFlag}`); }, false);
-  rhoSlider.addEventListener("input", function() { updateRho(); }, false);
-  rhoSlider.addEventListener("change", function() { updateRho(); }, false);
+  sourceRadiusSlider.addEventListener("input", function() { updateSourceRadius(); }, false);
+  sourceRadiusSlider.addEventListener("change", function() { updateSourceRadius(); }, false);
   }
 
-  function initRho() {
-    sourceRadius = 1/75 * 4; // source radius in mas
-    updateRhoSlider();
+  function initSourceRadius() {
+    sourceRadius = 1/75 * 1; // source radius in mas
+    updateSourceRadiusSlider();
   }
 
-  function updateRhoSlider() {
-    rhoSlider.value = sourceRadius; // source radius in mas
-    rhoReadout.innerHTML = Number(rhoSlider.value).toFixed(4);
+  function updateSourceRadiusSlider() {
+    sourceRadiusSlider.value = sourceRadius; // source radius in mas
+    sourceRadiusReadout.innerHTML = Number(sourceRadiusSlider.value).toFixed(4);
   }
 
-  function updateRho() {
-    sourceRadius = rhoSlider.value; // source radisu in mas
-    updateRhoSlider();
+  function updateSourceRadius() {
+    sourceRadius = sourceRadiusSlider.value; // source radisu in mas
+    updateSourceRadiusSlider();
     eventModule.updateCurveData();
     eventModule.plotLightcurve();
     redraw();
@@ -272,11 +272,11 @@ var PSPL_microlensing_event_lens_plane = (function() {
     }
     thetaXreadout.innerHTML = newThetaXreadout; // update source thetaX readout
 
-    var newRhoNormalizedReadout = Number(sourceRadius / eventModule.thetaE_mas).toFixed(4);
-    if (Number(newRhoNormalizedReadout) === -0) {
-      newRhoNormalizedReadout = Number(0).toFixed(4);
+    var newSourceRadiusNormalizedReadout = Number(sourceRadius / eventModule.thetaE_mas).toFixed(4);
+    if (Number(newSourceRadiusNormalizedReadout) === -0) {
+      newSourceRadiusNormalizedReadout = Number(0).toFixed(4);
     }
-    rhoNormalizedReadout.innerHTML = newRhoNormalizedReadout;
+    sourceRadiusNormalizedReadout.innerHTML = newSourceRadiusNormalizedReadout;
 
     // convert position to pixel units
     sourcePixelPos = {x: thetaXtoPixel(sourcePos.x), y: thetaYtoPixel(sourcePos.y)};
@@ -976,6 +976,6 @@ var PSPL_microlensing_event_lens_plane = (function() {
     get sourceRadius() { return sourceRadius; }, // mas
     redraw: redraw,
     getThetaX: getThetaX,
-    initRho: initRho,
+    initSourceRadius: initSourceRadius,
   };
 })();
