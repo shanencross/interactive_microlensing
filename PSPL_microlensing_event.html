@@ -51,10 +51,23 @@
   	&rho;: <span id="rhoNormalizedReadout">0.0000</span>
   </div>
 
-  <div style="text-align:center; position:relative;">
-    source radius <input type="range" id="rhoSlider" min="0.0001" max="1.5000" step="0.0001" value="0.0133">
-    <span id="rhoReadout" style="display:inline-block;
-                    width:3.8em; text-align:right;">0.0133</span> mas
+  <div style="text-align:center; position:relative; padding: 5px 10px;">
+    <!-- <a href="javascript:show_hide_test.toggleDiv('myContent');"
+          style="text-align:center; position:relative; padding: 5px 10px;">
+          + Show Options For Finite Source Effects</a> -->
+
+    <a id="displayText" href="javascript:show_hide_test.toggle();">+ Show Options For Finite Source Effects</a>
+
+    <!-- <div id="myContent" style="padding: 5px 10px;"> -->
+    <div id="toggleText" style="display: none; padding: 5px 10px;">
+
+      <div>
+        source radius <input type="range" id="rhoSlider" min="0.0001" max="1.5000" step="0.0001" value="0.0133">
+        <span id="rhoReadout" style="display:inline-block;
+                        width:3.8em; text-align:right;">0.0133</span> mas
+      </div>
+
+    </div>
   </div>
 
   <div style="text-align:center; position:relative;">
@@ -136,14 +149,19 @@
     <input type="button" id="resetGraph" value="Reset Range/Scale">
   </div>
 
+
+  <!--jQuery library-->
+  <!-- <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js"></script> -->
   <!--Everpolate library: for interpolation of finite source
       correction factor table-->
   <script src="libraries/everpolate.browserified.min.js"></script>
+  <!-- Microlensing Event scripts -->
   <!-- <script src="PSPL_microlensing_event_main.js"></script> -->
   <script src="PSPL_microlensing_event.js"></script>
   <script src="PSPL_microlensing_event_lens_plane.js"></script>
   <script src="PSPL_microlensing_event_finite_source_table.js"></script>
   <script src="PSPL_microlensing_event_finite_source.js"></script>
   <script src="PSPL_microlensing_event_animation.js"></script>
+  <script src="show_hide_test.js"></script>
 </body>
 </html>

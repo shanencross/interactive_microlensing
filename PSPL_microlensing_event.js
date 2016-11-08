@@ -68,7 +68,6 @@ var PSPL_microlensing_event = (function() {
 
   // tracks whether u0 is to be held fixed while other quantities vary
   var fixU0;
-  initParams();
 
   // plot scale
   var dayWidth;
@@ -86,9 +85,6 @@ var PSPL_microlensing_event = (function() {
   var magnifHeightDefault = 10; // const
   var xAxisInitialDayDefault = -16; // const
   var yAxisInitialMagnifDefault = 0.5; // const
-  // initialize plot scale/range vars
-  updatePlotScaleAndRange(dayWidthDefault, magnifHeightDefault,
-                          xAxisInitialDayDefault, yAxisInitialMagnifDefault);
 
   // gridlines
   var xGridInitial;
@@ -100,7 +96,6 @@ var PSPL_microlensing_event = (function() {
 
   var xGridStepDefault = 2; // const
   var yGridStepDefault = 1; // const
-  updateGridRange(xGridStepDefault, yGridStepDefault); // initialize gridline vars
 
   // Step increments used by debug buttons to alter range/scale
   var xGraphShiftStep = 0.25;
@@ -198,7 +193,12 @@ var PSPL_microlensing_event = (function() {
   init();
 
   function init() {
+    initParams();
     initListeners();
+    updateGridRange(xGridStepDefault, yGridStepDefault); // initialize gridline vars
+    // initialize plot scale/range vars
+    updatePlotScaleAndRange(dayWidthDefault, magnifHeightDefault,
+                            xAxisInitialDayDefault, yAxisInitialMagnifDefault);
     plotLightcurve();
     console.log(`tE: ${tE}`);
     console.log(`thetaE: ${thetaE}`);
@@ -235,7 +235,7 @@ var PSPL_microlensing_event = (function() {
     resetParamsButton.addEventListener("click", resetParams, false);
 
     // checkbox to hold u0 value fixed while varying other quantities besides thetaY
-    fixU0checkbox.addEventListener("change", function() { fixU0 = !fixU0;
+    fixU0checkbox.addEventListener("change", function() { fixU0 = fixU0checkbox.checked;
                                                           console.log(`fixU0: ${fixU0}`); }, false);
 
     // debug plot range/scale and reset buttons
@@ -264,19 +264,20 @@ var PSPL_microlensing_event = (function() {
     Dl = 7.0; // kpc: Dl = Ds * (1 - 1/mu)
     t0 = 0; // days
     mu = 7; // mas/yr  (milliarcseconds/year): mu = thetaE / tE
-    fixU0 = false;
+    fixU0 = fixU0checkbox.checked;
 
     // set derived quantities
-    updateDerivedQuantities();
+    updateDerivedQuantities(initializing=true);
   }
 
-  function updateDerivedQuantities() {
+  function updateDerivedQuantities(initializing=false) {
     updateDrel();
     updateThetaE();
-    if (fixU0 === false)
+    if (fixU0 === false || initializing === true)
       updateU0();
     else
       updateThetaY();
+
     // console.log(`tE before: ${tE}`);
     updateTE();
     // console.log(`tE after: ${tE}`);
@@ -407,10 +408,11 @@ var PSPL_microlensing_event = (function() {
 
     if (finiteSourceFlagDefault === true)
       updateCurveData();
-    plotLightcurve();
-    if (typeof PSPL_microlensing_event_lens_plane !== "undefined")
+    if (typeof PSPL_microlensing_event_lens_plane !== "undefined") {
       PSPL_microlensing_event_lens_plane.initRho(noRedraw=false);
       PSPL_microlensing_event_lens_plane.redraw();
+    }
+    plotLightcurve();
   }
 
   function updateParam(param) {
@@ -750,7 +752,6 @@ var PSPL_microlensing_event = (function() {
   function plotLightcurve(tDayFinal=xAxisFinalDay, inputData, fromEquation=fromEquationDefault) {
     // Draw plot background, as well as both complete (dashed) lightcurve and
     // partial (solid) lightcurve up to a given time
-
     // draw plot with gridlines, etc. (no axes or axis labels yet).
     initPlot();
     // draw complete lightcurve across entire time axis as dashed line
