@@ -937,11 +937,16 @@ var PSPL_microlensing_event = (function() {
     get tE() { return tE; }, // days
     get u0() { return u0; }, // unitless (units of thetaE)
 
+    get finiteSourceFlag() { return finiteSourceFlag; }, // whether finite or point source is being used
+
     // used for animation
     get dt() { return dt; }, // time step used for drawing curve (days)
     get xAxisInitialDay() { return xAxisInitialDay; },
     get xAxisFinalDay() { return xAxisFinalDay; },
     plotLightcurve: plotLightcurve,
+
+    // toggling finite source effects
+    toggleFiniteSource: toggleFiniteSource,
 
     // for debugging
     getU: getU,

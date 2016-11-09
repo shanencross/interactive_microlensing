@@ -64,11 +64,11 @@ var PSPL_microlensing_event_lens_plane = (function() {
   var dashedPathLength = 8;
   var dashedPathSpacing = 10
 
-  var sourceColor = "teal";
+  var sourceColor = "navy";
   // initialized elsewhere in function
   var sourceRadius; // mas
   var sourceOutlineWidth = 2;
-  var sourceOutlineColor = sourceColor;
+  var sourceOutlineColor = "teal";
 
   var lensColor = "red";
   var lensRadius = 2;
@@ -86,10 +86,10 @@ var PSPL_microlensing_event_lens_plane = (function() {
 
   var lensedImageRadius = 2;
   var lensedImageLineWidth = 2;
-  var lensedImagePlusColor = "navy";
-  var lensedImagePlusOutlineColor = "navy";
-  var lensedImageMinusColor = "olive";
-  var lensedImageMinusOutlineColor = "olive";
+  var lensedImagePlusColor = "purple";
+  var lensedImagePlusOutlineColor = "fuchsia";
+  var lensedImageMinusColor = "green";
+  var lensedImageMinusOutlineColor = "lime";
 
   //base variables (tick labels)
   var tickLabelFont = "8pt Arial";
@@ -202,7 +202,8 @@ var PSPL_microlensing_event_lens_plane = (function() {
   }
 
   function initSourceRadius() {
-    sourceRadius = 1/75 * 1; // source radius in mas
+    sourceRadius = 2/xPixelScale; // source radius in mas
+    lensedImageRadius = sourceRadius*xPixelScale;
     updateSourceRadiusSlider();
   }
 
@@ -213,6 +214,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
 
   function updateSourceRadius() {
     sourceRadius = sourceRadiusSlider.value; // source radisu in mas
+    lensedImageRadius = sourceRadius * xPixelScale;
     updateSourceRadiusSlider();
     eventModule.updateCurveData();
     eventModule.plotLightcurve();
@@ -291,7 +293,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
 
     // lensed image outlines;
     // NOTE: This hammers the the dperformance signifcantly right now
-    if (drawFullLensedImagesFlag === true) {
+    if (drawFullLensedImagesFlag === true && eventModule.finiteSourceFlag === true) {
       sourceOutline = getCircleOutline(radius=sourceRadius, thetaPos=sourcePos);
       lensedImageOutlines = getLensedImageOutlines(sourceOutline);
       // if (lensedImageOutlines.plus.length === sourceOutline.length) {
@@ -945,19 +947,22 @@ var PSPL_microlensing_event_lens_plane = (function() {
     // drawSource(useOutline=true);
     drawUarrow();
     if (displayImageShapeFlag === true) {
-      //
-      if (clippingImageFlag === true) {
-        context.save();
-        context.beginPath();
-        context.rect(0, 0, canvas.width, context.canvas.height);
-        context.arc(lensPixelPos.x, lensPixelPos.y, ringRadius.x, 0, Math.PI * 2, true);
-        context.clip();
+      if (eventModule.finiteSourceFlag === false)
+        drawPointLensedImages();
+      else {
+        if (clippingImageFlag === true) {
+          context.save();
+          context.beginPath();
+          context.rect(0, 0, canvas.width, context.canvas.height);
+          context.arc(lensPixelPos.x, lensPixelPos.y, ringRadius.x, 0, Math.PI * 2, true);
+          context.clip();
+        }
+        drawFullLensedImages(debug=false, fillOn=true, strokeOn=true);
+        // drawFullLensedImages(debug=true);
+        // drawFullLensedImages(debug=true);
+        if (clippingImageFlag === true)
+          context.restore();
       }
-      drawFullLensedImages(debug=false, fillOn=true, strokeOn=true);
-      // drawFullLensedImages(debug=true);
-      // drawFullLensedImages(debug=true);
-      if (clippingImageFlag === true)
-        context.restore();
     }
     // drawPointLensedImages();
     drawLens();
