@@ -411,6 +411,8 @@ var PSPL_microlensing_event = (function() {
     // reset lense curve parameters to defaults and redraw curve
     initParams();
     updateSliders();
+    if (typeof PSPL_microlensing_event_lens_plane !== "undefined")
+      PSPL_microlensing_event_lens_plane.initSourceRadius();
     if (finiteSourceFlag == true)
       updateCurveData();
     redrawCanvases();
@@ -944,6 +946,9 @@ var PSPL_microlensing_event = (function() {
     get xAxisInitialDay() { return xAxisInitialDay; },
     get xAxisFinalDay() { return xAxisFinalDay; },
     plotLightcurve: plotLightcurve,
+
+    // redrawing both canvases
+    redrawCanvases: redrawCanvases,
 
     // toggling finite source effects
     toggleFiniteSource: toggleFiniteSource,

@@ -64,7 +64,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
   var dashedPathLength = 8;
   var dashedPathSpacing = 10
 
-  var sourceColor = "navy";
+  var sourceColor = "#004d4d"; // darker teal
   // initialized elsewhere in function
   var sourceRadius; // mas
   var sourceOutlineWidth = 2;
@@ -202,7 +202,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
   }
 
   function initSourceRadius() {
-    sourceRadius = 2/xPixelScale; // source radius in mas
+    sourceRadius = 4/xPixelScale; // source radius in mas
     lensedImageRadius = sourceRadius*xPixelScale;
     updateSourceRadiusSlider();
   }
@@ -217,8 +217,9 @@ var PSPL_microlensing_event_lens_plane = (function() {
     lensedImageRadius = sourceRadius * xPixelScale;
     updateSourceRadiusSlider();
     eventModule.updateCurveData();
-    eventModule.plotLightcurve();
-    redraw();
+    eventModule.redrawCanvases();
+    // eventModule.plotLightcurve();
+    // redraw();
   }
 
   function initSourcePos(animation=animationFlag, debug=debugFlag) {
