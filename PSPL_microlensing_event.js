@@ -138,13 +138,6 @@ var PSPL_microlensing_event = (function() {
   // time increment for drawing curve
   var dt = 0.01;
 
-  // flag for whether graph is generated from calculating
-  // magnifications for a range of times from an equation,
-  // or from an input of time/magnification arrays
-  var fromEquationDefault = false; // const
-  var centerLayout = false; // const
-  var finiteSourceFlag = true;
-
   // parameter sliders and their readouts
   var tEslider = document.getElementById("tEslider");
   var tEreadout = document.getElementById("tEreadout");
@@ -187,6 +180,16 @@ var PSPL_microlensing_event = (function() {
   var yZoomOutButton = document.getElementById("yZoomOut");
 
   var resetGraphButton = document.getElementById("resetGraph");
+
+  var finiteSourceCheckbox = document.getElementById("finiteSourceCheckbox");
+
+  // flag for whether graph is generated from calculating
+  // magnifications for a range of times from an equation,
+  // or from an input of time/magnification arrays
+  var fromEquationDefault = false; // const
+  var centerLayout = false; // const
+  var finiteSourceFlag = finiteSourceCheckbox.checked;
+
 
   // window.onload = init;
   // console.log(PSPL_microlensing_event_lens_plane);
@@ -252,6 +255,7 @@ var PSPL_microlensing_event = (function() {
     yZoomOutButton.addEventListener("click", function() { updateGraph("yZoomOut"); }, false);
 
     resetGraphButton.addEventListener("click", function() { updateGraph("reset"); }, false)
+    finiteSourceCheckbox.addEventListener("change", toggleFiniteSource, false);
     updateSliders(); // in case HTML slider values differ from actual starting values
   }
 
@@ -407,14 +411,16 @@ var PSPL_microlensing_event = (function() {
     // reset lense curve parameters to defaults and redraw curve
     initParams();
     updateSliders();
-
-    if (finiteSourceFlag === true)
+    if (finiteSourceFlag == true)
       updateCurveData();
-    if (typeof PSPL_microlensing_event_lens_plane !== "undefined") {
-      PSPL_microlensing_event_lens_plane.initSourceRadius(noRedraw=false);
-      PSPL_microlensing_event_lens_plane.redraw();
-    }
-    plotLightcurve();
+    redrawCanvases();
+    // if (finiteSourceFlag === true)
+    //   updateCurveData();
+    // if (typeof PSPL_microlensing_event_lens_plane !== "undefined") {
+    //   PSPL_microlensing_event_lens_plane.initSourceRadius(noRedraw=false);
+    //   PSPL_microlensing_event_lens_plane.redraw();
+    // }
+    // plotLightcurve();
   }
 
   function updateParam(param) {
@@ -490,9 +496,11 @@ var PSPL_microlensing_event = (function() {
     //
     updateDerivedQuantities();
     updateSliders();
-
     updateCurveData();
+    redrawCanvases();
+  }
 
+  function redrawCanvases() {
     if (typeof PSPL_microlensing_event_lens_plane !== "undefined")
       PSPL_microlensing_event_lens_plane.redraw();
 
@@ -872,6 +880,12 @@ var PSPL_microlensing_event = (function() {
     }
     var curveData = {times:times, magnifs:magnifs};
     lightcurveData = curveData;
+  }
+
+  function toggleFiniteSource() {
+    finiteSourceFlag = !finiteSourceFlag;
+    updateCurveData();
+    redrawCanvases();
   }
 
   // functions to calculate magnification from parameters for a given time

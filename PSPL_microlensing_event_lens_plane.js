@@ -195,10 +195,10 @@ var PSPL_microlensing_event_lens_plane = (function() {
   }
 
   function initListeners() {
-   imageShapeCheckbox.addEventListener("change", function() { displayImageShapeFlag = !displayImageShapeFlag;
-                                                          console.log(`displayImageShapeFlag: ${displayImageShapeFlag}`); }, false);
-  sourceRadiusSlider.addEventListener("input", function() { updateSourceRadius(); }, false);
-  sourceRadiusSlider.addEventListener("change", function() { updateSourceRadius(); }, false);
+    imageShapeCheckbox.addEventListener("change", function() { displayImageShapeFlag = imageShapeCheckbox.checked;
+                                                               console.log(`displayImageShapeFlag: ${displayImageShapeFlag}`); }, false);
+    sourceRadiusSlider.addEventListener("input", function() { updateSourceRadius(); }, false);
+    sourceRadiusSlider.addEventListener("change", function() { updateSourceRadius(); }, false);
   }
 
   function initSourceRadius() {
@@ -221,7 +221,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
 
   function initSourcePos(animation=animationFlag, debug=debugFlag) {
     var sourcePosY = eventModule.thetaY;
-    sourcePos = {x: getThetaX(eventModule.xAxisFinalDay), y: sourcePosY};
+    sourcePos = {x: getThetaX(eventModule.xAxisInitialDay), y: sourcePosY};
 
     if (animation === false)
       sourcePos.x = xAxisFinalThetaX;
