@@ -158,7 +158,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
   // toggled by checkbox
   var displayImageShapeFlag = true;
 
-  var fractionDefault = 360; // number of points into which source outline is divided
+  var fractionDefault = 20; // number of points into which source outline is divided
                            // i.e. a value of 8 would divide the outline into 8
                            // evenly spaced points
 
@@ -944,8 +944,8 @@ var PSPL_microlensing_event_lens_plane = (function() {
     drawGridlinesAndTicks();
     toggleClippingRegion(turnOn=true);
     drawSourcePath();
-    drawSource();
-    // drawSource(useOutline=true);
+    // drawSource();
+    drawSource(useOutline=true);
     drawUarrow();
     if (displayImageShapeFlag === true) {
       if (eventModule.finiteSourceFlag === false)
@@ -959,13 +959,11 @@ var PSPL_microlensing_event_lens_plane = (function() {
           context.clip();
         }
         drawFullLensedImages(debug=false, fillOn=true, strokeOn=true);
-        // drawFullLensedImages(debug=true);
-        // drawFullLensedImages(debug=true);
+        drawFullLensedImages(debug=true);
         if (clippingImageFlag === true)
           context.restore();
       }
     }
-    // drawPointLensedImages();
     drawLens();
     drawRing();
     toggleClippingRegion(turnOn=false);
