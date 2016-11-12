@@ -803,6 +803,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
       // draw either a plus or minus lensed image
 
       // set aesthetics and select plus or minus outlines object
+      // DEBUG: removing the linewidth line possibly fixes it????
       context.lineWidth = lensedImageLineWidth;
       if (sign === "plus") {
         context.strokeStyle = "fuchsia";
@@ -853,6 +854,15 @@ var PSPL_microlensing_event_lens_plane = (function() {
                 [267.5266382822896, 200.39231068491944],
                 [267.6168454281123, 200.74557136501642]];
 
+    context.beginPath();
+    context.moveTo(outlines[0][0], outlines[0][1]);
+    for (var i=0; i<outlines.length; i++) {
+      context.lineTo(outlines[i][0], outlines[i][1]);
+    }
+    context.closePath();
+    context.stroke();
+    context.fill();
+/* 
       // draw line through each point in outline array
       if (debug === false) {
         context.beginPath();
@@ -884,7 +894,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
         if (fillOn === true)
           context.fill();
       }
-    }
+ */    }
     
     function drawCombinedImage(fillOn=true, strokeOn=false) {
 
@@ -995,24 +1005,26 @@ var PSPL_microlensing_event_lens_plane = (function() {
     //drawSourcePath();
     //drawSource();
     // drawSource(useOutline=true);
-    drawUarrow();
-    if (displayImageShapeFlag === true) {
-      if (eventModule.finiteSourceFlag === false)
-        drawPointLensedImages();
-      else {
-        if (clippingImageFlag === true) {
-          context.save();
-          context.beginPath();
-          context.rect(0, 0, canvas.width, context.canvas.height);
-          context.arc(lensPixelPos.x, lensPixelPos.y, ringRadius.x, 0, Math.PI * 2, true);
-          context.clip();
-        }
+    
+    // drawUarrow();
+    // if (displayImageShapeFlag === true) {
+      // if (eventModule.finiteSourceFlag === false)
+        // drawPointLensedImages();
+      // else {
+        // if (clippingImageFlag === true) {
+          // context.save();
+          // context.beginPath();
+          // context.rect(0, 0, canvas.width, context.canvas.height);
+          // context.arc(lensPixelPos.x, lensPixelPos.y, ringRadius.x, 0, Math.PI * 2, true);
+          // context.clip();
+        // }
         drawFullLensedImages(debug=false, fillOn=true, strokeOn=true);
         // drawFullLensedImages(debug=true);
-        if (clippingImageFlag === true)
-          context.restore();
-      }
-    }
+        // if (clippingImageFlag === true)
+          // context.restore();
+      // }
+    // }
+    
     //drawLens();
     //drawRing();
     //toggleClippingRegion(turnOn=false);
