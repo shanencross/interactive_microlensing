@@ -158,11 +158,11 @@ var PSPL_microlensing_event_lens_plane = (function() {
   // toggled by checkbox
   var displayImageShapeFlag = true;
 
-  var fractionDefault = 360; // number of points into which source outline is divided
+  var fractionDefault = 20; // number of points into which source outline is divided
                            // i.e. a value of 8 would divide the outline into 8
                            // evenly spaced points
 
-  var subFractionDefault = 50;
+  var subFractionDefault = 0;
 
   // debug flags
   var animationFlag = true;
@@ -441,6 +441,24 @@ var PSPL_microlensing_event_lens_plane = (function() {
       outlines.plus.push(images.plus);
       outlines.minus.push(images.minus);
     }
+    // console.log(`Plus (mas):`)
+    // for (i=0; i<outlines.plus.length; i++) {
+      // console.log(`(${outlines.plus[i].pos.x}, ${outlines.plus[i].pos.y})`);
+    // }
+    
+    // console.log(`Minus (mas):`)
+    // for (i=0; i<outlines.minus.length; i++) {
+      // console.log(`(${outlines.minus[i].pos.x}, ${outlines.minus[i].pos.y})`);
+    // }
+    
+    for (i=0; i<outlines.plus.length; i++) {
+      console.log(`Plus (pixels): (${outlines.plus[i].pixelPos.x}, ${outlines.plus[i].pixelPos.y})`);
+    }
+    
+    for (i=0; i<outlines.minus.length; i++) {
+      console.log(`Minus (pixels): (${outlines.minus[i].pixelPos.x}, ${outlines.minus[i].pixelPos.y})`);
+    }
+  
     return outlines;
   }
 
@@ -772,9 +790,16 @@ var PSPL_microlensing_event_lens_plane = (function() {
       context.fill();
       context.stroke();
     }
-
+    /* 
+    function drawFullLensedImage(sign="plus", debug=false, fillOn=true, 
+                                 strokeOn=false) {
+      context.beginPath();
+      
+    }                                 
+ */
     function drawFullLensedImage(sign="plus", debug=false, fillOn=true,
                                  strokeOn=false) {
+                                 
       // draw either a plus or minus lensed image
 
       // set aesthetics and select plus or minus outlines object
@@ -798,7 +823,6 @@ var PSPL_microlensing_event_lens_plane = (function() {
         }
         var outlines = lensedImageOutlines.minus;
       }
-
       else {
         console.log(`sign ${sign} is in valid. Must be "plus" or "minus"`)
         return;
@@ -807,18 +831,43 @@ var PSPL_microlensing_event_lens_plane = (function() {
       if (outlines === undefined || outlines.length === 0) {
         return;
       }
+      
+      var outlines = [[267.62102584096135, 201.13473064592418],
+                [267.53750937435694, 201.50867380458072],
+                [267.37956236862965, 201.8194148268458],
+                [267.1714019472248, 202.0321117633997],
+                [266.94152063594515, 202.12987570664646],
+                [266.71653612014677, 202.1127711592042],
+                [266.5175709293343, 201.99324738651003],
+                [266.35929969286803, 201.7908596789046],
+                [266.25070423110486, 201.52813014206978],
+                [266.1964489132225, 201.22811766312861],
+                [266.19813601574845, 200.91346263972184],
+                [266.2550780112988, 200.60637721309226],
+                [266.3644645068215, 200.32902475498128],
+                [266.5209267025598, 200.10376345913784],
+                [266.7155996504034, 199.95272687101846],
+                [266.93494530223165, 199.8962072178908],
+                [267.1598827876401, 199.94944157305596],
+                [267.3661137567075, 200.11791190720993],
+                [267.5266382822896, 200.39231068491944],
+                [267.6168454281123, 200.74557136501642]];
 
       // draw line through each point in outline array
       if (debug === false) {
         context.beginPath();
-        context.moveTo(outlines[0].pixelPos.x, outlines[0].pixelPos.y);
+        context.moveTo(outlines[0][0], outlines[0][1]);
+        // context.moveTo(outlines[0].pixelPos.x, outlines[0].pixelPos.y);
+        // console.log(`outline debug: moving to (${sign}): (${outlines[0].pixelPos.x}, ${outlines[0].pixelPos.y})`);
       }
 
       for (var index = 0; index<outlines.length; index++) {
-        var pixelPos = outlines[index].pixelPos;
+        // var pixelPos = outlines[index].pixelPos;
+        var pixelPos = {x: outlines[index][0], y: outlines[index][1]};
 
         if (debug === false) {
           context.lineTo(pixelPos.x, pixelPos.y);
+          console.log(`outline debug: drawing (${sign}): (${pixelPos.x}, ${pixelPos.y})`);
         }
         else {
           context.beginPath();
@@ -836,7 +885,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
           context.fill();
       }
     }
-
+    
     function drawCombinedImage(fillOn=true, strokeOn=false) {
 
       function drawInnerOutline() {
@@ -933,18 +982,18 @@ var PSPL_microlensing_event_lens_plane = (function() {
       }
       else {
         console.log("draw full lensed images");
-        drawFullLensedImage("plus", debug, fillOn, strokeOn); // draw plus image
+        //drawFullLensedImage("plus", debug, fillOn, strokeOn); // draw plus image
         drawFullLensedImage("minus", debug, fillOn, strokeOn); // draw minus image
       }
     }
 
     clearPic();
-    drawBackgrounds();
-    drawBorder();
-    drawGridlinesAndTicks();
-    toggleClippingRegion(turnOn=true);
-    drawSourcePath();
-    drawSource();
+    //drawBackgrounds();
+    //drawBorder();
+    //drawGridlinesAndTicks();
+    //toggleClippingRegion(turnOn=true);
+    //drawSourcePath();
+    //drawSource();
     // drawSource(useOutline=true);
     drawUarrow();
     if (displayImageShapeFlag === true) {
@@ -960,16 +1009,14 @@ var PSPL_microlensing_event_lens_plane = (function() {
         }
         drawFullLensedImages(debug=false, fillOn=true, strokeOn=true);
         // drawFullLensedImages(debug=true);
-        // drawFullLensedImages(debug=true);
         if (clippingImageFlag === true)
           context.restore();
       }
     }
-    // drawPointLensedImages();
-    drawLens();
-    drawRing();
-    toggleClippingRegion(turnOn=false);
-    drawAxes();
+    //drawLens();
+    //drawRing();
+    //toggleClippingRegion(turnOn=false);
+    //drawAxes();
   }
 
   // executing script initialization
