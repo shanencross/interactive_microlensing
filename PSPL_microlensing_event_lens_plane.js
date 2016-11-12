@@ -1018,7 +1018,13 @@ var PSPL_microlensing_event_lens_plane = (function() {
           // context.arc(lensPixelPos.x, lensPixelPos.y, ringRadius.x, 0, Math.PI * 2, true);
           // context.clip();
         // }
-        drawFullLensedImages(debug=false, fillOn=true, strokeOn=true);
+        //drawFullLensedImages(debug=false, fillOn=true, strokeOn=true);
+        
+        //DEBUG: below line generates artifacts alllll by itself
+        //WHY?????
+        //However, getting rid of it in the original code does not fix the artifacting problem?!
+        context.lineWidth = lensedImageLineWidth;
+        
         // drawFullLensedImages(debug=true);
         // if (clippingImageFlag === true)
           // context.restore();
