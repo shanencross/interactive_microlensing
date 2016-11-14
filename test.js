@@ -34,6 +34,8 @@ for (var i=0; i<minusOutline.length; i++) {
 }
 context.closePath();
 
+window.alert(context.lineWidth);
+context.lineWidth = 2;
 context.strokeStyle = "lime";
 context.fillStyle = "green";
 context.stroke();

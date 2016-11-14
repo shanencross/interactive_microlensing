@@ -1023,7 +1023,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
         //DEBUG: below line generates artifacts alllll by itself
         //WHY?????
         //However, getting rid of it in the original code does not fix the artifacting problem?!
-        context.lineWidth = lensedImageLineWidth;
+        // context.lineWidth = lensedImageLineWidth;
         
         // drawFullLensedImages(debug=true);
         // if (clippingImageFlag === true)
@@ -1039,6 +1039,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
 
   // executing script initialization
   init();
+  // context.lineWidth = lensedImageLineWidth;
   // public properties to be stored in module object,
   // accessible via module object by code executed after this script
   return {
