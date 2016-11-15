@@ -62,7 +62,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
   var dashedPathColor = "green";
   var dashedPathWidth = 2;
   var dashedPathLength = 8;
-  var dashedPathSpacing = 10
+  var dashedPathSpacing = 10;
 
   var sourceColor = "#004d4d"; // darker teal
   // initialized elsewhere in function
@@ -86,6 +86,8 @@ var PSPL_microlensing_event_lens_plane = (function() {
 
   var lensedImageRadius = 2;
   var lensedImageLineWidth = 2;
+  var dashedLensedImageLength = 5;
+  var dashedLensedImageSpacing = 0;
   var lensedImagePlusColor = "purple";
   var lensedImagePlusOutlineColor = "fuchsia";
   var lensedImageMinusColor = "green";
@@ -760,6 +762,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
       context.fillStyle = lensedImagePlusColor;
       context.strokeStyle = lensedImagePlusOutlineColor;
 
+      context.setLineDash([dashedLensedImageLength, dashedLensedImageSpacing]);
       context.beginPath();
       context.arc(lensedImages.plus.pixelPos.x, lensedImages.plus.pixelPos.y, lensedImageRadius, 0, 2*Math.PI, false);
       context.fill();
@@ -771,6 +774,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
       context.arc(lensedImages.minus.pixelPos.x, lensedImages.minus.pixelPos.y, lensedImageRadius, 0, 2*Math.PI, false);
       context.fill();
       context.stroke();
+      context.setLineDash([]);
     }
 
     function drawFullLensedImage(sign="plus", debug=false, fillOn=true,
@@ -829,11 +833,15 @@ var PSPL_microlensing_event_lens_plane = (function() {
       // context.closePath();
       if (debug === false) {
         context.closePath();
-
+        
+        context.setLineDash([dashedLensedImageLength, dashedLensedImageSpacing]);
+        
         if (strokeOn === true)
           context.stroke();
         if (fillOn === true)
           context.fill();
+          
+        context.setLineDash([]);
       }
     }
 
@@ -903,6 +911,8 @@ var PSPL_microlensing_event_lens_plane = (function() {
       if (strokeOn === true) {
         // draw separate outline for outer and inner outlines
 
+        context.setLineDash([dashedLensedImageLength, dashedLensedImageSpacing]);
+        
         // draw and display inner outline
         context.beginPath();
         drawInnerOutline();
@@ -916,6 +926,8 @@ var PSPL_microlensing_event_lens_plane = (function() {
         context.moveTo(outerOutlines[outerConnectionIndex].pixelPos.x, outerOutlines[outerConnectionIndex].pixelPos.y);
         drawOuterOutline(outerConnectionIndex);
         context.stroke();
+        
+        context.setLineDash([]);
       }
     }
 
