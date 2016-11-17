@@ -26,9 +26,16 @@ var PSPL_microlensing_event_animation = (function() {
   var roundingErrorThreshold = 1e-12; // if values passed to almostEquals have a smaller difference
                                       // than this, they will pass as "almost" equal
 
+  function init() {
+    updateMinAndMaxTimes();
+    time = minTime;
+    timeReadout.innerHTML = Number(time).toFixed(4);
+    initListeners();
+  }
+  
   function updateMinAndMaxTimes(min, max) {
 
-    // default to min/max values of lightcurve plot time axis
+	// default to min/max values of lightcurve plot time axis
     if (min === undefined)
       min = eventModule.xAxisInitialDay;
 
@@ -38,12 +45,13 @@ var PSPL_microlensing_event_animation = (function() {
     minTime = min;
     maxTime = max;
   }
-
-  function init() {
-    updateMinAndMaxTimes();
-    time = minTime;
-    timeReadout.innerHTML = Number(time).toFixed(4);
-    initListeners();
+  
+  function initListeners() {
+    stepBackButton.addEventListener("click", function() { updatePlayback("stepBack"); }, false);
+    playButton.addEventListener("click", function() { updatePlayback("play"); }, false);
+    pauseButton.addEventListener("click", function() { updatePlayback("pause"); }, false);
+    stepForwardButton.addEventListener("click", function() { updatePlayback("stepForward"); }, false);
+    timeResetButton.addEventListener("click", function() { updatePlayback("timeReset"); }, false);
   }
 
   function run() {
@@ -95,14 +103,6 @@ var PSPL_microlensing_event_animation = (function() {
     // update source thetaX position for new time
     lensPlaneModule.sourcePos.x = lensPlaneModule.getThetaX(time);
     lensPlaneModule.redraw();
-  }
-
-  function initListeners() {
-    stepBackButton.addEventListener("click", function() { updatePlayback("stepBack"); }, false);
-    playButton.addEventListener("click", function() { updatePlayback("play"); }, false);
-    pauseButton.addEventListener("click", function() { updatePlayback("pause"); }, false);
-    stepForwardButton.addEventListener("click", function() { updatePlayback("stepForward"); }, false);
-    timeResetButton.addEventListener("click", function() { updatePlayback("timeReset"); }, false);
   }
 
   function updatePlayback(command="play", updateFrame=true) {

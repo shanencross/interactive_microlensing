@@ -295,7 +295,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
     lensedImages = getLensedImages(sourcePos);
 
     // lensed image outlines;
-    // NOTE: This hammers the the dperformance signifcantly right now
+    // NOTE: This hammers the performance signifcantly right now
     if (drawFullLensedImagesFlag === true && eventModule.finiteSourceFlag === true) {
       sourceOutline = getCircleOutline(radius=sourceRadius, thetaPos=sourcePos);
       lensedImageOutlines = getLensedImageOutlines(sourceOutline);
@@ -971,8 +971,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
           context.clip();
         }
         drawFullLensedImages(debug=false, fillOn=true, strokeOn=true);
-        // drawFullLensedImages(debug=true);
-        // drawFullLensedImages(debug=true);
+        //drawFullLensedImages(debug=true);
         if (clippingImageFlag === true)
           context.restore();
       }
