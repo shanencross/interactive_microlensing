@@ -1,4 +1,4 @@
-// console.log = function() {} // uncomment this to disable all console.log messages
+console.log = function() {} // uncomment this to disable all console.log messages
 console.log("Executing PSPL_microlensing_event.js");
 
 //NOTE: const keyword not compatible with IE -- should replace it with var and document what values are constant

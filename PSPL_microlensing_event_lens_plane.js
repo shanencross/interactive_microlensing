@@ -291,10 +291,10 @@ var PSPL_microlensing_event_lens_plane = (function() {
     // lens pixel position
     lensPixelPos = {x:thetaXtoPixel(lensPos.x), y: thetaYtoPixel(lensPos.y)};
 
-    // lensed image positions;
+    // lensed image positions
     lensedImages = getLensedImages(sourcePos);
 
-    // lensed image outlines;
+    // lensed image outlines
     // NOTE: This hammers the performance signifcantly right now
     if (drawFullLensedImagesFlag === true && eventModule.finiteSourceFlag === true) {
       sourceOutline = getCircleOutline(radius=sourceRadius, thetaPos=sourcePos);
@@ -337,6 +337,10 @@ var PSPL_microlensing_event_lens_plane = (function() {
   function almostEquals(a, b, epsilon=1e-12) {
     return (Math.abs(a - b) < epsilon);
   }
+  
+  /*
+  
+  */
 
   function getCircleOutline(radius=sourceRadius, thetaPos=sourcePos,
                             fraction=fractionDefault,
@@ -826,8 +830,11 @@ var PSPL_microlensing_event_lens_plane = (function() {
         }
         else {
           context.beginPath();
-          context.arc(pixelPos.x, pixelPos.y, 1, 0, 2*Math.PI);
-          context.fill();
+          // filling in rectangles for points is much faster than 
+          // filling circles with arc function
+          context.fillRect(pixelPos.x-0.5, pixelPos.y-0.5, 1, 1);
+          // context.arc(pixelPos.x, pixelPos.y, 1, 0, 2*Math.PI);
+          // context.fill();
         }
       }
       // context.closePath();
@@ -971,7 +978,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
           context.clip();
         }
         drawFullLensedImages(debug=false, fillOn=true, strokeOn=true);
-        //drawFullLensedImages(debug=true);
+        // drawFullLensedImages(debug=true);
         if (clippingImageFlag === true)
           context.restore();
       }
