@@ -204,7 +204,10 @@ var PSPL_microlensing_event_lens_plane = (function() {
   }
 
   function initSourceRadius() {
-    sourceRadius = 4/xPixelScale; // source radius in mas
+    //sourceRadius = 4/xPixelScale; // source radius in mas
+    // sourceRadius = 0.0133; // mas
+    sourceRadius = 0.0636; // mas
+
     lensedImageRadius = sourceRadius*xPixelScale;
     updateSourceRadiusSlider();
   }

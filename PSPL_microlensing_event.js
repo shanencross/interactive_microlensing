@@ -264,14 +264,21 @@ var PSPL_microlensing_event = (function() {
     // set lense curve parameters to defaults
 
     // set base quantity defaults
-    // tE = 10; // tE = thetaE / mu
-    Ml = 0.1; // solMass
-    Ds = 8.0; // kpc: Ds =  Dl / (1 - 1/mu)
-    thetaY = 0.0121; // milliarcseconds (mas)
-    Dl = 7.0; // kpc: Dl = Ds * (1 - 1/mu)
-    t0 = 0; // days
-    mu = 7; // mas/yr  (milliarcseconds/year): mu = thetaE / tE
-    fixU0 = fixU0checkbox.checked;
+    // tE = 10; // tE = thetaE / mu // old, don't use
+    // Ml = 0.1; // solMass
+    // Ds = 8.0; // kpc: Ds =  Dl / (1 - 1/mu)
+    // thetaY = 0.0121; // milliarcseconds (mas)
+    // Dl = 7.0; // kpc: Dl = Ds * (1 - 1/mu)
+    // t0 = 0; // days
+    // mu = 7; // mas/yr  (milliarcseconds/year): mu = thetaE / tE
+
+    Ml = 0.1;
+    Ds = 8.0;
+    thetaY = -0.05463809952990817329;
+    Dl = 4.75;
+    t0 = 0;
+    mu = 7;
+
 
     // set derived quantities
     updateDerivedQuantities(initializing=true);
