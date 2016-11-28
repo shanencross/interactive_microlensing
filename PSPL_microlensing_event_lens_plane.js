@@ -857,16 +857,17 @@ var PSPL_microlensing_event_lens_plane = (function() {
       }
       // context.closePath();
       if (debug === false) {
-        context.closePath();
+         context.lineTo(outlines[0].pixelPos.x, outlines[0].pixelPos.y);
+        //context.closePath();
         
-        context.setLineDash([dashedLensedImageLength, dashedLensedImageSpacing]);
+        //context.setLineDash([dashedLensedImageLength, dashedLensedImageSpacing]);
         
-        if (strokeOn === true)
-          context.stroke();
         if (fillOn === true)
           context.fill();
+        if (strokeOn === true)
+          context.stroke();
           
-        context.setLineDash([]);
+        //context.setLineDash([]);
       }
     }
 
@@ -878,7 +879,10 @@ var PSPL_microlensing_event_lens_plane = (function() {
           var pixelPos = innerOutlines[i].pixelPos;
           context.lineTo(pixelPos.x, pixelPos.y);
         }
-        context.closePath();
+        //context.closePath();
+        context.lineTo(innerOutlines[0].pixelPos.x, innerOutlines[0].pixelPos.y);
+
+
       }
 
       function drawOuterOutline(outerConnectionIndex) {
@@ -936,7 +940,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
       if (strokeOn === true) {
         // draw separate outline for outer and inner outlines
 
-        context.setLineDash([dashedLensedImageLength, dashedLensedImageSpacing]);
+        //context.setLineDash([dashedLensedImageLength, dashedLensedImageSpacing]);
         
         // draw and display inner outline
         context.beginPath();
@@ -952,7 +956,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
         drawOuterOutline(outerConnectionIndex);
         context.stroke();
         
-        context.setLineDash([]);
+        //context.setLineDash([]);
       }
     }
 
