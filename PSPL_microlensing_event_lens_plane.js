@@ -41,6 +41,15 @@ var PSPL_microlensing_event_lens_plane = (function() {
   var yAxisInitialThetaY = -0.5; // half of thetaYheight so that 0 is the middle
   var xGridStepDefault = 0.1;
   var yGridStepDefault = 0.1;
+  
+  // var thetaXwidth = 4/3*5;
+  // var thetaYheight = 1*5; // mas
+  // var xAxisInitialDay = -15;
+  // var xAxisInitialThetaX = -(4/3)/2*5
+  // var yAxisInitialThetaY = -0.5*5; // half of thetaYheight so that 0 is the middle
+  // var xGridStepDefault = 0.1;
+  // var yGridStepDefault = 0.1;
+
 
   // lens (thetaX, thetaY) position in milliarcseconds
   var lensPos = {x: 0, y:0};
@@ -159,7 +168,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
   // if on, display shapes for the lensed images, not just points;
   // toggled by checkbox
   var displayImageShapeFlag = true;
-
+  
   var fractionDefault = 360; // number of points into which source outline is divided
                            // i.e. a value of 8 would divide the outline into 8
                            // evenly spaced points
@@ -189,6 +198,8 @@ var PSPL_microlensing_event_lens_plane = (function() {
   // because we NEED parameters intialized first to do drawing and scaling
 
   function init(animation=animationFlag, debug=debugFlag) {
+    // context.translate(-100, -100);
+    // context.scale(2, 2);
     initListeners();
     updateScaleAndRangeValues();
     initSourcePos();
@@ -204,7 +215,9 @@ var PSPL_microlensing_event_lens_plane = (function() {
   }
 
   function initSourceRadius() {
-    sourceRadius = 4/xPixelScale; // source radius in mas
+    //sourceRadius = 4/xPixelScale; // source radius in mas
+    // sourceRadius = 0.0133; // mas
+    sourceRadius = 0.0636; // mas
     lensedImageRadius = sourceRadius*xPixelScale;
     updateSourceRadiusSlider();
   }
@@ -370,7 +383,22 @@ var PSPL_microlensing_event_lens_plane = (function() {
       var deltaY = point.y - lensPos.y;
       var distR = Math.sqrt(deltaX*deltaX + deltaY*deltaY);
 
-      if (almostEquals(distR, 0, epsilon=10/xPixelScale) === true && recurring === false && lensProximityCheckFlag===true) {
+      
+      
+      // how close outline point must be in pixels to lens for extra points to be added
+      //var pixelProximity = sourceRadius*xPixelScale/4;
+      var pixelProximity = sourceRadius / 0.0133;
+      
+      // if (pixelProximity > 30) // cap at 10 pixels
+        // pixelProximity = 30;
+        
+      // output pixel proximity ONCE whenever value changes
+      if (typeof this.pixelProximity !== "undefined" && pixelProximity !== this.pixelProximity) {
+        console.log(`new pixelProximity: ${pixelProximity}`);
+      }
+      this.pixelProximity = pixelProximity;
+        
+      if (almostEquals(distR, 0, epsilon=pixelProximity/xPixelScale) === true && recurring === false && lensProximityCheckFlag===true) {
         var nextAngle = angle + deltaAngle;
         // var halfwayAngle = (angle + nextAngle)/2;
         // var quarterAngle = (angle + halfwayAngle)/2;
@@ -379,6 +407,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
 
         // var subFraction2 = (nextAngle - angle)/(2*Math.PI/subFraction);
         // console.log(`subFraction2: ${subFraction2}`);
+        
         var subOutline = getCircleOutline(radius, thetaPos, subFraction, subFraction, angle, nextAngle, true);
         outline = outline.concat(subOutline);
       }
@@ -766,7 +795,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
       context.fillStyle = lensedImagePlusColor;
       context.strokeStyle = lensedImagePlusOutlineColor;
 
-      context.setLineDash([dashedLensedImageLength, dashedLensedImageSpacing]);
+      // context.setLineDash([dashedLensedImageLength, dashedLensedImageSpacing]);
       context.beginPath();
       context.arc(lensedImages.plus.pixelPos.x, lensedImages.plus.pixelPos.y, lensedImageRadius, 0, 2*Math.PI, false);
       context.fill();
@@ -778,7 +807,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
       context.arc(lensedImages.minus.pixelPos.x, lensedImages.minus.pixelPos.y, lensedImageRadius, 0, 2*Math.PI, false);
       context.fill();
       context.stroke();
-      context.setLineDash([]);
+      // context.setLineDash([]);
     }
 
     function drawFullLensedImage(sign="plus", debug=false, fillOn=true,
@@ -832,23 +861,24 @@ var PSPL_microlensing_event_lens_plane = (function() {
           context.beginPath();
           // filling in rectangles for points is much faster than 
           // filling circles with arc function
-          context.fillRect(pixelPos.x-0.5, pixelPos.y-0.5, 1, 1);
-          // context.arc(pixelPos.x, pixelPos.y, 1, 0, 2*Math.PI);
-          // context.fill();
+          // context.fillRect(pixelPos.x-0.5, pixelPos.y-0.5, 1, 1);
+          context.arc(pixelPos.x, pixelPos.y, 1, 0, 2*Math.PI);
+          context.fill();
         }
       }
       // context.closePath();
       if (debug === false) {
-        context.closePath();
+        context.lineTo(outlines[0].pixelPos.x, outlines[0].pixelPos.y);
+        // context.closePath();
         
-        context.setLineDash([dashedLensedImageLength, dashedLensedImageSpacing]);
+        // context.setLineDash([dashedLensedImageLength, dashedLensedImageSpacing]);
         
-        if (strokeOn === true)
-          context.stroke();
         if (fillOn === true)
           context.fill();
+        if (strokeOn === true)
+          context.stroke();
           
-        context.setLineDash([]);
+        // context.setLineDash([]);
       }
     }
 
@@ -860,7 +890,8 @@ var PSPL_microlensing_event_lens_plane = (function() {
           var pixelPos = innerOutlines[i].pixelPos;
           context.lineTo(pixelPos.x, pixelPos.y);
         }
-        context.closePath();
+        context.lineTo(innerOutlines[0].pixelPos.x, innerOutlines[0].pixelPos.y);
+        // context.closePath();
       }
 
       function drawOuterOutline(outerConnectionIndex) {
@@ -918,7 +949,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
       if (strokeOn === true) {
         // draw separate outline for outer and inner outlines
 
-        context.setLineDash([dashedLensedImageLength, dashedLensedImageSpacing]);
+        // context.setLineDash([dashedLensedImageLength, dashedLensedImageSpacing]);
         
         // draw and display inner outline
         context.beginPath();
@@ -934,7 +965,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
         drawOuterOutline(outerConnectionIndex);
         context.stroke();
         
-        context.setLineDash([]);
+        // context.setLineDash([]);
       }
     }
 
@@ -963,8 +994,8 @@ var PSPL_microlensing_event_lens_plane = (function() {
     drawGridlinesAndTicks();
     toggleClippingRegion(turnOn=true);
     drawSourcePath();
-    drawSource();
-    // drawSource(useOutline=true);
+    // drawSource();
+    drawSource(useOutline=true);
     drawUarrow();
     if (displayImageShapeFlag === true) {
       if (eventModule.finiteSourceFlag === false)
@@ -978,7 +1009,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
           context.clip();
         }
         drawFullLensedImages(debug=false, fillOn=true, strokeOn=true);
-        // drawFullLensedImages(debug=true);
+        //drawFullLensedImages(debug=true);
         if (clippingImageFlag === true)
           context.restore();
       }

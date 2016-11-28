@@ -1,4 +1,4 @@
-console.log = function() {} // uncomment this to disable all console.log messages
+// console.log = function() {} // uncomment this to disable all console.log messages
 console.log("Executing PSPL_microlensing_event.js");
 
 //NOTE: const keyword not compatible with IE -- should replace it with var and document what values are constant
@@ -264,13 +264,20 @@ var PSPL_microlensing_event = (function() {
     // set lense curve parameters to defaults
 
     // set base quantity defaults
-    // tE = 10; // tE = thetaE / mu
-    Ml = 0.1; // solMass
-    Ds = 8.0; // kpc: Ds =  Dl / (1 - 1/mu)
-    thetaY = 0.0121; // milliarcseconds (mas)
-    Dl = 7.0; // kpc: Dl = Ds * (1 - 1/mu)
-    t0 = 0; // days
-    mu = 7; // mas/yr  (milliarcseconds/year): mu = thetaE / tE
+    // tE = 10; // tE = thetaE / mu // old, don't use
+    // Ml = 0.1; // solMass
+    // Ds = 8.0; // kpc: Ds =  Dl / (1 - 1/mu)
+    // thetaY = 0.0121; // milliarcseconds (mas)
+    // Dl = 7.0; // kpc: Dl = Ds * (1 - 1/mu)
+    // t0 = 0; // days
+    // mu = 7; // mas/yr  (milliarcseconds/year): mu = thetaE / tE
+    
+    Ml = 0.1;
+    Ds = 8.0;
+    thetaY = -0.05463809952990817329;
+    Dl = 4.75;
+    t0 = 0;
+    mu = 7;
     fixU0 = fixU0checkbox.checked;
 
     // set derived quantities
