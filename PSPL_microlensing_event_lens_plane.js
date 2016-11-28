@@ -373,7 +373,22 @@ var PSPL_microlensing_event_lens_plane = (function() {
       var deltaY = point.y - lensPos.y;
       var distR = Math.sqrt(deltaX*deltaX + deltaY*deltaY);
 
-      if (almostEquals(distR, 0, epsilon=10/xPixelScale) === true && recurring === false && lensProximityCheckFlag===true) {
+
+      // how close outline point must be in pixels to lens for extra points to be added
+      //var pixelProximity = sourceRadius*xPixelScale/4;
+      var pixelProximity = sourceRadius / 0.0133;
+
+      // if (pixelProximity > 30) // cap at 10 pixels
+        // pixelProximity = 30;
+
+      // output pixel proximity ONCE whenever value changes
+      if (typeof this.pixelProximity !== "undefined" && pixelProximity !== this.pixelProximity) {
+        console.log(`new pixelProximity: ${pixelProximity}`);
+      }
+      this.pixelProximity = pixelProximity;
+
+      //if (almostEquals(distR, 0, epsilon=10/xPixelScale) === true && recurring === false && lensProximityCheckFlag===true) {
+      if (almostEquals(distR, 0, epsilon=pixelProximity/xPixelScale) === true && recurring === false && lensProximityCheckFlag===true) {
         var nextAngle = angle + deltaAngle;
         // var halfwayAngle = (angle + nextAngle)/2;
         // var quarterAngle = (angle + halfwayAngle)/2;
