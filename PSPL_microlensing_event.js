@@ -272,6 +272,7 @@ var PSPL_microlensing_event = (function() {
     // t0 = 0; // days
     // mu = 7; // mas/yr  (milliarcseconds/year): mu = thetaE / tE
 
+    fixU0 = fixU0checkbox.checked
     Ml = 0.1;
     Ds = 8.0;
     thetaY = -0.05463809952990817329;
