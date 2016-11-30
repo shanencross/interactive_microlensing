@@ -160,11 +160,11 @@ var PSPL_microlensing_event_lens_plane = (function() {
   // toggled by checkbox
   var displayImageShapeFlag = true;
 
-  var fractionDefault = 360; // number of points into which source outline is divided
+  var numPointsDefault = 360; // number of points into which source outline is divided
                            // i.e. a value of 8 would divide the outline into 8
                            // evenly spaced points
 
-  var subFractionDefault = 175;
+  var numExtraPointsDefault = 360;
 
   // debug flags
   var animationFlag = true;
@@ -300,8 +300,9 @@ var PSPL_microlensing_event_lens_plane = (function() {
     // lensed image outlines
     // NOTE: This hammers the performance signifcantly right now
     if (drawFullLensedImagesFlag === true && eventModule.finiteSourceFlag === true) {
-      // sourceOutline = getCircleOutline(radius=sourceRadius, thetaPos=sourcePos);
-      sourceOutline = getCircleOutlineAlt(radius=sourceRadius, thetaPos=sourcePos);
+      // sourceOutline = getCircleOutlineWithRecursion(radius=sourceRadius, thetaPos=sourcePos);
+      sourceOutline = getCircleOutline(radius=sourceRadius, thetaPos=sourcePos);
+      // setCircleOutline(radius=sourceRadius, thetaPos=sourcePos);
       lensedImageOutlines = getLensedImageOutlines(sourceOutline);
       // if (lensedImageOutlines.plus.length === sourceOutline.length) {
       //   console.log(`lensedImageOutlines plus length !== sourceOutline length: ${lensedImageOutlines.plus.length} !== ${sourceOutline.length}`);
@@ -342,8 +343,8 @@ var PSPL_microlensing_event_lens_plane = (function() {
     return (Math.abs(a - b) < epsilon);
   }
 
-  function getCircleOutlineAlt(radius=sourceRadius, thetaPos=sourcePos, 
-                            numPoints=fractionDefault, initialAngle=0, finalAngle=2*Math.PI ) {
+  function getCircleOutline(radius=sourceRadius, thetaPos=sourcePos, 
+                            numPoints=numPointsDefault, initialAngle=0, finalAngle=2*Math.PI ) {
     var outline = [];
     var deltaAngle = (finalAngle - initialAngle)/numPoints;
   
@@ -356,18 +357,18 @@ var PSPL_microlensing_event_lens_plane = (function() {
       var deltaY = point.y - lensPos.y;
       var distR = Math.sqrt(deltaX*deltaX + deltaY*deltaY);
       var nextAngle = angle+deltaAngle;
+      
+      outline.push(point);
       if (lensProximityCheckFlag === true)
         addExtraPoints(outline, radius, thetaPos, angle, nextAngle, distR)
-      outline.push(point);
     }
-  return outline;
+    return outline;
   }
   
-  function addExtraPoints(outline, radius, thetaPos, initialAngle, finalAngle, distR) {
-    var numExtraPoints = subFractionDefault;
+  function addExtraPoints(outline, radius, thetaPos, initialAngle, finalAngle, distR, numExtraPoints=numExtraPointsDefault) {
     var deltaAngle = (finalAngle - initialAngle)/numExtraPoints;
     if (almostEquals(distR, 0, epsilon=1/xPixelScale) === true) {
-      for (var angle=initialAngle; (angle<finalAngle && almostEquals(angle, finalAngle) === false); angle+=deltaAngle) {
+      for (var angle=initialAngle+deltaAngle; (angle<finalAngle && almostEquals(angle, finalAngle) === false); angle+=deltaAngle) {
         var xOffset = radius * Math.cos(angle);
         var yOffset = radius * Math.sin(angle);
         var point = {x: thetaPos.x + xOffset, y: thetaPos.y + yOffset};
@@ -376,9 +377,9 @@ var PSPL_microlensing_event_lens_plane = (function() {
     }
   }
   
-  function getCircleOutline(radius=sourceRadius, thetaPos=sourcePos,
-                            fraction=fractionDefault,
-                            subFraction=subFractionDefault,
+  function getCircleOutlineWithRecursion(radius=sourceRadius, thetaPos=sourcePos,
+                            numPoints=numPointsDefault,
+                            numExtraPoints=numExtraPointsDefault,
                             initialAngle, finalAngle, recurring=false) {
     // get points (in mas units) for outline of a circle, given its pixel radius
     // and theta position; defaults to getting source outline
@@ -393,7 +394,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
       recurring = false;
 
     var outline = [];
-    var deltaAngle = (finalAngle - initialAngle)/fraction;
+    var deltaAngle = (finalAngle - initialAngle)/numPoints;
     for (var angle=initialAngle; (angle<finalAngle && almostEquals(angle, finalAngle) === false); angle += deltaAngle) {
       var xOffset = radius * Math.cos(angle);
       var yOffset = radius * Math.sin(angle);
@@ -424,11 +425,11 @@ var PSPL_microlensing_event_lens_plane = (function() {
         // var halfwayAngle = (angle + nextAngle)/2;
         // var quarterAngle = (angle + halfwayAngle)/2;
         // var threeQuartersRadian = (halfwayAngle + nextAngle)/2;
-        // var subOutline = getCircleOutline(radius, thetaPos, fraction, quarterRadian, threeQuartersRadian, true);
+        // var subOutline = getCircleOutline(radius, thetaPos, numPoints, quarterRadian, threeQuartersRadian, true);
 
-        // var subFraction2 = (nextAngle - angle)/(2*Math.PI/subFraction);
-        // console.log(`subFraction2: ${subFraction2}`);
-        var subOutline = getCircleOutline(radius, thetaPos, subFraction, subFraction, angle, nextAngle, true);
+        // var numExtraPoints2 = (nextAngle - angle)/(2*Math.PI/numExtraPoints);
+        // console.log(`numExtraPoints2: ${numExtraPoints2}`);
+        var subOutline = getCircleOutline(radius, thetaPos, numExtraPoints, numExtraPoints, angle, nextAngle, true);
         outline = outline.concat(subOutline);
       }
       else { // not close enough to center, or on a recursion iteration, or lens proximity check flag is off
