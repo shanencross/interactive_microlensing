@@ -164,7 +164,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
                            // i.e. a value of 8 would divide the outline into 8
                            // evenly spaced points
 
-  var subFractionDefault = 50;
+  var subFractionDefault = 175;
 
   // debug flags
   var animationFlag = true;
@@ -300,7 +300,8 @@ var PSPL_microlensing_event_lens_plane = (function() {
     // lensed image outlines
     // NOTE: This hammers the performance signifcantly right now
     if (drawFullLensedImagesFlag === true && eventModule.finiteSourceFlag === true) {
-      sourceOutline = getCircleOutline(radius=sourceRadius, thetaPos=sourcePos);
+      // sourceOutline = getCircleOutline(radius=sourceRadius, thetaPos=sourcePos);
+      sourceOutline = getCircleOutlineAlt(radius=sourceRadius, thetaPos=sourcePos);
       lensedImageOutlines = getLensedImageOutlines(sourceOutline);
       // if (lensedImageOutlines.plus.length === sourceOutline.length) {
       //   console.log(`lensedImageOutlines plus length !== sourceOutline length: ${lensedImageOutlines.plus.length} !== ${sourceOutline.length}`);
@@ -340,11 +341,41 @@ var PSPL_microlensing_event_lens_plane = (function() {
   function almostEquals(a, b, epsilon=1e-12) {
     return (Math.abs(a - b) < epsilon);
   }
-  
-  /*
-  
-  */
 
+  function getCircleOutlineAlt(radius=sourceRadius, thetaPos=sourcePos, 
+                            numPoints=fractionDefault, initialAngle=0, finalAngle=2*Math.PI ) {
+    var outline = [];
+    var deltaAngle = (finalAngle - initialAngle)/numPoints;
+  
+    for (var angle=initialAngle; (angle<finalAngle && almostEquals(angle, finalAngle) === false); angle+=deltaAngle) {
+      var xOffset = radius * Math.cos(angle);
+      var yOffset = radius * Math.sin(angle);
+      var point = {x: thetaPos.x + xOffset, y: thetaPos.y + yOffset};
+      
+      var deltaX = point.x - lensPos.x;
+      var deltaY = point.y - lensPos.y;
+      var distR = Math.sqrt(deltaX*deltaX + deltaY*deltaY);
+      var nextAngle = angle+deltaAngle;
+      if (lensProximityCheckFlag === true)
+        addExtraPoints(outline, radius, thetaPos, angle, nextAngle, distR)
+      outline.push(point);
+    }
+  return outline;
+  }
+  
+  function addExtraPoints(outline, radius, thetaPos, initialAngle, finalAngle, distR) {
+    var numExtraPoints = subFractionDefault;
+    var deltaAngle = (finalAngle - initialAngle)/numExtraPoints;
+    if (almostEquals(distR, 0, epsilon=1/xPixelScale) === true) {
+      for (var angle=initialAngle; (angle<finalAngle && almostEquals(angle, finalAngle) === false); angle+=deltaAngle) {
+        var xOffset = radius * Math.cos(angle);
+        var yOffset = radius * Math.sin(angle);
+        var point = {x: thetaPos.x + xOffset, y: thetaPos.y + yOffset};
+        outline.push(point);
+      }
+    }
+  }
+  
   function getCircleOutline(radius=sourceRadius, thetaPos=sourcePos,
                             fraction=fractionDefault,
                             subFraction=subFractionDefault,
@@ -375,7 +406,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
 
 
       // how close outline point must be in pixels to lens for extra points to be added
-      //var pixelProximity = sourceRadius*xPixelScale/4;
+      // var pixelProximity = sourceRadius*xPixelScale/4;
       var pixelProximity = sourceRadius / 0.0133;
 
       // if (pixelProximity > 30) // cap at 10 pixels
@@ -387,7 +418,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
       }
       this.pixelProximity = pixelProximity;
 
-      //if (almostEquals(distR, 0, epsilon=10/xPixelScale) === true && recurring === false && lensProximityCheckFlag===true) {
+      // if (almostEquals(distR, 0, epsilon=10/xPixelScale) === true && recurring === false && lensProximityCheckFlag===true) {
       if (almostEquals(distR, 0, epsilon=pixelProximity/xPixelScale) === true && recurring === false && lensProximityCheckFlag===true) {
         var nextAngle = angle + deltaAngle;
         // var halfwayAngle = (angle + nextAngle)/2;
@@ -407,7 +438,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
 
     return outline;
   }
-
+ 
   function getLensedImages(thetaPos=sourcePos) {
     var thetaE_mas = eventModule.thetaE_mas;
     // var u0 = eventModule.u0;
@@ -1000,7 +1031,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
           context.clip();
         }
         drawFullLensedImages(debug=false, fillOn=true, strokeOn=true);
-        // drawFullLensedImages(debug=true);
+        //drawFullLensedImages(debug=true);
         if (clippingImageFlag === true)
           context.restore();
       }
