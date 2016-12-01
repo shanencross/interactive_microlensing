@@ -161,7 +161,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
   var displayImageShapeFlag = true;
 
   // var numPointsDefault = 360; 
-  var numPointsDefault = 50; // number of points into which source outline is divided
+  var numPointsDefault = 8; // number of points into which source outline is divided
                             // i.e. a value of 8 would divide the outline into 8
                             // evenly spaced points
 
@@ -371,16 +371,17 @@ var PSPL_microlensing_event_lens_plane = (function() {
   function addExtraPoints(outline, radius, thetaPos, 
                           initialAngle, finalAngle, distR) {
     // var numExtraPoints = numExtraPointsDefault;
-    var numExtraPoints = Math.round(360*distR);
+    var numExtraPoints = Math.round(10/Math.sqrt(distR));
+    // var numExtraPoints = 2;
     console.log(`number of extra points: ${numExtraPoints}`);
 
     var deltaAngle = (finalAngle - initialAngle)/numExtraPoints;    
     for (var angle=initialAngle+deltaAngle; (angle<finalAngle && almostEquals(angle, finalAngle) === false); angle+=deltaAngle) {
-        var xOffset = radius * Math.cos(angle);
-        var yOffset = radius * Math.sin(angle);
-        var point = {x: thetaPos.x + xOffset, y: thetaPos.y + yOffset};
-        outline.push(point);
-      }
+      var xOffset = radius * Math.cos(angle);
+      var yOffset = radius * Math.sin(angle);
+      var point = {x: thetaPos.x + xOffset, y: thetaPos.y + yOffset};
+      outline.push(point);
+    }
   }
   
   function addExtraPointsWithDistanceCutoff(outline, radius, thetaPos, initialAngle, finalAngle, 
