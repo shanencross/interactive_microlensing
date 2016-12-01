@@ -160,9 +160,10 @@ var PSPL_microlensing_event_lens_plane = (function() {
   // toggled by checkbox
   var displayImageShapeFlag = true;
 
-  var numPointsDefault = 360; // number of points into which source outline is divided
-                           // i.e. a value of 8 would divide the outline into 8
-                           // evenly spaced points
+  // var numPointsDefault = 360; 
+  var numPointsDefault = 50; // number of points into which source outline is divided
+                            // i.e. a value of 8 would divide the outline into 8
+                            // evenly spaced points
 
   var numExtraPointsDefault = 360;
 
@@ -358,6 +359,8 @@ var PSPL_microlensing_event_lens_plane = (function() {
       var distR = Math.sqrt(deltaX*deltaX + deltaY*deltaY);
       var nextAngle = angle+deltaAngle;
       
+      // console.log(`point: (${deltaX}, ${deltaY})`);
+      // console.log(`point: distR is ${distR}`);
       outline.push(point);
       if (lensProximityCheckFlag === true)
         addExtraPoints(outline, radius, thetaPos, angle, nextAngle, distR)
@@ -365,7 +368,38 @@ var PSPL_microlensing_event_lens_plane = (function() {
     return outline;
   }
   
-  function addExtraPoints(outline, radius, thetaPos, initialAngle, finalAngle, distR, numExtraPoints=numExtraPointsDefault) {
+  function addExtraPoints(outline, radius, thetaPos, 
+                          initialAngle, finalAngle, distR) {
+    // var numExtraPoints = numExtraPointsDefault;
+    var numExtraPoints = Math.round(360*distR);
+    console.log(`number of extra points: ${numExtraPoints}`);
+
+    var deltaAngle = (finalAngle - initialAngle)/numExtraPoints;    
+    for (var angle=initialAngle+deltaAngle; (angle<finalAngle && almostEquals(angle, finalAngle) === false); angle+=deltaAngle) {
+        var xOffset = radius * Math.cos(angle);
+        var yOffset = radius * Math.sin(angle);
+        var point = {x: thetaPos.x + xOffset, y: thetaPos.y + yOffset};
+        outline.push(point);
+      }
+  }
+  
+  function addExtraPointsWithDistanceCutoff(outline, radius, thetaPos, initialAngle, finalAngle, 
+                                            distR, numExtraPoints=numExtraPointsDefault) {
+    /* // how close outline point must be in pixels to lens for extra points to be added
+    var pixelProximity = radius / 0.0133;
+    // var pixelProximity = radius / 0.0133;
+
+    if (pixelProximity > 30) // cap at 10 pixels
+      pixelProximity = 30;
+
+    // output pixel proximity ONCE whenever value changes
+    if (typeof this.pixelProximity !== "undefined" && pixelProximity !== this.pixelProximity) {
+      console.log(`new pixelProximity: ${pixelProximity}`);
+    }
+    this.pixelProximity = pixelProximity;
+    */
+      
+      
     var deltaAngle = (finalAngle - initialAngle)/numExtraPoints;
     if (almostEquals(distR, 0, epsilon=1/xPixelScale) === true) {
       for (var angle=initialAngle+deltaAngle; (angle<finalAngle && almostEquals(angle, finalAngle) === false); angle+=deltaAngle) {
@@ -1032,7 +1066,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
           context.clip();
         }
         drawFullLensedImages(debug=false, fillOn=true, strokeOn=true);
-        //drawFullLensedImages(debug=true);
+        drawFullLensedImages(debug=true);
         if (clippingImageFlag === true)
           context.restore();
       }
