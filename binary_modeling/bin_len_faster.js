@@ -1,6 +1,6 @@
-console.log("Executing bin_lens_faster.js");
+console.log("Executing bin_len_faster.js");
 
-bin_lens_faster = (function() {
+bin_len_faster = (function() {
   
   var GM1 = 0.1;
   var GM2 = 20;

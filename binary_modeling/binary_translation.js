@@ -8,5 +8,5 @@ binary_translation = (function() {
   var cof2 = -0.5;
 
   // bin_ima.bin_ima();
-  // bin_lens_faster.plot_binary(GM1, GM2, D, cof1, cof2)  
+  // bin_len_faster.plot_binary(GM1, GM2, D, cof1, cof2)  
 })();
