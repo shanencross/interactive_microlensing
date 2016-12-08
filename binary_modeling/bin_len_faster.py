@@ -29,7 +29,7 @@ def plot_binary(GM1, GM2, D, cof1, cof2):
    # Initialize arrays
    # y,x coords of source and magnification ASA
    # Define the number of points (NPN) to use for the trajectory
-   NPN = 4000
+   NPN = 40
    XSA, YSA, ASA = np.zeros(NPN), np.zeros(NPN), np.zeros(NPN)
    AIA = np.zeros(shape = (5, NPN))
    # Initialize arrays holding critical curve and caustic points
@@ -158,17 +158,27 @@ def plot_binary(GM1, GM2, D, cof1, cof2):
       # Calculate positions of images given a source position
       imageparms = bin_ima(GM1, GM2, D, XS[IXS], YS[IXS])
       ASA[IXS] = 0.0
+
       XI  = imageparms[:,0]
       YI  = imageparms[:,1]
       AI  = imageparms[:,2]
       IMP = imageparms[:,3]
       
+      # transposed_imageparms = np.transpose(imageparms)
+      # XI  = transposed_imageparms[0]
+      # YI  = transposed_imageparms[1]
+      # AI  = transposed_imageparms[2]
+      # IMP = transposed_imageparms[3]
+      
       # Loop over all images
       for IM in range(0,5):
          AIA[IM,IXS] = AI[IM]
          ASA[IXS] = ASA[IXS] + IMP[IM] * AI[IM]
+         print IMP[IM]
          #X = XI[IM] # Image X location
          #Y = YI[IM] # Image Y location
+         
+    
 
    # Set up drawing canvas
    fig = plt.figure(0, figsize=(6,8), dpi=80)

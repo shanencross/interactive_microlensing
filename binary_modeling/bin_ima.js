@@ -2,8 +2,10 @@ console.log("Executing bin_ima.js");
 
 bin_ima = (function() {
   function bin_ima(GM1=0.5, GM2=0.5, D=0.5, XS=0, YS=0) {
+    timeDebug = false;
     // console.log("Executing bin_ima function");
-    console.time();
+    if (timeDebug === true)
+      console.time();
     // GM1 = mass of object 1 (as a % of total mass) e.g. 0.1
     // GM2 = mass of object 2 (as a % of total mass) e.g  0.9
     // D = half binary separation (between components) in Einstein radii
@@ -169,7 +171,8 @@ bin_ima = (function() {
     
     scope.results = math.transpose(scope.resultColumns);
    
-    console.timeEnd();
+    if (timeDebug === true)
+      console.timeEnd();
     // return scope; // DEBUG: temp
     return scope.results;
   }
