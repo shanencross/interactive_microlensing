@@ -24,7 +24,7 @@ if (cpolyFlag) {
   // Roots of 32*x^5 + 10*x^4 + 3*x^1 + 2
   // var t0 = window.performance.now()
   console.time("cpoly time");
-  var r3 = roots([32, 10, 0, 0, 3, 2]);
+  var r3 = roots([32, 10, 5, 4, 3, 2]);
   console.timeEnd("cpoly time");
   // var t1 = window.performance.now()
   // var t = t1 - t0;
@@ -46,7 +46,9 @@ console.log("durand-kerner roots.js method")
 // var roots = findRoots([1, 1, -1])
 // var t0 = window.performance.now();
 console.time("durand-kerner time");
-var r4 = findRoots([2, 3, 0, 0, 10, 32]);
+var r4 = findRoots([2, 3, 4, 5, 10, 32]);
+// r4 = math.transpose(r4);
+// r4.sort();
 console.timeEnd("durand-kerner time");
 // var t1 = window.performance.now();
 // var t = t1-t0;
@@ -58,10 +60,13 @@ console.timeEnd("durand-kerner time");
 //      r4[1] = imaginary part of roots
 
 console.log("r4 length: " + r4.length);
-for(var i=0; i<r4[0].length; i++) {
+for(var i=0; i<r4.length; i++) {
   // console.log(r4[i])
   console.log(r4[0][i] + " + " + r4[1][i] + "*i");
 }
+
+// console.log("companion roots method");
+// var r5 = findRoots([2, 3, 4, 5, 10, 32]);
 
 
 /*

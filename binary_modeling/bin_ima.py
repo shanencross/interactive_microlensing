@@ -12,7 +12,7 @@ import numpy.polynomial.polynomial as poly
 # GM2 = mass of object 2 (as a % of total mass) e.g  0.9
 # D = half binary separation (between components) in Einstein radii
 # XS, YS = x,y coordinates of the source (in x/R_E, y/R_E)
-def bin_ima(GM1, GM2, D, XS, YS, debug=False, output=False):
+def bin_ima(GM1=0.5, GM2=0.5, D=0.5, XS=0, YS=0, debug=False, output=False):
    # XI, YI, AI = image coordinates (x,y) and magnification for
    # each of the five (max) images
    #
@@ -109,3 +109,13 @@ def bin_ima(GM1, GM2, D, XS, YS, debug=False, output=False):
    #print result
    #print "Mangification =", np.sum(result[:,3] * result[:,2])
    return result
+   
+   
+def main():
+  import timeit
+  setup = "from __main__ import bin_ima"
+  print("Execution time: " + str(timeit.timeit("bin_ima()", number=1, setup=setup)) + " seconds")
+  print("result:\n" + str(bin_ima()))
+
+if __name__ == "__main__":
+  main()

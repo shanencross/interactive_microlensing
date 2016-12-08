@@ -2,8 +2,8 @@ console.log("Executing bin_ima.js");
 
 bin_ima = (function() {
   function bin_ima(GM1=0.5, GM2=0.5, D=0.5, XS=0, YS=0) {
-    console.log("Executing bin_ima function");
-    
+    // console.log("Executing bin_ima function");
+    console.time();
     // GM1 = mass of object 1 (as a % of total mass) e.g. 0.1
     // GM2 = mass of object 2 (as a % of total mass) e.g  0.9
     // D = half binary separation (between components) in Einstein radii
@@ -62,11 +62,33 @@ bin_ima = (function() {
     // scope.ZI = new Array(5).fill(0); // DEBUG: temp
     
     // DEBUG: temp test
+    /* 
+    var ZC_real = [];
+    var ZC_imag = [];
+    for (var i in scope.ZC) {
+      ZC_real.push(math.complex(scope.ZC[i]).re);
+      ZC_imag.push(math.complex(scope.ZC[i]).im);
+    }
+    
+    // console.time();
+    var ZC_roots = findRoots(ZC_real, ZC_imag);
+    // console.timeEnd();
+
+    scope.ZI = [];
+    for (var i=0; i<ZC_roots[0].length; i++) {
+      if (almostEquals(0, ZC_roots[0][i]) === true)
+        ZC_roots[0][i] = 0;
+      if (almostEquals(0, ZC_roots[1][i]) === true)
+        ZC_roots[1][i] = 0;
+      
+      scope.ZI.push(math.complex(ZC_roots[0][i], ZC_roots[1][i]));
+    } */
+    
     scope.ZI = [ math.complex(-1.11803399e+00, -8.26372302e-20),  
-                      math.complex(-1.38344197e-16, 8.66025404e-01),
-                      math.complex(0.00000000e+00, 0.00000000e+00), 
-                      math.complex(8.12052344e-17, -8.66025404e-01),
-                      math.complex(1.11803399e+00, -2.22044605e-16)]
+                  math.complex(-1.38344197e-16, 8.66025404e-01),
+                  math.complex(0.00000000e+00, 0.00000000e+00), 
+                  math.complex(8.12052344e-17, -8.66025404e-01),
+                  math.complex(1.11803399e+00, -2.22044605e-16)]
 
     scope.SA = 0.0;
    
@@ -147,7 +169,9 @@ bin_ima = (function() {
     
     scope.results = math.transpose(scope.resultColumns);
    
-    return scope; // DEBUG: temp
+    console.timeEnd();
+    // return scope; // DEBUG: temp
+    return scope.results;
   }
   
   function almostEquals(a, b, epsilon=1e-12) {
@@ -181,11 +205,11 @@ bin_ima = (function() {
   }
   
     
-  var scope = bin_ima();
+  // var scope = bin_ima(); // debug
   
   return {
     bin_ima: bin_ima,
-    scope: scope,
+    // scope: scope, // debug
     almostEquals: almostEquals,
     compareComplexNumToZero: compareComplexNumToZero,
   };
