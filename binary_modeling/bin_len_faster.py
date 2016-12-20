@@ -244,7 +244,7 @@ def main():
     # e: GM1, GM2, D, cof1, cof2 = 0.5, 0.5, 0.5, 0.0, -0.1 # default values
    # GM1, GM2, D, cof1, cof2 = 0.1, 20, 0.5, 0.1, -0.5
    GM1, GM2, D, cof1, cof2 = 0.1, 20, 0.5, 0.1, -0.5
-   GM1, GM2, D, cof1, cof2 = 0.2, 20, 0.5, 0.1, -0.5
+   # GM1, GM2, D, cof1, cof2 = 0.2, 20, 0.5, 0.1, -0.5
    
    print("GM1: %s" % (GM1))
    print("GM2: %s" % (GM2))

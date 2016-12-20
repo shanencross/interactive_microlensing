@@ -2,7 +2,8 @@ console.log("Executing bin_len_faster.js");
 
 var bin_len_faster = (function() {
   
-  function plot_binary(GM1=0.5, GM2=0.5, D=0.5, cof1=0.1, cof2=-0.5, minXLM=-3, maxXLM=3, NPN=40, debug=false) {
+  function plot_binary(GM1=0.5, GM2=0.5, D=0.5, cof1=0.1, cof2=-0.5, 
+                               minXLM=-3, maxXLM=3, NPN=40, debug=false) {
     console.time();
     // console.log("executing plot_binary function");
     // console.log(`${GM1}, ${GM2}, ${D}, ${cof1}, ${cof2}`)
@@ -111,8 +112,8 @@ var bin_len_faster = (function() {
     }
     else {
       return {
-        times: scope.XSA,
-        mags: scope.ASA,
+        normalizedPositions: scope.XSA,
+        magnifs: scope.ASA,
       };
     }
   }
