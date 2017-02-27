@@ -29,10 +29,10 @@ var bin_ima = (function() {
     // Set up parameters for the calculation of the coefficients
 
     // console.time();
-    scope.HSM = math.eval("(GM1 + GM2)/2.0", scope);    // half sum of masses
-    scope.HDM = math.eval("(GM2 - GM1)/2.0", scope);     // half difference of masses
-    // scope.HSM = math.multiply(math.add(scope.GM1, scope.GM2), 1/2.0);
-    // scope.HDM = math.multiply(math.subtract(scope.GM2, scope.GM1), 1/2.0);
+    // scope.HSM = math.eval("(GM1 + GM2)/2.0", scope);    // half sum of masses
+    // scope.HDM = math.eval("(GM2 - GM1)/2.0", scope);     // half difference of masses
+    scope.HSM = math.multiply(math.add(scope.GM1, scope.GM2), 1/2.0);
+    scope.HDM = math.multiply(math.subtract(scope.GM2, scope.GM1), 1/2.0);
     // console.timeEnd();
 
     // scope.HSM = 1.5;
