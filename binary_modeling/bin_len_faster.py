@@ -21,13 +21,13 @@ import time
 # e: Instead it appears GM2 is set equal to 1 - GM1
 
 # Plot critical and caustic curves for the binary lens
-def plot_binary(GM1, GM2, D, cof1, cof2):
+def plot_binary(GM1, GM2, D, cof1, cof2, NPN=400):
    print ("test GM1: %s" % GM1)
    print ("test GM2: %s" % GM2)
    # Initialize arrays
    # y,x coords of source and magnification ASA
    # Define the number of points (NPN) to use for the trajectory
-   NPN = 40;
+   #NPN = 40;
    XSA, YSA, ASA = np.zeros(NPN), np.zeros(NPN), np.zeros(NPN)
    AIA = np.zeros(shape = (5, NPN))
    # Initialize arrays holding critical curve and caustic points
@@ -121,7 +121,7 @@ def plot_binary(GM1, GM2, D, cof1, cof2):
                      Y2 * (1.0 - GM1/DN1_C2 - GM2/DN2_C2)
       PXCAUS_C1, PXCAUS_C2 = IP * XC_C1, IP * XC_C2
       PYCAUS_C1, PYCAUS_C2 = IP * YC_C1, IP * YC_C2
-      
+
       # Append to caustic points
       caustic_points_x1 = np.append(caustic_points_x1, PXCAUS_C1)
       caustic_points_x1 = np.append(caustic_points_x1, PXCAUS_C2)
@@ -160,32 +160,32 @@ def plot_binary(GM1, GM2, D, cof1, cof2):
       # print("D: %s" % D)
       # print("XS[IXS]: %s" % XS[IXS])
       # print("YS[IXS]: %s" % YS[IXS])
-      
+
       imageparms = bin_ima(GM1, GM2, D, XS[IXS], YS[IXS])
       ASA[IXS] = 0.0
-      
+
       # print imageparms
 
       XI  = imageparms[:,0]
       YI  = imageparms[:,1]
       AI  = imageparms[:,2]
       IMP = imageparms[:,3]
-      
+
       # print("XI: %s" % XI)
       # print("YI: %s" % YI)
       # print("AI: %s" % AI)
       # print("IMP: %s" % IMP)
-      
+
       # transposed_imageparms = np.transpose(imageparms)
       # XI  = transposed_imageparms[0]
       # YI  = transposed_imageparms[1]
       # AI  = transposed_imageparms[2]
       # IMP = transposed_imageparms[3]
-      
+
       # print imageparms
       # print "--------------------------------"
       # print transposed_imageparms
-      
+
       # Loop over all images
       for IM in range(0,5):
          AIA[IM,IXS] = AI[IM]
@@ -194,11 +194,11 @@ def plot_binary(GM1, GM2, D, cof1, cof2):
          # print AI[IM]
          X = XI[IM] # Image X location
          Y = YI[IM] # Image Y location
-         
-   print( "--- %s seconds (before plot set-up)---" % str(time.time() - start_time)) 
+
+   print( "--- %s seconds (before plot set-up)---" % str(time.time() - start_time))
    print("XSA: %s" % XSA)
    print("ASA: %s" % ASA)
-   
+
    # Set up drawing canvas
    fig = plt.figure(0, figsize=(6,8), dpi=80)
    ax1 = fig.add_subplot(2,1,1)
@@ -239,13 +239,13 @@ def plot_binary(GM1, GM2, D, cof1, cof2):
    # print( "--- %s seconds ---" % str(time.time() - start_time))
    plt.show()
 
-   
+
 def main():
     # e: GM1, GM2, D, cof1, cof2 = 0.5, 0.5, 0.5, 0.0, -0.1 # default values
    # GM1, GM2, D, cof1, cof2 = 0.1, 20, 0.5, 0.1, -0.5
-   GM1, GM2, D, cof1, cof2 = 0.1, 20, 0.5, 0.1, -0.5
+   GM1, GM2, D, cof1, cof2, NPN = 0.2, 20, 0.5, 0.1, -0.5, 40
    # GM1, GM2, D, cof1, cof2 = 0.2, 20, 0.5, 0.1, -0.5
-   
+
    print("GM1: %s" % (GM1))
    print("GM2: %s" % (GM2))
    print("D: %s" % (D))
@@ -253,8 +253,8 @@ def main():
    print("cof2: %s" % (cof2))
 
    global start_time
-   start_time = time.time()   
-   plot_binary(GM1, GM2, D, cof1, cof2)   
-   
+   start_time = time.time()
+   plot_binary(GM1, GM2, D, cof1, cof2, NPN)
+
 if __name__ == "__main__":
    main()

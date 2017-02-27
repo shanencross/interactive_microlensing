@@ -19,7 +19,7 @@ var PSPL_binary_microlensing_event = (function() {
   var graphBottomTrail = 10;
 
   var graphRightBorder = graphLeftBorder + graphWidth; // right border of graph x-pixel value, NOT including any trailing gridlines
-  var graphBottomBorder = graphTopBorder + graphHeight; // bottom border of y-pixel value, NOT including any trailing gridlines
+    var graphBottomBorder = graphTopBorder + graphHeight; // bottom border of y-pixel value, NOT including any trailing gridlines
 
   var graphLeftTrailingBorder = graphLeftBorder - graphLeftTrail; // left border of graph x-pixel value, INCLUDING any trailing gridlines
   var graphRightTrailingBorder = graphRightBorder + graphRightTrail; // right border of graph x-pixel value, INCLUDING any trailing gridlines
@@ -149,7 +149,7 @@ var PSPL_binary_microlensing_event = (function() {
 
   var Ml1Slider = document.getElementById("Ml1Slider");
   var Ml1Readout = document.getElementById("Ml1Readout");
-  
+
   var Ml2Slider = document.getElementById("Ml2Slider");
   var Ml2Readout = document.getElementById("Ml2Readout");
 
@@ -167,10 +167,10 @@ var PSPL_binary_microlensing_event = (function() {
 
   var muSlider = document.getElementById("muSlider");
   var muReadout = document.getElementById("muReadout");
-  
+
   var inclineSlider = document.getElementById("inclineSlider");
   var inclineReadout = document.getElementById("inclineReadout");
-  
+
   var lensSepSlider = document.getElementById("lensSepSlider");
   var lensSepReadout = document.getElementById("lensSepReadout");
 
@@ -217,7 +217,7 @@ var PSPL_binary_microlensing_event = (function() {
     console.log(`mu: ${mu}`);
     console.log(`lensSep: ${lensSep}`);
   }
- 
+
   function initListeners() {
     tEslider.addEventListener("input", function() { updateParam("tE"); }, false);
     tEslider.addEventListener("change", function() { updateParam("tE"); }, false);
@@ -227,7 +227,7 @@ var PSPL_binary_microlensing_event = (function() {
 
     Ml1Slider.addEventListener("input", function() { updateParam("Ml1"); }, false);
     Ml1Slider.addEventListener("change", function() { updateParam("Ml1"); }, false);
-    
+
     Ml2Slider.addEventListener("input", function() { updateParam("Ml2"); }, false);
     Ml2Slider.addEventListener("change", function() { updateParam("Ml2"); }, false);
 
@@ -245,10 +245,10 @@ var PSPL_binary_microlensing_event = (function() {
 
     muSlider.addEventListener("input", function() { updateParam("mu"); }, false);
     muSlider.addEventListener("change", function() { updateParam("mu"); }, false);
-    
+
     inclineSlider.addEventListener("input", function() { updateParam("incline"); }, false);
     inclineSlider.addEventListener("change", function() { updateParam("incline"); }, false);
-    
+
     lensSepSlider.addEventListener("input", function() { updateParam("lensSep"); }, false);
     lensSepSlider.addEventListener("change", function() { updateParam("lensSep"); }, false);
 
@@ -435,10 +435,10 @@ var PSPL_binary_microlensing_event = (function() {
     if (mu > muMax) {
       muReadout.innerHTML += "+";
     }
-    
+
     inclineSlider.value = incline;
     inclineReadout.innerHTML = Number(inclineSlider.value).toFixed(2);
-    
+
     lensSepSlider.value = lensSep;
     lensSepReadout.innerHTML = Number(lensSepSlider.value).toFixed(3);
     // if (lensSep > lensSepMax) {
@@ -449,7 +449,7 @@ var PSPL_binary_microlensing_event = (function() {
     var thetaE_mas = thetaE / masToRad;
     console.log(`thetaE (mas): ${thetaE_mas}`);
     thetaEreadout.innerHTML = Number(thetaE_mas).toFixed(4);
-    
+
     // console.log(`lensSep (mas): ${lensSep}`);
   }
 
@@ -540,11 +540,11 @@ var PSPL_binary_microlensing_event = (function() {
       var thetaY_rad = u0 * thetaE; // thetaY in radians
       thetaY = thetaY_rad / masToRad; // converted to milliarcseconds (mas)
     }
-    
+
     else if (param === "incline") {
       incline = Number(inclineSlider.value);
     }
-    
+
     else if (param === "lensSep") {
       lensSep = Number(lensSepSlider.value);
     }
@@ -925,61 +925,60 @@ var PSPL_binary_microlensing_event = (function() {
         context.setLineDash([]); // turn off dashed lines
     context.restore();
   }
-  
-    function getThetaX(t) {
+
+  function getThetaX(t) {
     var yearToDay = 365.25; // day/year; const
     var eqMu = mu / yearToDay; // convert mu to milliarcseconds/day
     var thetaX = eqMu * (t - t0);
     return thetaX;
   }
 
-
   function updateCurveData() {
     var binaryFlag = true; // for debugging; switch between binary and single lens modes
-    
+
     if (binaryFlag === true) {
       // send GM1, GM2, D, cof1, cof2, minXLM, maxXLM, and NPN
       // to bin_len_faster.plot_binary() function
-      
+
       var totalMass = Ml1 + Ml2;
       var GM1 = Ml1/totalMass;
       var GM2 = Ml2/totalMass;
       var D = lensSep/2; // "D" is the half-separation
-      
+
       var thetaE_mas = thetaE / masToRad;
       var cof2 = thetaY / thetaE_mas;
-      
-      var cof1 = incline; // DEBUG: temp, not correct; 
+
+      var cof1 = incline; // DEBUG: temp, not correct;
                                  // cof1 should be negative slope, incline should be degrees, need conversion
-                                 
+
       var minXLM = getThetaX(xAxisInitialDay) / thetaE_mas;
       var maxXLM = getThetaX(xAxisFinalDay) / thetaE_mas;
-      
+
       var NPN = 400;
-      
+
       console.log(`(binary) GM1: ${GM1}`);
       console.log(`(binary) GM2: ${GM2}`);
       console.log(`(binary) D: ${D}`);
-      
+
       console.log(`(binary) cof1: ${cof1}`);
       console.log(`(binary) cof2: ${cof2}`);
       console.log(`(binary) NPN: ${NPN}`);
       console.log(`(binary) minXLM: ${minXLM}`);
       console.log(`(binary) maxXLM: ${maxXLM}`);
-      
+
       var normalizedPositionsAndMagnifs = bin_len_faster.plot_binary(GM1, GM2, D, cof1, cof2,
                                                                 minXLM, maxXLM, NPN);
       console.log(bin_len_faster.plot_binary());
-      
+
       var times = numeric.linspace(xAxisInitialDay, xAxisFinalDay, NPN);
       var magnifs = normalizedPositionsAndMagnifs.magnifs;
-      
+
       console.log(`(binary) times.length: ${times.length}`);
       console.log(`(binary) magnifs.length: ${magnifs.length}`);
       console.log(`(binary) times: ${times}`);
       console.log(`(binary) magnifs: ${magnifs}`);
     }
-    
+
     else  {
       var times = [];
       var magnifs = [];
@@ -993,7 +992,7 @@ var PSPL_binary_microlensing_event = (function() {
       }
     }
       var curveData = {times:times, magnifs:magnifs};
-      lightcurveData = curveData; 
+      lightcurveData = curveData;
   }
 
   function toggleFiniteSource() {

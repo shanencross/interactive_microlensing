@@ -37,17 +37,17 @@ def bin_ima(GM1=0.5, GM2=0.5, D=0.5, XS=0, YS=0, debug=False, output=False):
    AS = np.abs(ZS)
    ZSC = np.complex(XS, -YS)
    ZSS = ZS * ZSC
-   
+
    # class Scope:
       # pass
-    
+
    # Scope.ZC=ZC
    # Scope.ZIC=ZIC
    # Scope.IP=IP
    # Scope.EP=EP
    # Scope.HSM=HSM
    # Scope.HDM=HDM
-   # Scope.HSDM=HSDM 
+   # Scope.HSDM=HSDM
    # Scope.HSSM=HSSM
    # Scope.HDDM=HDDM
    # Scope.Z1=Z1
@@ -55,15 +55,15 @@ def bin_ima(GM1=0.5, GM2=0.5, D=0.5, XS=0, YS=0, debug=False, output=False):
    # Scope.Z1C=Z1C
    # Scope.Z2C=Z2C
    # Scope.ZS=ZS
-   # Scope.AS=AS 
+   # Scope.AS=AS
    # Scope.ZSC=ZSC
    # Scope.ZSS=ZSS
-   
-   
+
+
    # for key in Scope.__dict__:
       # if not key.startswith("_"):
          # print "%s: %s" %(key, Scope.__dict__[key])
-   
+
    # Complex coefficients
    # ----------------------------------------------------------------------------------
    # start_time_ZC = time.time()
@@ -78,8 +78,8 @@ def bin_ima(GM1=0.5, GM2=0.5, D=0.5, XS=0, YS=0, debug=False, output=False):
    ZC[5] = Z1 * Z1 - ZSC * ZSC
    # end_time_ZC = time.time()
    # print("start time ZC: %s, end time ZC: %s" % (start_time_ZC, end_time_ZC))
-   # print( "--- %s seconds (ZC calculations)---" % (end_time_ZC - start_time_ZC)) 
-   
+   # print( "--- %s seconds (ZC calculations)---" % (end_time_ZC - start_time_ZC))
+
    # for i in range(0, 6):
      # print("ZC[%s]: %s" % (i, ZC[i]))
    # ----------------------------------------------------------------------------------
@@ -122,15 +122,15 @@ def bin_ima(GM1=0.5, GM2=0.5, D=0.5, XS=0, YS=0, debug=False, output=False):
       # if output:
          # print "AJ[I] < 0:  %s, AJ[I] == 0: %s, AJ[I] > 0: %s" % (AJ[I] < 0, AJ[I] == 0, AJ[I] > 0)
          # print "np.abs(ZE[I] - ZS) - EP > 0: %s" % (np.abs(ZE[I] - ZS) - EP > 0)
-   
+
       # case 1
       if (AJ[I] < 0 and not np.abs(ZE[I] - ZS) - EP > 0):
-         # if output: 
+         # if output:
             # print("adding -1 to IP");
          IP[I] = -1
      # case 2
       if (AJ[I] == 0 and np.abs(ZE[I] - ZS) - EP > 0):
-         # if output: 
+         # if output:
             # print("adding -1 to IP");
          IP[I] = 0
       # case 3
@@ -144,31 +144,31 @@ def bin_ima(GM1=0.5, GM2=0.5, D=0.5, XS=0, YS=0, debug=False, output=False):
    #print result
    #print "Mangification =", np.sum(result[:,3] * result[:,2])
    return result
-   
-   
+
+
 def main():
   # import timeit
 
-   
+
   # setup = "from __main__ import bin_ima"
   # print("Execution time: " + str(timeit.timeit("bin_ima()", number=1, setup=setup)) + " seconds")
   # print("result:\n" + str(bin_ima()))
-  
+
   GM1, GM2, D, XS, YS = 0.1, 0.9, 0.5, -3.0, 0.2
   # GM1, GM2, D, XS, YS = 0.5, 0.5, 0.5, 0.0, 0.0
   # GM1, GM2, D, XS, YS = 0.5, 0.5, 0.6, 0.0, 0.0
-  
+
   # print("GM1: %s" % GM1)
   # print("GM2: %s" % GM2)
   # print("D: %s" % D)
   # print("XS: %s" % XS)
   # print("YS: %s" % YS)
-  
-  # global start_time
-  # start_time = time.time()
+
+  global start_time
+  start_time = time.time()
   result = bin_ima(GM1, GM2, D, XS, YS)
-  # print( "--- %s seconds (before plot set-up)---" % str(time.time() - start_time)) 
-  
+  print( "--- %s seconds (before plot set-up)---" % str(time.time() - start_time))
+
   print("result:\n" + str(result))
   # print("result:\n" + str(bin_ima()))
 
