@@ -2,7 +2,7 @@ console.log("Executing bin_ima.js");
 
 var bin_ima = (function() {
   function bin_ima(GM1=0.5, GM2=0.5, D=0.5, XS=0, YS=0) {
-    timeDebug = false;
+    timeDebug = true;
     // console.log("Executing bin_ima function");
     if (timeDebug === true)
       console.time();
@@ -107,11 +107,45 @@ var bin_ima = (function() {
 
     // ----------------------------------------------------------------------------------
     /******* Caclulating ZC[2] *********/
-    scope.ZC[2] = math.eval("4 * HSSM * ZS + Z1 * (4 * HSDM - 4 * HDM * ZSS + Z1 * \
-                        (-2 * ZSS * ZSC + Z1 * (4 * HDM + 2 * ZS * Z1 ) ) )", scope);
+    // scope.ZC[2] = math.eval("4 * HSSM * ZS + Z1 * (4 * HSDM - 4 * HDM * ZSS + Z1 * \
+    //                     (-2 * ZSS * ZSC + Z1 * (4 * HDM + 2 * ZS * Z1 ) ) )", scope);
+
+    // 4 * HSSM * ZS + Z1 * (4 * HSDM - 4 * HDM * ZSS + Z1 * (-2 * ZSS * ZSC + Z1 * (4 * HDM + 2 * ZS * Z1 ) ) )
+
+    // 4 * HDM + 2 * ZS * Z1
+    var ZC_2_paren1 = math.add(math.multiply(4, scope.HDM),
+                               math.multiply(2, math.multiply(scope.ZS, scope.Z1)));
+
+    // -2 * ZSS * ZSC + Z1 * (ZC_2_paren1)
+    var ZC_2_paren2 = math.add(math.multiply(-2, math.multiply(scope.ZSS, scope.ZSC)),
+                               math.multiply(scope.Z1, ZC_2_paren1));
+
+    //  4 * HSDM - 4 * HDM * ZSS + Z1 * (ZC_2_paren2)
+    var ZC_2_paren3 = math.add(math.subtract(math.multiply(4, scope.HSDM),
+                                             math.multiply(4, math.multiply(scope.HDM, scope.ZSS))),
+                               math.multiply(scope.Z1, ZC_2_paren2));
+
+    // 4 * HSSM * ZS + Z1 * (ZC_2_paren3)
+    scope.ZC[2] = math.add(math.multiply(4, math.multiply(scope.HSSM, scope.ZS)),
+                     math.multiply(scope.Z1, ZC_2_paren3));
+
     // ----------------------------------------------------------------------------------
     /******* Caclulating ZC[3] *********/
-    scope.ZC[3] = math.eval("4 * HSM * ZSS + Z1 * (4 * HDM * ZSC + Z1 * (2 * ZSC * ZSC - 2 * Z1 * Z1) )", scope);
+    // scope.ZC[3] = math.eval("4 * HSM * ZSS + Z1 * (4 * HDM * ZSC + Z1 * (2 * ZSC * ZSC - 2 * Z1 * Z1) )", scope);
+
+    // 4 * HSM * ZSS + Z1 * (4 * HDM * ZSC + Z1 * (2 * ZSC * ZSC - 2 * Z1 * Z1) )
+
+    // 2 * ZSC * ZSC - 2 * Z1 * Z1
+    var ZC_3_paren1 = math.subtract(math.multiply(2, math.multiply(scope.ZSC, scope.ZSC)),
+                                    math.multiply(2, math.multiply(scope.Z1, scope.Z1)))
+
+    // 4 * HDM * ZSC + Z1 * (ZC_3_paren1)
+    var ZC_3_paren2 = math.add(math.multiply(4, math.multiply(scope.HDM, scope.ZSC)),
+                               math.multiply(scope.Z1, ZC_3_paren1));
+
+    // 4 * HSM * ZSS + Z1 * (ZC_3_paren2)
+    scope.ZC[3] = math.add(math.multiply(4, math.multiply(scope.HSM, scope.ZSS)),
+                           math.multiply(scope.Z1, ZC_3_paren2));
 
     // ----------------------------------------------------------------------------------
     /******* Caclulating ZC[4] *********/
@@ -189,13 +223,34 @@ var bin_ima = (function() {
     scope.resultColumns.push(scope.YI); // result_1
 
     scope.ZR = scope.ZI;
+    // ----------------------------------------------------------------------------------
+    /******* Caclulating ZP *********/
+    // WARNING: THIS MAY NOT BE REQUIRED? DELETE FOR SPEED IF SO
     // return {ZR: scope.ZR, ZC: scope.ZC};
     // mathjs eval syntax has one-based numbering, so array indicies increment by one
-    scope.ZP = math.eval("ZC[0+1] + ZR * (ZC[1+1] + ZR * (ZC[2+1] + ZR * (ZC[3+1] + \
-                                    ZR * (ZC[4+1] + ZR * ZC[5+1]) ) ) )", {ZR: math.matrix(scope.ZR),
-                                                                                           ZC: math.matrix(scope.ZC)}).toArray();
+    // scope.ZP = math.eval("ZC[0+1] + ZR * (ZC[1+1] + ZR * (ZC[2+1] + ZR * (ZC[3+1] + \
+    //                                 ZR * (ZC[4+1] + ZR * ZC[5+1]) ) ) )", {ZR: math.matrix(scope.ZR),
+    //                                                                                        ZC: math.matrix(scope.ZC)}).toArray();
 
-    scope.ZIC = math.conj(scope.ZI); //
+    // ZC[0+1] + ZR * (ZC[1+1] + ZR * (ZC[2+1] + ZR * (ZC[3+1] + ZR * (ZC[4+1] + ZR * ZC[5+1]) ) ) )
+
+    // ZC[4+1] + ZR * ZC[5+1]
+    var ZP_paren1 = math.add(scope.ZC[4], math.multiply(scope.ZR, scope.ZC[5]));
+
+    // ZC[3+1] + ZR * (ZR_paren1)
+    var ZP_paren2 = math.add(scope.ZC[3], math.multiply(scope.ZR, ZP_paren1));
+
+    // ZC[2+1] + ZR * (ZR_paren2)
+    var ZP_paren3 = math.add(scope.ZC[2], math.multiply(scope.ZR, ZP_paren2));
+
+    // ZC[1+1] + ZR * (ZR_paren3)
+    var ZP_paren4 = math.add(scope.ZC[1], math.multiply(scope.ZR, ZP_paren3));
+
+    // ZC[0+1] + ZR * (ZR_paren4)
+    scope.ZP = math.add(scope.ZC[0], math.multiply(scope.ZR, ZP_paren4));
+
+    // ----------------------------------------------------------------------------------
+    scope.ZIC = math.conj(scope.ZI);
 
     scope.ZDC1 = math.subtract(scope.ZIC, scope.Z1C);
 
