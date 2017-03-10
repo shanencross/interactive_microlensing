@@ -33,16 +33,18 @@ var binary_translation_bin_ima = (function() {
   console.log(`XS: ${XS}`);
   console.log(`YS: ${YS}`);
 
-  var scope = bin_ima.bin_ima(GM1, GM2, D, XS, YS);
-  // var scope2 = bin_ima.bin_ima(GM1*1.1, GM2*1.1, D*1.1, XS*1.1, YS*1.1);
-  // var scope3 = bin_ima.bin_ima(GM1*1.2, GM2*1.2, D*1.2, XS*1.2, YS*1.2);
-  // var scope4 = bin_ima.bin_ima(GM1*1.3, GM2*1.3, D*1.3, XS*1.3, YS*1.3);
-  var scope2 = bin_ima.bin_ima(GM1, GM2, D, XS, YS);
-  var scope3 = bin_ima.bin_ima(GM1, GM2, D, XS, YS);
-  var scope4 = bin_ima.bin_ima(GM1, GM2, D, XS, YS);
-  var scope5 = bin_ima.bin_ima(GM1, GM2, D, XS, YS);
-  var scope6 = bin_ima.bin_ima(GM1, GM2, D, XS, YS);
-  var scope7 = bin_ima.bin_ima(GM1, GM2, D, XS, YS);
+  var timeDebug = true;
+
+  var scope = bin_ima.bin_ima(GM1, GM2, D, XS, YS, timeDebug);
+  var scope2 = bin_ima.bin_ima(GM1*1.1, GM2*1.1, D*1.1, XS*1.1, YS*1.1, timeDebug);
+  var scope3 = bin_ima.bin_ima(GM1*1.2, GM2*1.2, D*1.2, XS*1.2, YS*1.2, timeDebug);
+  var scope4 = bin_ima.bin_ima(GM1*1.3, GM2*1.3, D*1.3, XS*1.3, YS*1.3, timeDebug);
+  // var scope2 = bin_ima.bin_ima(GM1, GM2, D, XS, YS, timeDebug);
+  // var scope3 = bin_ima.bin_ima(GM1, GM2, D, XS, YS, timeDebug);
+  // var scope4 = bin_ima.bin_ima(GM1, GM2, D, XS, YS, timeDebug);
+  // var scope5 = bin_ima.bin_ima(GM1, GM2, D, XS, YS, timeDebug);
+  // var scope6 = bin_ima.bin_ima(GM1, GM2, D, XS, YS, timeDebug);
+  // var scope7 = bin_ima.bin_ima(GM1, GM2, D, XS, YS, timeDebug);
   // var scope8 = bin_ima.bin_ima(GM1, GM2, D, XS, YS);
   // var scope9 = bin_ima.bin_ima(GM1, GM2, D, XS, YS);
   // var scope10 = bin_ima.bin_ima(GM1, GM2, D, XS, YS);

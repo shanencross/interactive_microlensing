@@ -1,8 +1,7 @@
 console.log("Executing bin_ima.js");
 
 var bin_ima = (function() {
-  function bin_ima(GM1=0.5, GM2=0.5, D=0.5, XS=0, YS=0) {
-    timeDebug = true;
+  function bin_ima(GM1=0.5, GM2=0.5, D=0.5, XS=0, YS=0, timeDebug=false) {
     // console.log("Executing bin_ima function");
     if (timeDebug === true)
       console.time();

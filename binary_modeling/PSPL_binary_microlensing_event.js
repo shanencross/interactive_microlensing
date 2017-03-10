@@ -939,6 +939,7 @@ var PSPL_binary_microlensing_event = (function() {
     if (binaryFlag === true) {
       // send GM1, GM2, D, cof1, cof2, minXLM, maxXLM, and NPN
       // to bin_len_faster.plot_binary() function
+      var debug = false; // use debug values for binary variables
 
       var totalMass = Ml1 + Ml2;
       var GM1 = Ml1/totalMass;
@@ -950,11 +951,30 @@ var PSPL_binary_microlensing_event = (function() {
 
       var cof1 = incline; // DEBUG: temp, not correct;
                                  // cof1 should be negative slope, incline should be degrees, need conversion
-
       var minXLM = getThetaX(xAxisInitialDay) / thetaE_mas;
       var maxXLM = getThetaX(xAxisFinalDay) / thetaE_mas;
 
       var NPN = 400;
+
+      if (debug === true) {
+        // GM1 = 0.2;
+        // GM2 = 0.8;
+        // D = 0.5;
+        // cof1 = 0;
+        // cof2 = -0.5;
+        //
+        // minXLM = -1.1617229221914211;
+        // maxXLM = 1.1617229221914211;
+        //
+        // NPN = 4000;
+
+        GM1 = 0.61383532827548774
+        GM2 = 1 - GM1;
+        D = 0.5;
+        cof1 = 0;
+        cof2 = -0.0304658505511549;
+        NPN = 4000;
+      }
 
       console.log(`(binary) GM1: ${GM1}`);
       console.log(`(binary) GM2: ${GM2}`);

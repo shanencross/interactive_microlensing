@@ -8,7 +8,7 @@ var binary_translation = (function() {
   var cof2 = -0.5;
   var minXLM = -3; // lower x limit
   var maxXLM = 3; // upper x limit
-  var NPN = 40; // number of points
+  var NPN = 4000; // number of points
 
   // var GM1 = 0.5;
   // var GM2 = 0.5;
@@ -40,7 +40,12 @@ var binary_translation = (function() {
   // console.log(`YS: ${YS}`);
 
   // var scope = bin_ima.bin_ima(GM1, GM2, D, XS, YS);
-  var scope = bin_len_faster.plot_binary(GM1, GM2, D, cof1, cof2, minXLM, maxXLM, NPN, debug=true);
+  var scope = bin_len_faster.plot_binary(GM1, GM2, D, cof1, cof2,
+                                         minXLM, maxXLM, NPN, debug=true);
+  // var scope = bin_len_faster.plot_binary(GM1, GM2, D, cof1, cof2,
+  //                                       minXLM, maxXLM, NPN, debug=true);
+  // var scope = bin_len_faster.plot_binary(GM1*1.1, GM2, D*1.5, cof1, cof2,
+  //                                      minXLM, maxXLM, NPN, debug=true);
 
   for (var i=0; i<scope.length; i++) {
     console.log(`${i}: ${scope[i]}`);
