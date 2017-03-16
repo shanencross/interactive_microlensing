@@ -196,6 +196,7 @@ var PSPL_binary_microlensing_event = (function() {
   var fromEquationDefault = false; // const
   var centerLayout = false; // const
   var finiteSourceFlag = false; // no finite source functionality yet
+  var binaryFlag = true; // switch between binary and single lens modes
 
   // window.onload = init;
   // console.log(PSPL_microlensing_event_lens_plane);
@@ -309,15 +310,16 @@ var PSPL_binary_microlensing_event = (function() {
     fixU0 = fixU0checkbox.checked
     // Ml1 = 0.1;
     // Ml2 = 0.1;
-    Ml1 = 1*0.38
+    Ml1 = 1*0.62
     Ml2 = 1*1 - Ml1;
     Ds = 8.0;
     // thetaY = -0.05463809952990817329;
     thetaY =  -0.0304658505511549 * 0.6539599913692768;
     Dl = 4.75;
     t0 = 0;
-    mu = 7;
-    lensSep = 0.001;
+    // mu = 7;
+    mu = 20; // DEBUG value, TEMPORARY
+    lensSep = 1; // mas (milliarcseconds)
     incline = 0; // degrees
 
     // set derived quantities
@@ -370,10 +372,22 @@ var PSPL_binary_microlensing_event = (function() {
 
     var eqMl1 = Ml1 * solMassToKg; // Ml1 converted for equation to kg
     var eqDrel = Drel * kpcToM; // Drel converted for equation to m
+    var binaryMassFlag = true;
+    if (binaryFlag === true && binaryMassFlag ===  true) {
+      var eqMl2 = Ml2 * solMassToKg; // Ml2 converted for equation to kg
+      // var eqReducedMl = (eqMl1 * eqMl2)/(eqMl1 + eqMl2); // reduced mass from
+      //                                                    // Ml1 and Ml2 in kg
+      var eqTotalMl = eqMl1 + eqMl2; // total mass from Ml1 and Ml2 in kg
 
-    // G is m^3 /(kg * s^2)
-    // c is m/s
-    thetaE = Math.sqrt(4 * G * eqMl1/(c*c*eqDrel)); // radians (i.e. unitless)
+      thetaE = Math.sqrt(4 * G * eqTotalMl/(c*c*eqDrel)); // radians (i.e. unitless)
+    }
+
+    else { // single lens, not binary
+
+      // G is m^3 /(kg * s^2)
+      // c is m/s
+      thetaE = Math.sqrt(4 * G * eqMl1/(c*c*eqDrel)); // radians (i.e. unitless)
+    }
   }
 
   function updateTE(debug=false) {
@@ -985,20 +999,18 @@ var PSPL_binary_microlensing_event = (function() {
   }
 
   function updateCurveData() {
-    var binaryFlag = true; // for debugging; switch between binary and single lens modes
-
     if (binaryFlag === true) {
       // send GM1, GM2, D, cof1, cof2, minXLM, maxXLM, and NPN
       // to bin_len_faster.plot_binary() function
       var debug = true; // use debug values for binary variables
 
+      var thetaE_mas = thetaE / masToRad;
       var totalMass = Ml1 + Ml2;
       var GM1 = Ml1/totalMass;
       var GM2 = Ml2/totalMass;
-      var D = lensSep/2; // "D" is the half-separation
+      var D = (lensSep/2)/thetaE_mas; // "D" is the half-separation in units of
 
-      var thetaE_mas = thetaE / masToRad;
-      var cof2 = thetaY / thetaE_mas;
+      var cof2 = thetaY/thetaE_mas;
 
       var cof1 = incline; // DEBUG: temp, not correct;
                           // cof1 should be negative slope,
