@@ -229,7 +229,7 @@ def plot_binary(GM1, GM2, D, cof1, cof2, NPN=400):
    # Render magnification plot
    ax2.plot(XSA, ASA,'k-', linewidth=0.5)
    # Set y-scale to log
-   ax2.set_yscale('log')
+   # ax2.set_yscale('log')
    # Annotate
    plt.xlabel(r'$x/R_E$')
    plt.ylabel('Magnification')
@@ -241,13 +241,16 @@ def plot_binary(GM1, GM2, D, cof1, cof2, NPN=400):
 
 
 def main():
-    # e: GM1, GM2, D, cof1, cof2 = 0.5, 0.5, 0.5, 0.0, -0.1 # default values
+   # e: GM1, GM2, D, cof1, cof2 = 0.5, 0.5, 0.5, 0.0, -0.1 # default values
    # GM1, GM2, D, cof1, cof2 = 0.1, 20, 0.5, 0.1, -0.5
    # GM1, GM2, D, cof1, cof2, NPN = 0.2, 20, 0.5, 0.1, -0.5, 4000
    # GM1, GM2, D, cof1, cof2 = 0.2, 20, 0.5, 0.1, -0.5
 
-   GM1, GM2, D, cof1, cof2, NPN = 0.61383532827548774, 0.3816467172451226, \
-                                  0.5, 0, -0.0304658505511549, 4000
+   # GM1, GM2, D, cof1, cof2, NPN = 0.61383532827548774, 0.3816467172451226, \
+   #                                0.5, 0, -0.0304658505511549, 4000
+
+   GM1, GM2, D, cof1, cof2, NPN = 0.38, 0.62, \
+                                   1, 0, -0.0304658505511549, 4000
 
 
    print("GM1: %s" % (GM1))

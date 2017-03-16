@@ -1,4 +1,4 @@
-console.log = function() {} // uncomment this to disable all console.log messages
+// console.log = function() {} // uncomment this to disable all console.log messages
 console.log("Executing PSPL_microlensing_event.js");
 
 // "revealing pattern" module object for this script file
@@ -307,16 +307,18 @@ var PSPL_binary_microlensing_event = (function() {
     // mu = 7; // mas/yr  (milliarcseconds/year): mu = thetaE / tE
 
     fixU0 = fixU0checkbox.checked
-    Ml1 = 0.1;
-    Ml2 = 0.1;
+    // Ml1 = 0.1;
+    // Ml2 = 0.1;
+    Ml1 = 1*0.38
+    Ml2 = 1*1 - Ml1;
     Ds = 8.0;
-    thetaY = -0.05463809952990817329;
+    // thetaY = -0.05463809952990817329;
+    thetaY =  -0.0304658505511549 * 0.6539599913692768;
     Dl = 4.75;
     t0 = 0;
     mu = 7;
-    lensSep = 0.5;
+    lensSep = 0.001;
     incline = 0; // degrees
-
 
     // set derived quantities
     updateDerivedQuantities(initializing=true);
@@ -988,7 +990,7 @@ var PSPL_binary_microlensing_event = (function() {
     if (binaryFlag === true) {
       // send GM1, GM2, D, cof1, cof2, minXLM, maxXLM, and NPN
       // to bin_len_faster.plot_binary() function
-      var debug = false; // use debug values for binary variables
+      var debug = true; // use debug values for binary variables
 
       var totalMass = Ml1 + Ml2;
       var GM1 = Ml1/totalMass;
@@ -999,9 +1001,10 @@ var PSPL_binary_microlensing_event = (function() {
       var cof2 = thetaY / thetaE_mas;
 
       var cof1 = incline; // DEBUG: temp, not correct;
-                                 // cof1 should be negative slope, incline should be degrees, need conversion
-      var minXLM = getThetaX(xAxisInitialDay) / thetaE_mas;
-      var maxXLM = getThetaX(xAxisFinalDay) / thetaE_mas;
+                          // cof1 should be negative slope,
+                          // incline should be degrees, need conversion
+      var minXLM = getThetaX(xAxisInitialDay);
+      var maxXLM = getThetaX(xAxisFinalDay);
 
       var NPN = 4000;
 
@@ -1011,18 +1014,18 @@ var PSPL_binary_microlensing_event = (function() {
         // D = 0.5;
         // cof1 = 0;
         // cof2 = -0.5;
-        //
+        // var thetaE_mas_temp = 0.6539599913692768;
         // minXLM = -1.1617229221914211;
         // maxXLM = 1.1617229221914211;
         //
         // NPN = 4000;
 
-        GM1 = 0.61383532827548774
-        GM2 = 1 - GM1;
-        D = 0.5;
-        cof1 = 0;
-        cof2 = -0.0304658505511549;
-        NPN = 4000;
+        // GM1 = 0.61383532827548774
+        // GM2 = 1 - GM1;
+        // D = 0.5;
+        // cof1 = 0;
+        // cof2 = thetaY;
+        // NPN = 4000;
       }
 
       console.log(`(binary) GM1: ${GM1}`);
@@ -1034,6 +1037,10 @@ var PSPL_binary_microlensing_event = (function() {
       console.log(`(binary) NPN: ${NPN}`);
       console.log(`(binary) minXLM: ${minXLM}`);
       console.log(`(binary) maxXLM: ${maxXLM}`);
+      console.log(`(binary) xAxisInitialDay: ${xAxisInitialDay}`);
+      console.log(`(binary) xAxisFinalDay: ${xAxisFinalDay}`);
+      console.log(`(binary) thetaE_mas: ${thetaE_mas}`);
+
 
       var normalizedPositionsAndMagnifs = bin_len_faster.plot_binary(GM1, GM2, D, cof1, cof2,
                                                                 minXLM, maxXLM, NPN);
@@ -1044,8 +1051,8 @@ var PSPL_binary_microlensing_event = (function() {
 
       console.log(`(binary) times.length: ${times.length}`);
       console.log(`(binary) magnifs.length: ${magnifs.length}`);
-      console.log(`(binary) times: ${times}`);
-      console.log(`(binary) magnifs: ${magnifs}`);
+      // console.log(`(binary) times: ${times}`);
+      // console.log(`(binary) magnifs: ${magnifs}`);
     }
 
     else  {
