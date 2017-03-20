@@ -1,4 +1,4 @@
-// console.log = function() {} // uncomment this to disable all console.log messages
+console.log = function() {} // uncomment this to disable all console.log messages
 console.log("Executing PSPL_microlensing_event.js");
 
 // "revealing pattern" module object for this script file
@@ -323,7 +323,7 @@ var PSPL_binary_microlensing_event = (function() {
     mu = 7;
     // mu = 20; // DEBUG value, TEMPORARY
     lensSep = 1 * 0.8346900557366428; // mas (milliarcseconds)
-    incline = 0; // degrees
+    incline = Math.atan(0.12) * 180/Math.PI; // degrees
 
     // set derived quantities
     updateDerivedQuantities(initializing=true);
@@ -1017,6 +1017,9 @@ var PSPL_binary_microlensing_event = (function() {
       var cof1 = incline; // DEBUG: temp, not correct;
                           // cof1 should be negative slope,
                           // incline should be degrees, need conversion
+
+      var incline_radians = incline * Math.PI/180;
+      var cof1 = Math.tan(incline_radians);
       var minXLM = getThetaX(xAxisInitialDay);
       var maxXLM = getThetaX(xAxisFinalDay);
 
