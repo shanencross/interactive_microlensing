@@ -527,8 +527,7 @@ var PSPL_binary_microlensing_event = (function() {
     updateSliders();
     if (typeof PSPL_microlensing_event_lens_plane !== "undefined")
       PSPL_microlensing_event_lens_plane.initSourceRadius();
-    if (finiteSourceFlag == true)
-      updateCurveData();
+    updateCurveData();
     redrawCanvases();
     // if (finiteSourceFlag === true)
     //   updateCurveData();
