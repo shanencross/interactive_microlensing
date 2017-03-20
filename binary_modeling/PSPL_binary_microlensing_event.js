@@ -81,9 +81,11 @@ var PSPL_binary_microlensing_event = (function() {
   var xAxisFinalDay;
   var yAxisFinalMagnif;
 
-  var dayWidthDefault = 32; // const
+  // var dayWidthDefault = 32; // const
+  var dayWidthDefault = 200; // debug value; temp
   var magnifHeightDefault = 10; // const
-  var xAxisInitialDayDefault = -16; // const
+  // var xAxisInitialDayDefault = -16; // const
+  var xAxisInitialDayDefault = -100; // debug value; temp
   var yAxisInitialMagnifDefault = 0.5; // const
 
   // gridlines
@@ -94,7 +96,8 @@ var PSPL_binary_microlensing_event = (function() {
   var xGridStep;
   var yGridStep;
 
-  var xGridStepDefault = 2; // const
+  // var xGridStepDefault = 2; // const
+  var xGridStepDefault = 20; // debug value; temp
   var yGridStepDefault = 1; // const
 
   // Step increments used by debug buttons to alter range/scale
@@ -310,16 +313,16 @@ var PSPL_binary_microlensing_event = (function() {
     fixU0 = fixU0checkbox.checked
     // Ml1 = 0.1;
     // Ml2 = 0.1;
-    Ml1 = 2*0.62
-    Ml2 = 2*1 - Ml1;
+    Ml1 = 1*0.62
+    Ml2 = 1*1 - Ml1;
     Ds = 8.0;
     // thetaY = -0.05463809952990817329;
     thetaY =  -0.03 * 0.8346900557366428;
     Dl = 4.75;
     t0 = 0;
-    // mu = 7;
-    mu = 20; // DEBUG value, TEMPORARY
-    lensSep = 1; // mas (milliarcseconds)
+    mu = 7;
+    // mu = 20; // DEBUG value, TEMPORARY
+    lensSep = 1 * 0.8346900557366428; // mas (milliarcseconds)
     incline = 0; // degrees
 
     // set derived quantities
