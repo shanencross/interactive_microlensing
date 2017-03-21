@@ -1,4 +1,4 @@
-console.log = function() {} // uncomment this to disable all console.log messages
+// console.log = function() {} // uncomment this to disable all console.log messages
 console.log("Executing PSPL_microlensing_event.js");
 
 // "revealing pattern" module object for this script file
