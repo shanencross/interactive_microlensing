@@ -184,6 +184,9 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
   var lensProximityCheckFlag = true;
   var clippingImageFlag = false;
 
+  var updateOnSliderMovementFlag = eventModule.updateOnSliderMovementFlag;
+  var updateOnSliderReleaseFlag = eventModule.updateOnSliderReleaseFlag;
+
   // called from PSPL_microlensing_event.js (or whichever script holds the parameter
   // values) after initializations and slider updates),
   // because we NEED parameters intialized first to do drawing and scaling
@@ -196,11 +199,34 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
     redraw();
   }
 
-  function initListeners() {
+  function initListeners(updateOnSliderMovement=updateOnSliderMovementFlag,
+                         updateOnSliderRelease=updateOnSliderReleaseFlag) {
     imageShapeCheckbox.addEventListener("change", function() { displayImageShapeFlag = imageShapeCheckbox.checked;
+                                                               redraw();
                                                                console.log(`displayImageShapeFlag: ${displayImageShapeFlag}`); }, false);
-    sourceRadiusSlider.addEventListener("input", function() { updateSourceRadius(); }, false);
-    sourceRadiusSlider.addEventListener("change", function() { updateSourceRadius(); }, false);
+    console.log("(binary_lens_plane) updateOnSliderMovement: " + updateOnSliderMovement);
+    console.log("(binary_lens_plane) updateOnSliderRelease: " + updateOnSliderRelease);
+
+    // update plot when slider is moved
+    if (updateOnSliderMovement === true) {
+      sourceRadiusSlider.addEventListener("input", function() { updateSourceRadius(); }, false);
+    }
+
+    // update plot when slider is released
+    if (updateOnSliderRelease === true) {
+      sourceRadiusSlider.addEventListener("change", function() { updateSourceRadius(); }, false);
+
+      // if plot updates only upon slider release,
+      // update slider readout alone while slider is being moved,
+      // without recalculating/updating other sliders (until after current slider is released)
+      if (updateOnSliderMovement === false) {
+        sourceRadiusSlider.addEventListener("input",
+                                            function() { eventModule.updateSliderReadout(sourceRadiusSlider,
+                                                                                        sourceRadiusReadout,
+                                                                                        "sourceRadius"); }, false);
+      }
+
+    }
   }
 
   function initSourceRadius() {
@@ -214,7 +240,8 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
 
   function updateSourceRadiusSlider() {
     sourceRadiusSlider.value = sourceRadius; // source radius in mas
-    sourceRadiusReadout.innerHTML = Number(sourceRadiusSlider.value).toFixed(4);
+    eventModule.updateSliderReadout(sourceRadiusSlider, sourceRadiusReadout, "sourceRadius");
+    // sourceRadiusReadout.innerHTML = Number(sourceRadiusSlider.value).toFixed(4);
   }
 
   function updateSourceRadius() {

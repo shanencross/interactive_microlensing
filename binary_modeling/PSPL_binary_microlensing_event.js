@@ -201,8 +201,13 @@ var PSPL_binary_microlensing_event = (function() {
   var finiteSourceFlag = false; // no finite source functionality yet
   var binaryFlag = true; // switch between binary and single lens modes
 
+  // controls whether plot updates when slider is moved
+  // or when slider is released
+  var updateOnSliderMovementFlag = false;
+  var updateOnSliderReleaseFlag = true;
+
   // window.onload = init;
-  // console.log(PSPL_microlensing_event_lens_plane);
+  // console.log(PSPL_binary_microlensing_event_lens_plane);
   init();
 
   function init() {
@@ -222,12 +227,8 @@ var PSPL_binary_microlensing_event = (function() {
     console.log(`lensSep: ${lensSep}`);
   }
 
-  function initListeners() {
-
-    // controls whether plot updates when slider is moved
-    // or when slider is released
-    var updateOnSliderMovement = false;
-    var updateOnSliderRelease = true;
+  function initListeners(updateOnSliderMovement=updateOnSliderMovementFlag,
+                         updateOnSliderRelease=updateOnSliderReleaseFlag) {
 
     // update plot when slider is moved
     if (updateOnSliderMovement == true) {
@@ -418,6 +419,9 @@ var PSPL_binary_microlensing_event = (function() {
     else if (sliderName === "t0") {
       fixedDecimalPlace = 1;
     }
+    else if (sliderName === "sourceRadius") {
+      fixedDecimalePlace = 4;
+    }
 
     readout.innerHTML = Number(slider.value).toFixed(fixedDecimalPlace);
   }
@@ -525,15 +529,15 @@ var PSPL_binary_microlensing_event = (function() {
     // reset lense curve parameters to defaults and redraw curve
     initParams();
     updateSliders();
-    if (typeof PSPL_microlensing_event_lens_plane !== "undefined")
-      PSPL_microlensing_event_lens_plane.initSourceRadius();
+    if (typeof PSPL_binary_microlensing_event_lens_plane !== "undefined")
+      PSPL_binary_microlensing_event_lens_plane.initSourceRadius();
     updateCurveData();
     redrawCanvases();
     // if (finiteSourceFlag === true)
     //   updateCurveData();
-    // if (typeof PSPL_microlensing_event_lens_plane !== "undefined") {
-    //   PSPL_microlensing_event_lens_plane.initSourceRadius(noRedraw=false);
-    //   PSPL_microlensing_event_lens_plane.redraw();
+    // if (typeof PSPL_binary_microlensing_event_lens_plane !== "undefined") {
+    //   PSPL_binary_microlensing_event_lens_plane.initSourceRadius(noRedraw=false);
+    //   PSPL_binary_microlensing_event_lens_plane.redraw();
     // }
     // plotLightcurve();
   }
@@ -627,8 +631,8 @@ var PSPL_binary_microlensing_event = (function() {
   }
 
   function redrawCanvases() {
-    if (typeof PSPL_microlensing_event_lens_plane !== "undefined")
-      PSPL_microlensing_event_lens_plane.redraw();
+    if (typeof PSPL_binary_microlensing_event_lens_plane !== "undefined")
+      PSPL_binary_microlensing_event_lens_plane.redraw();
 
     if (typeof PSPL_microlensing_event_animation != "undefined") {
       plotLightcurve(PSPL_microlensing_event_animation.time);
@@ -1145,6 +1149,10 @@ var PSPL_binary_microlensing_event = (function() {
 
     get finiteSourceFlag() { return finiteSourceFlag; }, // whether finite or point source is being used
 
+    // controls if plot updates when slider is moved and/or released
+    get updateOnSliderMovementFlag() { return updateOnSliderMovementFlag; },
+    get updateOnSliderReleaseFlag() { return updateOnSliderReleaseFlag; },
+
     // used for animation
     get dt() { return dt; }, // time step used for drawing curve (days)
     get xAxisInitialDay() { return xAxisInitialDay; },
@@ -1162,6 +1170,9 @@ var PSPL_binary_microlensing_event = (function() {
     getTimeTerm: getTimeTerm,
     getMagnif: getMagnif,
     updateCurveData: updateCurveData,
+
+    // for updating slider readout
+    updateSliderReadout: updateSliderReadout,
 
     // plotLightcurveSegment: plotLightcurveSegment,
     // initPlot: initPlot,
