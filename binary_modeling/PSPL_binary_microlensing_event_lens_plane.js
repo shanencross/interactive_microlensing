@@ -43,7 +43,37 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
   var yGridStepDefault = 0.1;
 
   // lens (thetaX, thetaY) position in milliarcseconds
-  var lensPos = {x: 0, y:0};
+  function Lens(xPos, yPos, radius, color, outlineWidth, outlineColor) {
+
+
+
+    this.updatePos = function(xPos, yPos) {
+      this.pos = {
+        x: xPos,
+        y: yPos,
+      };
+
+      this.pixelPos = {
+        x: thetaXtoPixel(xPos),
+        y: thetaYtoPixel(yPos),
+      };
+    }
+
+    this.updatePos(xPos, yPos);
+
+    this.radius = 2;
+
+    this.color = "red";
+
+    this.outlineWidth = outlineWidth;
+    this.outlineColor = outlineColor;
+
+
+  }
+
+
+  var lens1;
+  var lens2;
 
   //base variables (background/picture aesthetics)
   var backgroundColor = "#ffffe6";
@@ -70,8 +100,8 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
   var sourceOutlineWidth = 2;
   var sourceOutlineColor = "teal";
 
-  var lensColor = "red";
   var lensRadius = 2;
+  var lensColor = "red";
   var lensOutlineWidth = 2;
   var lensOutlineColor = lensColor;
 
@@ -140,7 +170,8 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
   // derived variable (source/lens/ring)
   var sourcePos; // x value: time (days); y value: thetaY
   var sourcePixelPos; // pixel x and y values
-  var lensPixelPos;
+  // var lens1pixelPos;
+  // var lens2pixelPos;
   var ringRadius = {x: undefined, y: undefined}
   var lensedImages;
   var sourceOutline;
@@ -158,7 +189,7 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
 
   // if on, display shapes for the lensed images, not just points;
   // toggled by checkbox
-  var displayImageShapeFlag = true;
+  var displayImageShapeFlag = false;
 
   var numPointsDefault = 360; // number of points into which source outline is divided
                            // i.e. a value of 8 would divide the outline into 8
@@ -183,6 +214,7 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
   // add more points to outline if source is close to lens
   var lensProximityCheckFlag = true;
   var clippingImageFlag = false;
+  var binaryFlag = true;
 
   var updateOnSliderMovementFlag = eventModule.updateOnSliderMovementFlag;
   var updateOnSliderReleaseFlag = eventModule.updateOnSliderReleaseFlag;
@@ -194,6 +226,7 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
   function init(animation=animationFlag, debug=debugFlag) {
     initListeners();
     updateScaleAndRangeValues();
+    initLenses();
     initSourcePos();
     initSourceRadius();
     redraw();
@@ -229,10 +262,23 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
     }
   }
 
+  function initLenses(isBinary=binaryFlag) {
+
+    lens1 = new Lens(0, 0, lensRadius, lensColor,
+                         lensOutlineWidth, lensOutlineColor);
+
+    if (isBinary === true) {
+      var lensSep = eventModule.lensSep;
+      lens1.updatePos(-lensSep/2, 0);
+      lens2 = new Lens(lensSep/2, 0, lensRadius, lensColor,
+                           lensOutlineWidth, lensOutlineColor);
+    }
+  }
+
   function initSourceRadius() {
-    //sourceRadius = 4/xPixelScale; // source radius in mas
+    sourceRadius = 4/xPixelScale; // source radius in mas
     // sourceRadius = 0.0133; // mas
-    sourceRadius = 0.0636; // mas
+    // sourceRadius = 0.0636; // mas
 
     lensedImageRadius = sourceRadius*xPixelScale;
     updateSourceRadiusSlider();
@@ -254,15 +300,12 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
     // redraw();
   }
 
-  function initSourcePos(animation=animationFlag, debug=debugFlag) {
+  function initSourcePos(animation=animationFlag) {
     var sourcePosY = eventModule.thetaY;
     sourcePos = {x: getThetaX(eventModule.xAxisInitialDay), y: sourcePosY};
 
     if (animation === false)
       sourcePos.x = xAxisFinalThetaX;
-
-    if (debug === true)
-      sourcePos.x = lensPos.x - 1/4 *(thetaXwidth);
   }
 
   function redraw(animation=animationFlag, debug=debugFlag) {
@@ -319,7 +362,8 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
     ringRadius.y = eventModule.thetaE_mas * yPixelScale;
 
     // lens pixel position
-    lensPixelPos = {x:thetaXtoPixel(lensPos.x), y: thetaYtoPixel(lensPos.y)};
+    // lens1.pixelPos = {x:thetaXtoPixel(lens1.pos.x), y: thetaYtoPixel(lens1.pos.y)};
+    initLenses();
 
     // lensed image positions
     lensedImages = getLensedImages(sourcePos);
@@ -380,8 +424,8 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
       var yOffset = radius * Math.sin(angle);
       var point = {x: thetaPos.x + xOffset, y: thetaPos.y + yOffset};
 
-      var deltaX = point.x - lensPos.x;
-      var deltaY = point.y - lensPos.y;
+      var deltaX = point.x - lens1.pos.x;
+      var deltaY = point.y - lens1.pos.y;
       var distR = Math.sqrt(deltaX*deltaX + deltaY*deltaY);
       var nextAngle = angle+deltaAngle;
 
@@ -428,8 +472,8 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
 
       var point = {x: thetaPos.x + xOffset, y: thetaPos.y + yOffset}
 
-      var deltaX = point.x - lensPos.x;
-      var deltaY = point.y - lensPos.y;
+      var deltaX = point.x - lens1.pos.x;
+      var deltaY = point.y - lens1.pos.y;
       var distR = Math.sqrt(deltaX*deltaX + deltaY*deltaY);
 
 
@@ -499,10 +543,10 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
     //   phi += 2*Math.PI;
 
 
-    images.plus.pos = {x: lensPos.x + plusLensedImageR * Math.cos(phi),
-                       y: lensPos.y + plusLensedImageR * Math.sin(phi)};
-    images.minus.pos = {x: lensPos.x + minusLensedImageR * Math.cos(Math.PI + phi),
-                        y: lensPos.y + minusLensedImageR * Math.sin(Math.PI + phi)};
+    images.plus.pos = {x: lens1.pos.x + plusLensedImageR * Math.cos(phi),
+                       y: lens1.pos.y + plusLensedImageR * Math.sin(phi)};
+    images.minus.pos = {x: lens1.pos.x + minusLensedImageR * Math.cos(Math.PI + phi),
+                        y: lens1.pos.y + minusLensedImageR * Math.sin(Math.PI + phi)};
 
     images.plus.pixelPos = {x: thetaXtoPixel(images.plus.pos.x),
                             y: thetaYtoPixel(images.plus.pos.y)};
@@ -574,7 +618,7 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
 
   function xDayToThetaX() {}
 
-  function drawPic() {
+  function drawPic(isBinary=binaryFlag) {
     function clearPic() {
       context.clearRect(picLeftBorder, picTopBorder, picWidth, picHeight);
     }
@@ -618,13 +662,13 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
       }
     }
 
-    function drawLens() {
+    function drawLens(lens=lens1) {
       context.beginPath();
-      context.arc(lensPixelPos.x, lensPixelPos.y, lensRadius, 0, 2*Math.PI, false);
-      context.fillStyle = lensColor;
+      context.arc(lens.pixelPos.x, lens.pixelPos.y, lens.radius, 0, 2*Math.PI, false);
+      context.fillStyle = lens.color;
       context.fill();
-      context.lineWidth = lensOutlineWidth;
-      context.strokeStyle = lensOutlineColor;
+      context.lineWidth = lens.outlineWidth;
+      context.strokeStyle = lens.outlineColor;
       context.stroke();
     }
     function drawRing(firefoxCompatibility=firefoxCompatibilityFlag) {
@@ -633,7 +677,7 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
       if (firefoxCompatibility === true)
         context.arc(centerX, centerY, ringRadius.x, 0, 2*Math.PI, false);
       else
-        context.ellipse(lensPixelPos.x, lensPixelPos.y, ringRadius.x, ringRadius.y, 0, 0, 2*Math.PI)
+        context.ellipse(lens1.pixelPos.x, lens1.pixelPos.y, ringRadius.x, ringRadius.y, 0, 0, 2*Math.PI)
       context.strokeStyle = ringColor;
       context.lineWidth = ringWidth;
       context.setLineDash([dashedRingLength, dashedRingSpacing]); // turn on dashed lines
@@ -1022,8 +1066,8 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
     function drawFullLensedImages(debug=false, fillOn=false, strokeOn=false) {
       // draw both plus and minus lensed images
 
-      sourceLensDistX = sourcePos.x - lensPos.x;
-      sourceLensDistY = sourcePos.y - lensPos.y;
+      sourceLensDistX = sourcePos.x - lens1.pos.x;
+      sourceLensDistY = sourcePos.y - lens1.pos.y;
       sourceLensDist = Math.sqrt(sourceLensDistX * sourceLensDistX +
                                  sourceLensDistY * sourceLensDistY);
 
@@ -1055,7 +1099,7 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
           context.save();
           context.beginPath();
           context.rect(0, 0, canvas.width, context.canvas.height);
-          context.arc(lensPixelPos.x, lensPixelPos.y, ringRadius.x, 0, Math.PI * 2, true);
+          context.arc(lens1.pixelPos.x, lens1.pixelPos.y, ringRadius.x, 0, Math.PI * 2, true);
           context.clip();
         }
         drawFullLensedImages(debug=false, fillOn=true, strokeOn=true);
@@ -1065,7 +1109,10 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
       }
     }
     // drawPointLensedImages();
-    drawLens();
+    drawLens(lens1);
+    if (isBinary === true) {
+      drawLens(lens2);
+    }
     drawRing();
     toggleClippingRegion(turnOn=false);
     drawAxes();

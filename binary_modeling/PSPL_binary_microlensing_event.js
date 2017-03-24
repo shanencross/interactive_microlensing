@@ -19,7 +19,7 @@ var PSPL_binary_microlensing_event = (function() {
   var graphBottomTrail = 10;
 
   var graphRightBorder = graphLeftBorder + graphWidth; // right border of graph x-pixel value, NOT including any trailing gridlines
-    var graphBottomBorder = graphTopBorder + graphHeight; // bottom border of y-pixel value, NOT including any trailing gridlines
+  var graphBottomBorder = graphTopBorder + graphHeight; // bottom border of y-pixel value, NOT including any trailing gridlines
 
   var graphLeftTrailingBorder = graphLeftBorder - graphLeftTrail; // left border of graph x-pixel value, INCLUDING any trailing gridlines
   var graphRightTrailingBorder = graphRightBorder + graphRightTrail; // right border of graph x-pixel value, INCLUDING any trailing gridlines
@@ -1146,6 +1146,7 @@ var PSPL_binary_microlensing_event = (function() {
     get thetaE_mas() { return thetaE / masToRad; }, // milliarcseconds (mas)
     get tE() { return tE; }, // days
     get u0() { return u0; }, // unitless (units of thetaE)
+    get lensSep() { return lensSep; }, // milliarcseconds (mas)
 
     get finiteSourceFlag() { return finiteSourceFlag; }, // whether finite or point source is being used
 
