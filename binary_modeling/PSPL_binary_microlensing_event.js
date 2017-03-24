@@ -358,6 +358,10 @@ var PSPL_binary_microlensing_event = (function() {
   }
 
   function updateThetaE() {
+    thetaE = calculateThetaE();
+  }
+
+  function calculateThetaE(get_mas=false, useBinaryMass=binaryFlag, lensToUse=1) {
     /*
     G: m3 kg−1 s−2 (astropy value)
     c: 299792458.0; // m s-1 (astropy value)
@@ -376,22 +380,32 @@ var PSPL_binary_microlensing_event = (function() {
 
     var eqMl1 = Ml1 * solMassToKg; // Ml1 converted for equation to kg
     var eqDrel = Drel * kpcToM; // Drel converted for equation to m
-    var binaryMassFlag = true;
-    if (binaryFlag === true && binaryMassFlag ===  true) {
+    if (useBinaryMass === true) {
       var eqMl2 = Ml2 * solMassToKg; // Ml2 converted for equation to kg
       // var eqReducedMl = (eqMl1 * eqMl2)/(eqMl1 + eqMl2); // reduced mass from
       //                                                    // Ml1 and Ml2 in kg
       var eqTotalMl = eqMl1 + eqMl2; // total mass from Ml1 and Ml2 in kg
 
-      thetaE = Math.sqrt(4 * G * eqTotalMl/(c*c*eqDrel)); // radians (i.e. unitless)
+      eqMl = eqTotalMl;
     }
 
     else { // single lens, not binary
-
-      // G is m^3 /(kg * s^2)
-      // c is m/s
-      thetaE = Math.sqrt(4 * G * eqMl1/(c*c*eqDrel)); // radians (i.e. unitless)
+      if (lensToUse === 2) {
+        eqMl = eqMl2;
+      }
+      else { // lensToUse === 1 or otherwise
+        eqMl = eqMl1;
+      }
     }
+
+    // G is m^3 /(kg * s^2)
+    // c is m/s
+    var thetaEresult = Math.sqrt(4 * G * eqMl/(c*c*eqDrel)); // radians (i.e. unitless)
+
+    if (get_mas ===true)
+      thetaEresult = thetaEresult / masToRad;
+
+    return thetaEresult;
   }
 
   function updateTE(debug=false) {
@@ -1165,6 +1179,10 @@ var PSPL_binary_microlensing_event = (function() {
 
     // toggling finite source effects
     toggleFiniteSource: toggleFiniteSource,
+
+    // for calculating thetaE for individual lens masses, in addition to the
+    // thetaE of the summed lens masses
+    calculateThetaE: calculateThetaE,
 
     // for debugging
     getU: getU,

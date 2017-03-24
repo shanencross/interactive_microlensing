@@ -43,10 +43,9 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
   var yGridStepDefault = 0.1;
 
   // lens (thetaX, thetaY) position in milliarcseconds
-  function Lens(xPos, yPos, radius, color, outlineWidth, outlineColor) {
-
-
-
+  function Lens(xPos, yPos, radius, color, outlineWidth, outlineColor,
+                ringRadiusX, ringRadiusY,
+                ringColor, ringWidth, dashedRingLength, dashedRingSpacing) {
     this.updatePos = function(xPos, yPos) {
       this.pos = {
         x: xPos,
@@ -64,13 +63,20 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
     this.radius = 2;
 
     this.color = "red";
-
     this.outlineWidth = outlineWidth;
     this.outlineColor = outlineColor;
 
-
+    this.ring = {
+      radius: {
+        x: ringRadiusX,
+        y: ringRadiusY,
+      },
+      color: ringColor,
+      width: ringWidth,
+      dashedLength: dashedRingLength,
+      dashedSPacing: dashedRingSpacing,
+    };
   }
-
 
   var lens1;
   var lens2;
@@ -264,14 +270,24 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
 
   function initLenses(isBinary=binaryFlag) {
 
+    ring1radiusX = eventModule.calculateThetaE(get_mas=true, useBinaryMass=false, lensToUse=1) * xPixelScale;
+    ring1radiusY = eventModule.calculateThetaE(get_mas=true, useBinaryMass=false, lensToUse=1) * yPixelScale;
+
     lens1 = new Lens(0, 0, lensRadius, lensColor,
-                         lensOutlineWidth, lensOutlineColor);
+                     lensOutlineWidth, lensOutlineColor,
+                     ring1radiusX, ring1radiusY,
+                     ringColor, ringWidth, dashedRingLength, dashedRingSpacing);
 
     if (isBinary === true) {
+      ring2radiusX = eventModule.calculateThetaE(get_mas=true, useBinaryMass=false, lensToUse=2) * xPixelScale;
+      ring2radiusY = eventModule.calculateThetaE(get_mas=true, useBinaryMass=false, lensToUse=2) * yPixelScale;
+
       var lensSep = eventModule.lensSep;
       lens1.updatePos(-lensSep/2, 0);
       lens2 = new Lens(lensSep/2, 0, lensRadius, lensColor,
-                           lensOutlineWidth, lensOutlineColor);
+                       lensOutlineWidth, lensOutlineColor,
+                       ring2radiusX, ring2radiusY,
+                       ringColor, ringWidth, dashedRingLength, dashedRingSpacing);
     }
   }
 
@@ -358,8 +374,8 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
 
     // convert position to pixel units
     sourcePixelPos = {x: thetaXtoPixel(sourcePos.x), y: thetaYtoPixel(sourcePos.y)};
-    ringRadius.x = eventModule.thetaE_mas * xPixelScale;
-    ringRadius.y = eventModule.thetaE_mas * yPixelScale;
+    // ringRadius.x = eventModule.thetaE_mas * xPixelScale;
+    // ringRadius.y = eventModule.thetaE_mas * yPixelScale;
 
     // lens pixel position
     // lens1.pixelPos = {x:thetaXtoPixel(lens1.pos.x), y: thetaYtoPixel(lens1.pos.y)};
@@ -671,16 +687,18 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
       context.strokeStyle = lens.outlineColor;
       context.stroke();
     }
-    function drawRing(firefoxCompatibility=firefoxCompatibilityFlag) {
+    function drawRing(lens=lens1, firefoxCompatibility=firefoxCompatibilityFlag) {
+      var ring = lens.ring;
       context.beginPath();
       // ellipse not compatible with firefox
       if (firefoxCompatibility === true)
-        context.arc(centerX, centerY, ringRadius.x, 0, 2*Math.PI, false);
+        context.arc(lens.pixelPos.x, lens.pixelPos.y, ring.radius.x, 0, 2*Math.PI, false);
       else
-        context.ellipse(lens1.pixelPos.x, lens1.pixelPos.y, ringRadius.x, ringRadius.y, 0, 0, 2*Math.PI)
-      context.strokeStyle = ringColor;
-      context.lineWidth = ringWidth;
-      context.setLineDash([dashedRingLength, dashedRingSpacing]); // turn on dashed lines
+        context.ellipse(lens.pixelPos.x, lens.pixelPos.y, ring.radius.x,
+                        ring.radius.y, 0, 0, 2*Math.PI)
+      context.strokeStyle = ring.color;
+      context.lineWidth = ring.idth;
+      context.setLineDash([ring.dashedLength, ring.dashedSpacing]); // turn on dashed lines
       context.stroke();
       context.setLineDash([]); // turn off dashed-line drawing
     }
@@ -1113,7 +1131,11 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
     if (isBinary === true) {
       drawLens(lens2);
     }
-    drawRing();
+    var ringDebug = true;
+    drawRing(lens1);
+    if (ringDebug === true) {
+      drawRing(lens2);
+    }
     toggleClippingRegion(turnOn=false);
     drawAxes();
   }
