@@ -379,9 +379,10 @@ var PSPL_binary_microlensing_event = (function() {
     var kpcToM = 3.0856775814671917e19; // m/kpc; const
 
     var eqMl1 = Ml1 * solMassToKg; // Ml1 converted for equation to kg
+    var eqMl2 = Ml2 * solMassToKg; // Ml2 converted for equation to kg
     var eqDrel = Drel * kpcToM; // Drel converted for equation to m
+
     if (useBinaryMass === true) {
-      var eqMl2 = Ml2 * solMassToKg; // Ml2 converted for equation to kg
       // var eqReducedMl = (eqMl1 * eqMl2)/(eqMl1 + eqMl2); // reduced mass from
       //                                                    // Ml1 and Ml2 in kg
       var eqTotalMl = eqMl1 + eqMl2; // total mass from Ml1 and Ml2 in kg
@@ -402,7 +403,7 @@ var PSPL_binary_microlensing_event = (function() {
     // c is m/s
     var thetaEresult = Math.sqrt(4 * G * eqMl/(c*c*eqDrel)); // radians (i.e. unitless)
 
-    if (get_mas ===true)
+    if (get_mas === true)
       thetaEresult = thetaEresult / masToRad;
 
     return thetaEresult;
@@ -1022,7 +1023,7 @@ var PSPL_binary_microlensing_event = (function() {
     if (binaryFlag === true) {
       // send GM1, GM2, D, cof1, cof2, minXLM, maxXLM, and NPN
       // to bin_len_faster.plot_binary() function
-      var debug = true; // use debug values for binary variables
+      var debug = false; // use debug values for binary variables
 
       var thetaE_mas = thetaE / masToRad;
       var totalMass = Ml1 + Ml2;
@@ -1032,12 +1033,12 @@ var PSPL_binary_microlensing_event = (function() {
 
       var cof2 = thetaY/thetaE_mas;
 
-      var cof1 = incline; // DEBUG: temp, not correct;
+      // var cof1 = incline; // DEBUG: temp, not correct;
                           // cof1 should be negative slope,
                           // incline should be degrees, need conversion
 
       var incline_radians = incline * Math.PI/180;
-      var cof1 = Math.tan(incline_radians);
+      var cof1 = -Math.tan(incline_radians);
       var minXLM = getThetaX(xAxisInitialDay);
       var maxXLM = getThetaX(xAxisFinalDay);
 
@@ -1161,6 +1162,7 @@ var PSPL_binary_microlensing_event = (function() {
     get tE() { return tE; }, // days
     get u0() { return u0; }, // unitless (units of thetaE)
     get lensSep() { return lensSep; }, // milliarcseconds (mas)
+    get incline() { return incline; }, // degrees
 
     get finiteSourceFlag() { return finiteSourceFlag; }, // whether finite or point source is being used
 

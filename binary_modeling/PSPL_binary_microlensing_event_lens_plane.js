@@ -34,13 +34,19 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
 
   // plot range/scale
   var dayWidth = 30;
-  var thetaXwidth = 4/3;
-  var thetaYheight = 1; // mas
+  // var thetaXwidth = 4/3;
+  var thetaXwidth = 4;
+  // var thetaYheight = 1; // mas
+  var thetaYheight = 3;
   var xAxisInitialDay = -15;
-  var xAxisInitialThetaX = -(4/3)/2
-  var yAxisInitialThetaY = -0.5; // half of thetaYheight so that 0 is the middle
-  var xGridStepDefault = 0.1;
-  var yGridStepDefault = 0.1;
+  // var xAxisInitialThetaX = -(4/3)/2
+  var xAxisInitialThetaX = -(4)/2
+  // var yAxisInitialThetaY = -0.5; // half of thetaYheight so that 0 is the middle
+  var yAxisInitialThetaY = -3/2;
+  // var xGridStepDefault = 0.1;
+  var xGridStepDefault = 0.25;
+  // var yGridStepDefault = 0.1;
+  var yGridStepDefault = 0.25;
 
   // lens (thetaX, thetaY) position in milliarcseconds
   function Lens(xPos, yPos, radius, color, outlineWidth, outlineColor,
@@ -74,7 +80,7 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
       color: ringColor,
       width: ringWidth,
       dashedLength: dashedRingLength,
-      dashedSPacing: dashedRingSpacing,
+      dashedSpacing: dashedRingSpacing,
     };
   }
 
@@ -221,6 +227,8 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
   var lensProximityCheckFlag = true;
   var clippingImageFlag = false;
   var binaryFlag = true;
+  var separateBinaryRingsFlag = true; // desplay separate rings for each lens;
+                                      // for debugging/testing
 
   var updateOnSliderMovementFlag = eventModule.updateOnSliderMovementFlag;
   var updateOnSliderReleaseFlag = eventModule.updateOnSliderReleaseFlag;
@@ -356,7 +364,7 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
   }
 
   function updateDrawingValues() {
-    sourcePos.y = eventModule.thetaY; // update source thetaY
+    sourcePos.y = getThetaYpathValue(sourcePos.x); // update source thetaY
 
     // makes sure "0.0000" is displayed instead of "-0.0000" if rounding error
     // occurs
@@ -424,6 +432,14 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
     return thetaX;
   }
 
+  function getThetaYpathValue(thetaX) {
+    var incline_radians = eventModule.incline * Math.PI/180;
+    var slope = Math.tan(incline_radians);
+    var thetaYintercept = eventModule.thetaY; // mas
+
+    var thetaYvalue = slope*thetaX + thetaYintercept;
+    return thetaYvalue;
+  }
 
   // NOTE: Hacky -- fix
   function almostEquals(a, b, epsilon=1e-12) {
@@ -697,7 +713,7 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
         context.ellipse(lens.pixelPos.x, lens.pixelPos.y, ring.radius.x,
                         ring.radius.y, 0, 0, 2*Math.PI)
       context.strokeStyle = ring.color;
-      context.lineWidth = ring.idth;
+      context.lineWidth = ring.width;
       context.setLineDash([ring.dashedLength, ring.dashedSpacing]); // turn on dashed lines
       context.stroke();
       context.setLineDash([]); // turn off dashed-line drawing
@@ -730,10 +746,18 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
     }
 
     function drawSourcePath() {
+
+      var thetaYleft = getThetaYpathValue(xAxisInitialThetaX);
+      var thetaYright = getThetaYpathValue(xAxisFinalThetaX);
+      var thetaYpixelLeft = thetaYtoPixel(thetaYleft);
+      var thetaYpixelRight = thetaYtoPixel(thetaYright);
+
       // dashed line (path yet to be travelled)
       context.beginPath();
-      context.moveTo(picLeftBorder, sourcePixelPos.y);
-      context.lineTo(picRightBorder, sourcePixelPos.y);
+      // context.moveTo(picLeftBorder, sourcePixelPos.y);
+      context.moveTo(picLeftBorder, thetaYpixelLeft);
+      // context.lineTo(picRightBorder, sourcePixelPos.y);
+      context.lineTo(picRightBorder, thetaYpixelRight);
       context.setLineDash([dashedPathLength, dashedPathSpacing]); // turn on dashed lines
       context.strokeStyle = dashedPathColor;
       context.lineWidth = dashedPathWidth;
@@ -742,7 +766,9 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
 
       // solid line (path traveled so far)
       context.beginPath();
-      context.moveTo(picLeftBorder, sourcePixelPos.y);
+      // context.moveTo(picLeftBorder, sourcePixelPos.y);
+      context.moveTo(picLeftBorder, thetaYpixelLeft);
+      // context.lineTo(sourcePixelPos.x, sourcePixelPos.y);
       context.lineTo(sourcePixelPos.x, sourcePixelPos.y);
       context.strokeStyle = pathColor;
       context.lineWidth = pathWidth;
@@ -1131,11 +1157,22 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
     if (isBinary === true) {
       drawLens(lens2);
     }
-    var ringDebug = true;
-    drawRing(lens1);
-    if (ringDebug === true) {
-      drawRing(lens2);
+
+    // drawPointLensedImages();
+    if (isBinary === true) {
+      if (separateBinaryRingsFlag === true) {
+        // draw separate rings for each lens
+        drawRing(lens1);
+        drawRing(lens2);
+      }
+      else {
+        // draw the combined ring shape
+      }
     }
+    else { // single, non-binary lens
+      drawRing(lens1);
+    }
+
     toggleClippingRegion(turnOn=false);
     drawAxes();
   }
