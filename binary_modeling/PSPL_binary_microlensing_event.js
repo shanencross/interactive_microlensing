@@ -1,4 +1,4 @@
-// console.log = function() {} // uncomment this to disable all console.log messages
+console.log = function() {} // uncomment this to disable all console.log messages
 console.log("Executing PSPL_microlensing_event.js");
 
 // "revealing pattern" module object for this script file
@@ -198,7 +198,7 @@ var PSPL_binary_microlensing_event = (function() {
   // or from an input of time/magnification arrays
   var fromEquationDefault = false; // const
   var centerLayout = false; // const
-  var finiteSourceFlag = false; // no finite source functionality yet
+  var finiteSourceFlag = false; // toggle finite source effects
   var binaryFlag = true; // switch between binary and single lens modes
 
   // controls whether plot updates when slider is moved
@@ -295,7 +295,7 @@ var PSPL_binary_microlensing_event = (function() {
     yZoomOutButton.addEventListener("click", function() { updateGraph("yZoomOut"); }, false);
 
     resetGraphButton.addEventListener("click", function() { updateGraph("reset"); }, false)
-    finiteSourceCheckbox.addEventListener("change", toggleFiniteSource, false);
+    // finiteSourceCheckbox.addEventListener("change", toggleFiniteSource, false);
     updateSliders(); // in case HTML slider values differ from actual starting values
   }
 
@@ -1104,6 +1104,14 @@ var PSPL_binary_microlensing_event = (function() {
       }
     }
       var curveData = {times:times, magnifs:magnifs};
+
+      var autoScaleMagnifHeight = false;
+
+      if (autoScaleMagnifHeight === true) {
+        var maxMagnif = math.max(curveData.magnifs);
+        updatePlotScaleAndRange(undefined, maxMagnif+1, undefined, 0.5);
+        // updateGridRange(xGridStepDefault, (maxMagnif+1)/10);
+      }
       lightcurveData = curveData;
   }
 

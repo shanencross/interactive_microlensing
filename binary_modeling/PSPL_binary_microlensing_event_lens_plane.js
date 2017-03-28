@@ -255,24 +255,28 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
     console.log("(binary_lens_plane) updateOnSliderRelease: " + updateOnSliderRelease);
 
     // update plot when slider is moved
-    if (updateOnSliderMovement === true) {
-      sourceRadiusSlider.addEventListener("input", function() { updateSourceRadius(); }, false);
-    }
 
-    // update plot when slider is released
-    if (updateOnSliderRelease === true) {
-      sourceRadiusSlider.addEventListener("change", function() { updateSourceRadius(); }, false);
-
-      // if plot updates only upon slider release,
-      // update slider readout alone while slider is being moved,
-      // without recalculating/updating other sliders (until after current slider is released)
-      if (updateOnSliderMovement === false) {
-        sourceRadiusSlider.addEventListener("input",
-                                            function() { eventModule.updateSliderReadout(sourceRadiusSlider,
-                                                                                        sourceRadiusReadout,
-                                                                                        "sourceRadius"); }, false);
+    if (sourceRadiusSlider !== null) {
+      if (updateOnSliderMovement === true) {
+        sourceRadiusSlider.addEventListener("input", function() { updateSourceRadius(); }, false);
       }
 
+      // update plot when slider is released
+
+      if (updateOnSliderRelease === true) {
+        sourceRadiusSlider.addEventListener("change", function() { updateSourceRadius(); }, false);
+
+        // if plot updates only upon slider release,
+        // update slider readout alone while slider is being moved,
+        // without recalculating/updating other sliders (until after current slider is released)
+        if (updateOnSliderMovement === false) {
+          sourceRadiusSlider.addEventListener("input",
+                                              function() { eventModule.updateSliderReadout(sourceRadiusSlider,
+                                                                                          sourceRadiusReadout,
+                                                                                          "sourceRadius"); }, false);
+        }
+
+      }
     }
   }
 
@@ -305,7 +309,9 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
     // sourceRadius = 0.0636; // mas
 
     lensedImageRadius = sourceRadius*xPixelScale;
-    updateSourceRadiusSlider();
+
+    if (sourceRadiusSlider !== null)
+      updateSourceRadiusSlider();
   }
 
   function updateSourceRadiusSlider() {
