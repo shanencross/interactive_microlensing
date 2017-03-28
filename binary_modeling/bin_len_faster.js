@@ -9,70 +9,70 @@ var bin_len_faster = (function() {
     // console.log("executing plot_binary function");
     // console.log(`${GM1}, ${GM2}, ${D}, ${cof1}, ${cof2}`)
 
-    var scope = {GM1: GM1, GM2: GM2, D: D, cof1: cof1, cof2: cof2,
-                       minXLM:minXLM, maxXLM:maxXLM, NPN:NPN};
+    // var scope = {GM1: GM1, GM2: GM2, D: D, cof1: cof1, cof2: cof2,
+    //                    minXLM:minXLM, maxXLM:maxXLM, NPN:NPN};
 
     // # Initialize arrays
     // # y,x coords of source and magnification ASA
     // # Define the number of points (NPN) to use for the trajectory
-    // scope.NPN = 40;
-    scope.XSA = new Array(scope.NPN).fill(0);
-    scope.YSA = new Array(scope.NPN).fill(0);
-    scope.ASA = new Array(scope.NPN).fill(0);
+    // NPN = 40;
+    // var XSA = new Array(NPN).fill(0);
+    // var YSA = new Array(NPN).fill(0);
+    var ASA = new Array(NPN).fill(0);
 
     // AIA = np.zeros(shape = (5, NPN))
-    scope.AIA = [];
+    var AIA = [];
     for (var i=0; i<5; i++) {
-      scope.AIA.push(new Array(scope.NPN).fill(0));
+      AIA.push(new Array(NPN).fill(0));
     }
 
-    scope.GM2 = 1 - scope.GM1
+    GM2 = 1 - GM1
 
     // # Evaluate the (linear) trajectory path
     // # NXS is the trajectory length (NPN points)
-    scope.NXS = scope.NPN;
-    // scope.XLM = 3;
-    scope.XSC = numeric.linspace(scope.minXLM, scope.maxXLM, scope.NXS);
-    scope.XSA = scope.XSC;
+    var NXS = NPN;
+    // XLM = 3;
+    var XSC = numeric.linspace(minXLM, maxXLM, NXS);
+    var XSA = XSC;
 
     // # Specify the trajectory
-    scope.YSC = math.add(math.multiply(-scope.cof1, scope.XSC), scope.cof2)
-    scope.YSA = scope.YSC;
+    var YSC = math.add(math.multiply(-cof1, XSC), cof2)
+    var YSA = YSC;
 
-    scope.NT = 1;
-    scope.DT = 0.0;
-    scope.RC = 0.0;
-    scope.IT = 1;
+    var NT = 1;
+    var DT = 0.0;
+    var RC = 0.0;
+    var IT = 1;
 
-    scope.T = scope.IT * scope.DT
-    scope.XS = math.add(scope.XSC, math.multiply(scope.RC, math.cos(scope.T)))
-    scope.YS = math.add(scope.YSC, math.multiply(scope.RC, math.sin(scope.T)));
+    var T = IT * DT
+    var XS = math.add(XSC, math.multiply(RC, math.cos(T)))
+    var YS = math.add(YSC, math.multiply(RC, math.sin(T)));
 
     // # Evaluate the magnification
     // # Loop over source positions
-    for (var IXS=0; IXS<scope.NXS; IXS++) {
+    for (var IXS=0; IXS<NXS; IXS++) {
       // # Calculate positions of images given a source position
-      // console.log(`GM1: ${scope.GM1}`);
-      // console.log(`GM2: ${scope.GM2}`);
-      // console.log(`D: ${scope.D}`);
-      // console.log(`XS[IXS]: ${scope.XS[IXS]}`);
-      // console.log(`YS[IXS]: ${scope.YS[IXS]}`);
+      // console.log(`GM1: ${GM1}`);
+      // console.log(`GM2: ${GM2}`);
+      // console.log(`D: ${D}`);
+      // console.log(`XS[IXS]: ${XS[IXS]}`);
+      // console.log(`YS[IXS]: ${YS[IXS]}`);
 
-      scope.XS[IXS] = math.round(scope.XS[IXS], 12);
-      scope.YS[IXS] = math.round(scope.YS[IXS], 12);
-      // console.log(`rounded XS[IXS]: ${scope.XS[IXS]}`);
-      // console.log(`rounded YS[IXS]: ${scope.YS[IXS]}`);
+      XS[IXS] = math.round(XS[IXS], 12);
+      YS[IXS] = math.round(YS[IXS], 12);
+      // console.log(`rounded XS[IXS]: ${XS[IXS]}`);
+      // console.log(`rounded YS[IXS]: ${YS[IXS]}`);
 
 
 
-      scope.imageparms = bin_ima.bin_ima(scope.GM1, scope.GM2, scope.D,
-                                         scope.XS[IXS], scope.YS[IXS]);
-      scope.transposed_imageparms = math.transpose(scope.imageparms);
+      imageparms = bin_ima.bin_ima(GM1, GM2, D,
+                                         XS[IXS], YS[IXS]);
+      transposed_imageparms = math.transpose(imageparms);
 
-      var XI = scope.transposed_imageparms[0];
-      var YI = scope.transposed_imageparms[1];
-      var AI = scope.transposed_imageparms[2];
-      var IMP = scope.transposed_imageparms[3];
+      var XI = transposed_imageparms[0];
+      var YI = transposed_imageparms[1];
+      var AI = transposed_imageparms[2];
+      var IMP = transposed_imageparms[3];
 
       // console.log(`XI: ${XI}`);
       // console.log(`YI: ${YI}`);
@@ -81,12 +81,12 @@ var bin_len_faster = (function() {
 
       // console.log("---------------------------");
 
-      // for (var i in scope.imageparms)
-        // console.log(scope.imageparms[i]);
+      // for (var i in imageparms)
+        // console.log(imageparms[i]);
 
       for (var IM=0; IM<5; IM++) {
-        scope.AIA[IM][IXS] = AI[IM];
-        scope.ASA[IXS] = math.add(scope.ASA[IXS], math.multiply(IMP[IM], AI[IM]));
+        AIA[IM][IXS] = AI[IM];
+        ASA[IXS] = math.add(ASA[IXS], math.multiply(IMP[IM], AI[IM]));
         // console.log(AI[IM]);
       }
 
@@ -99,22 +99,22 @@ var bin_len_faster = (function() {
       console.log('done');
 
       /*console.log("XSA:");
-      for (var i in scope.XSA) {
-        console.log(scope.XSA[i]);
+      for (var i in XSA) {
+        console.log(XSA[i]);
       }
 
       console.log("");
       console.log("ASA:");
-      for (var i in scope.ASA) {
-        console.log(scope.ASA[i]);
+      for (var i in ASA) {
+        console.log(ASA[i]);
       }*/
 
       return scope; // DEBUG: temp
     }
     else {
       return {
-        normalizedPositions: scope.XSA,
-        magnifs: scope.ASA,
+        normalizedPositions: XSA,
+        magnifs: ASA,
       };
     }
   }
