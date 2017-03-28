@@ -150,7 +150,7 @@ var bin_ima = (function() {
     /******* Caclulating ZC[4] *********/
     // ZC[4] = math.eval("ZSC * (ZSS -2 * HSM) - Z1 * (2 * HDM + ZS * Z1)", scope);
 
-    // ZSC * (ZSS -2 * HSM) - Z1 * (2 * HDM + ZS * Z1
+    // ZSC * (ZSS -2 * HSM) - Z1 * (2 * HDM + ZS * Z1)
 
     // ZSS -2 * HSM
     var ZC_4_paren1 = math.subtract(ZSS, math.multiply(2, HSM));
@@ -216,9 +216,9 @@ var bin_ima = (function() {
 
     resultColumns = [];
 
-    XI = math.re(ZI);
+    var XI = math.re(ZI);
     resultColumns.push(XI); // result_0
-    YI = math.im(ZI);
+    var YI = math.im(ZI);
     resultColumns.push(YI); // result_1
 
     var ZR = ZI;
@@ -316,11 +316,13 @@ var bin_ima = (function() {
   }
 
   function compareComplexNumToZero(num) {
+    // if num "almost equals" 0: returns 0
+    // else if num > 0: returns 1
+    // else if num < 0: returns -1
     var complexNum = math.complex(num);
 
     // if real component is ~=0, use only imaginary component for comparison --
     // if real component is nonzero, use only the real component for comparison
-
     if (almostEquals(complexNum.re, 0) === true) {
       var comparisonNum = complexNum.im;
     }

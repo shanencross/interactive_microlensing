@@ -1077,13 +1077,12 @@ var PSPL_binary_microlensing_event = (function() {
       console.log(`(binary) xAxisFinalDay: ${xAxisFinalDay}`);
       console.log(`(binary) thetaE_mas: ${thetaE_mas}`);
 
-
-      var normalizedPositionsAndMagnifs = bin_len_faster.plot_binary(GM1, GM2, D, cof1, cof2,
+      var binaryCaclulationResults = bin_len_faster.plot_binary(GM1, GM2, D, cof1, cof2,
                                                                 minXLM, maxXLM, NPN);
       console.log(bin_len_faster.plot_binary());
 
       var times = numeric.linspace(xAxisInitialDay, xAxisFinalDay, NPN);
-      var magnifs = normalizedPositionsAndMagnifs.magnifs;
+      var magnifs = binaryCaclulationResults.magnifs;
 
       console.log(`(binary) times.length: ${times.length}`);
       console.log(`(binary) magnifs.length: ${magnifs.length}`);

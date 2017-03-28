@@ -20,10 +20,19 @@ var bin_len_faster = (function() {
     // var YSA = new Array(NPN).fill(0);
     var ASA = new Array(NPN).fill(0);
 
-    // AIA = np.zeros(shape = (5, NPN))
-    var AIA = [];
+    // adapted from python: AIA = np.zeros(shape = (5, NPN))
+    // var AIA = [];
+    // for (var i=0; i<5; i++) {
+    //   AIA.push(new Array(NPN).fill(0));
+    // }
+
+    var XIA = [];
     for (var i=0; i<5; i++) {
-      AIA.push(new Array(NPN).fill(0));
+      XIA.push(new Array(NPN));
+    }
+    var YIA = [];
+    for (var i=0; i<5; i++) {
+      YIA.push(new Array(NPN));
     }
 
     GM2 = 1 - GM1
@@ -84,16 +93,22 @@ var bin_len_faster = (function() {
       // for (var i in imageparms)
         // console.log(imageparms[i]);
 
+      // # Loop over all images
       for (var IM=0; IM<5; IM++) {
-        AIA[IM][IXS] = AI[IM];
+        // AIA[IM][IXS] = AI[IM];
         ASA[IXS] = math.add(ASA[IXS], math.multiply(IMP[IM], AI[IM]));
-        // console.log(AI[IM]);
+
+        XIA[IM][IXS] = XI[IM];
+        YIA[IM][IXS] = YI[IM];
       }
-
-      // console.log(IXS);
-
-    // # Loop over all images
     }
+
+    var normalizedSourcePositions = {x: XSA, y: YSA};
+
+    // XIA/YIA column: image number
+    // XIA/YIA row: x index (ranges from 0 to NPN)
+    var normalizedImagePositions = {x: XIA, y: YIA};
+
     if (debug === true) {
       console.timeEnd();
       console.log('done');
@@ -109,11 +124,12 @@ var bin_len_faster = (function() {
         console.log(ASA[i]);
       }*/
 
-      return scope; // DEBUG: temp
+      // return scope; // DEBUG: temp
     }
     else {
       return {
-        normalizedPositions: XSA,
+        normalizedSourcePositions: normalizedSourcePositions,
+        normalizedImagePositions: normalizedImagePositions,
         magnifs: ASA,
       };
     }
