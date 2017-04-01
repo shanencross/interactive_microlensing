@@ -65,12 +65,14 @@ def plot_binary(GM1, GM2, D, cof1, cof2, NPN=400):
       # Polynomial coeffs A, B, C
       # as described in Schneider & Weiss 1986 (eqn 9b)
       A = 16 * D2 * R2 * (R4M - GMXM)
+      print "A: " + str(A)
       B = 8 * R * D * (GMXM * R2 - (R2 + 4 * D2) * R4M)
       C = (R2P * R2P) * R4M - GM1S * R4 \
           - 2 * GMXM * R2 * (R2 + 4 * D2)
       C = C + 16 * GM1 * GM2 * D2 * R2
       # Calculate the determinant DT
       DT = B * B - 4 * A * C
+      print "DT: " + str(DT)
       # When the determinant is >= 0 calculate the values of cos(theta) C1, C2
       DTge0 = np.compress(DT >= 0, DT)
       # Modify relevant arrays accordingly
@@ -196,8 +198,8 @@ def plot_binary(GM1, GM2, D, cof1, cof2, NPN=400):
          Y = YI[IM] # Image Y location
 
    print( "--- %s seconds (before plot set-up)---" % str(time.time() - start_time))
-   print("XSA: %s" % XSA)
-   print("ASA: %s" % ASA)
+   # print("XSA: %s" % XSA)
+   # print("ASA: %s" % ASA)
 
    # Set up drawing canvas
    fig = plt.figure(0, figsize=(6,8), dpi=80)

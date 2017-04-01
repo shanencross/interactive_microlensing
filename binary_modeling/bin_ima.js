@@ -234,6 +234,9 @@ var bin_ima = (function() {
     // ZC[0+1] + ZR * (ZC[1+1] + ZR * (ZC[2+1] + ZR * (ZC[3+1] + ZR * (ZC[4+1] + ZR * ZC[5+1]) ) ) )
 
     // ZC[4+1] + ZR * ZC[5+1]
+
+    /*
+
     var ZP_paren1 = math.add(ZC[4], math.multiply(ZR, ZC[5]));
 
     // ZC[3+1] + ZR * (ZR_paren1)
@@ -247,6 +250,8 @@ var bin_ima = (function() {
 
     // ZC[0+1] + ZR * (ZR_paren4)
     var ZP = math.add(ZC[0], math.multiply(ZR, ZP_paren4));
+
+    */
 
     // ----------------------------------------------------------------------------------
     var ZIC = math.conj(ZI);

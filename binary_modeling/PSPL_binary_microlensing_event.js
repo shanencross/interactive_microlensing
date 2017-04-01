@@ -1079,7 +1079,6 @@ var PSPL_binary_microlensing_event = (function() {
 
       var binaryCaclulationResults = bin_len_faster.plot_binary(GM1, GM2, D, cof1, cof2,
                                                                 minXLM, maxXLM, NPN);
-      console.log(bin_len_faster.plot_binary());
 
       var times = numeric.linspace(xAxisInitialDay, xAxisFinalDay, NPN);
       var magnifs = binaryCaclulationResults.magnifs;
