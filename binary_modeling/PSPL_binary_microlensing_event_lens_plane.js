@@ -374,17 +374,21 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
 
     // makes sure "0.0000" is displayed instead of "-0.0000" if rounding error
     // occurs
-    var newThetaXreadout = Number(sourcePos.x).toFixed(4)
-    if (Number(newThetaXreadout) === -0) {
-      newThetaXreadout = Number(0).toFixed(4);
+    if (thetaXreadout !== null) {
+      var newThetaXreadout = Number(sourcePos.x).toFixed(4)
+      if (Number(newThetaXreadout) === -0) {
+        newThetaXreadout = Number(0).toFixed(4);
+      }
+      thetaXreadout.innerHTML = newThetaXreadout; // update source thetaX readout
     }
-    thetaXreadout.innerHTML = newThetaXreadout; // update source thetaX readout
 
-    var newSourceRadiusNormalizedReadout = Number(sourceRadius / eventModule.thetaE_mas).toFixed(4);
-    if (Number(newSourceRadiusNormalizedReadout) === -0) {
-      newSourceRadiusNormalizedReadout = Number(0).toFixed(4);
+    if (sourceRadiusNormalizedReadout !== null) {
+      var newSourceRadiusNormalizedReadout = Number(sourceRadius / eventModule.thetaE_mas).toFixed(4);
+      if (Number(newSourceRadiusNormalizedReadout) === -0) {
+        newSourceRadiusNormalizedReadout = Number(0).toFixed(4);
+      }
+      sourceRadiusNormalizedReadout.innerHTML = newSourceRadiusNormalizedReadout;
     }
-    sourceRadiusNormalizedReadout.innerHTML = newSourceRadiusNormalizedReadout;
 
     // convert position to pixel units
     sourcePixelPos = {x: thetaXtoPixel(sourcePos.x), y: thetaYtoPixel(sourcePos.y)};

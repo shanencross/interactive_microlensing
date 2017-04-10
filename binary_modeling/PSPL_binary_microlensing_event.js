@@ -533,11 +533,12 @@ var PSPL_binary_microlensing_event = (function() {
     // }
 
     // update thetaE readout (no slider)
-    var thetaE_mas = thetaE / masToRad;
-    console.log(`thetaE (mas): ${thetaE_mas}`);
-    thetaEreadout.innerHTML = Number(thetaE_mas).toFixed(4);
 
-    // console.log(`lensSep (mas): ${lensSep}`);
+    if (thetaEreadout !== null) {
+      var thetaE_mas = thetaE / masToRad;
+      console.log(`thetaE (mas): ${thetaE_mas}`);
+      thetaEreadout.innerHTML = Number(thetaE_mas).toFixed(4);
+    }
   }
 
   function resetParams() {
