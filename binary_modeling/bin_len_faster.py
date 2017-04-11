@@ -83,6 +83,7 @@ def plot_binary(GM1, GM2, D, cof1, cof2, NPN=400):
       # Evaluate C1, C2
       C1 = (-B_DTgt0 + np.sqrt(DTge0))/(2 * A_DTgt0)
       C2 = (-B_DTgt0 - np.sqrt(DTge0))/(2 * A_DTgt0)
+      print "C1: " + str(C1)
       # When abs(C1) or abs(C2) are <=1 append point to critical and caustic curves
       # Isolate the indexes of where the absolute values of C1 and C2 are <= 1
       idxC1le1 = ((np.abs(C1) <= 1)).nonzero()

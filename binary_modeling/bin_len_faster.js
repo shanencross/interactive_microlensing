@@ -156,7 +156,8 @@ var bin_len_faster = (function() {
     var D2 = D * D;
     var D4 = D2 * D2;
 
-    var NR = 300000; // # Points to use to plot critical curves and caustics
+    // var NR = 300000; // # Points to use to plot critical curves and caustics
+    var NR = 300000; // DEBUG temp value
     var DR = 0.00001; // # Used to define the sampling density of the caustics
 
     // # Estimate criticals and caustics
@@ -219,6 +220,7 @@ var bin_len_faster = (function() {
       // C + C_product
       C = numeric.add(C, C_product);
 
+      // # Calculate the determinant DT
       // DT = B * B - 4 * A * C
       var DT = numeric.sub(numeric.mul(B,
                                        B),
@@ -226,7 +228,76 @@ var bin_len_faster = (function() {
                                        numeric.mul(A,
                                                    C)));
 
+      // # When the determinant is >= 0 calculate the values of cos(theta) C1, C2
+      // # Modify relevant arrays accordingly
+      var DTge0 = [];
+      var DTge0_sqrt = [];
+      var DTge0_neg_sqrt = [];
+      var R_DTgt0 = [];
+      var R2_DTgt0 = [];
+      var B_DTgt0 = [];
+      var A_DTgt0 = [];
+      for (var i=0; i<DT.length; i++) {
+        // might need "almostEquals" here
+        if (DT[i] >= 0 || almostEquals(DT[i], 0) === true) {
+          DTge0.push(DT[i]);
+          var DT_element_sqrt = Math.sqrt(DT[i]);
+          DTge0_sqrt.push(DT_element_sqrt);
+          DTge0_neg_sqrt.push(-DT_element_sqrt);
+          R_DTgt0.push(R[i]);
+          R2_DTgt0.push(R2[i]);
+          B_DTgt0.push(B[i]);
+          A_DTgt0.push(A[i]);
+        }
+      }
+
+      var C_denominator = numeric.mul(2, A_DTgt0);
+      var C1_numerator = numeric.sub(DTge0_sqrt, B_DTgt0)
+      var C2_numerator = numeric.sub(DTge0_neg_sqrt, B_DTgt0);
+      //
+      var C1 = numeric.div(C1_numerator, C_denominator);
+      var C2 = numeric.div(C2_numerator, C_denominator);
+
+      var idxC1le1 = [];
+      var idxC2le1 = [];
+      for (var i=0; i<C1.length; i++) {
+        if (Math.abs(C1[i]) <= 1 || almostEquals(C1[i], 1) === true) {
+          idxC1le1.push(i);
+        }
+
+        if (Math.abs(C2[i]) <= 1 || almostEquals(C2[i], 1) === true) {
+          idxC2le1.push(i);
+        }
+      }
+
     }
+
+
+
+      // # Evaluate C1, C2
+
+      // DEBUG: temp test
+
+      // Note: count exceeds zero for NR > 53131 (when DR = 0.00001).
+      // It seems that every element after element 53131 is >= 0.
+      // No idea if this is relevant to anything
+      //
+      // var count = 0;
+      // for (var i=0; i<DT.length; i++) {
+      //   var element = DT[i];
+      //   if (element >= 0)
+      //     count++;
+      // }
+      // console.log(count);
+
+      // # When the determinant is >= 0 calculate the values of cos(theta) C1, C2
+      // DTge0 = np.compress(DT >= 0, DT)
+      // # Modify relevant arrays accordingly
+      // R_DTgt0 = np.compress(DT >= 0, R)
+      // R2_DTgt0 = np.compress(DT >= 0, R2)
+      // B_DTgt0 = np.compress(DT >= 0, B)
+      // A_DTgt0 = np.compress(DT >= 0, A)
+
   }
 
   function findCausticsAndCritCurves(GM1=0.5, GM2=0.5, D=0.5) {
@@ -330,11 +401,12 @@ var bin_len_faster = (function() {
       // var DTge0 = math.filter(DT, x => (x >= 0) );
       // // # Modify relevant arrays accordingly
       // var R_DTgt0 = math.filter(DT, x => (x >= 0) );
-
-
-
     }
+  }
 
+  // NOTE: Hacky -- fix
+  function almostEquals(a, b, epsilon=1e-12) {
+    return (Math.abs(a - b) < epsilon);
   }
 
   return {
