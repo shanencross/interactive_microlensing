@@ -22,8 +22,8 @@ import time
 
 # Plot critical and caustic curves for the binary lens
 def plot_binary(GM1, GM2, D, cof1, cof2, NPN=400):
-   print ("test GM1: %s" % GM1)
-   print ("test GM2: %s" % GM2)
+   print("test GM1: %s" % GM1)
+   print("test GM2: %s" % GM2)
    # Initialize arrays
    # y,x coords of source and magnification ASA
    # Define the number of points (NPN) to use for the trajectory
@@ -65,14 +65,14 @@ def plot_binary(GM1, GM2, D, cof1, cof2, NPN=400):
       # Polynomial coeffs A, B, C
       # as described in Schneider & Weiss 1986 (eqn 9b)
       A = 16 * D2 * R2 * (R4M - GMXM)
-      print "A: " + str(A)
+      print("A: " + str(A))
       B = 8 * R * D * (GMXM * R2 - (R2 + 4 * D2) * R4M)
       C = (R2P * R2P) * R4M - GM1S * R4 \
           - 2 * GMXM * R2 * (R2 + 4 * D2)
       C = C + 16 * GM1 * GM2 * D2 * R2
       # Calculate the determinant DT
       DT = B * B - 4 * A * C
-      print "DT: " + str(DT)
+      print("DT: " + str(DT))
       # When the determinant is >= 0 calculate the values of cos(theta) C1, C2
       DTge0 = np.compress(DT >= 0, DT)
       # Modify relevant arrays accordingly
@@ -83,7 +83,6 @@ def plot_binary(GM1, GM2, D, cof1, cof2, NPN=400):
       # Evaluate C1, C2
       C1 = (-B_DTgt0 + np.sqrt(DTge0))/(2 * A_DTgt0)
       C2 = (-B_DTgt0 - np.sqrt(DTge0))/(2 * A_DTgt0)
-      print "C1: " + str(C1)
       # When abs(C1) or abs(C2) are <=1 append point to critical and caustic curves
       # Isolate the indexes of where the absolute values of C1 and C2 are <= 1
       idxC1le1 = ((np.abs(C1) <= 1)).nonzero()
@@ -167,7 +166,7 @@ def plot_binary(GM1, GM2, D, cof1, cof2, NPN=400):
       imageparms = bin_ima(GM1, GM2, D, XS[IXS], YS[IXS])
       ASA[IXS] = 0.0
 
-      # print imageparms
+      # print(imageparms)
 
       XI  = imageparms[:,0]
       YI  = imageparms[:,1]
@@ -185,16 +184,16 @@ def plot_binary(GM1, GM2, D, cof1, cof2, NPN=400):
       # AI  = transposed_imageparms[2]
       # IMP = transposed_imageparms[3]
 
-      # print imageparms
-      # print "--------------------------------"
-      # print transposed_imageparms
+      # print(imageparms)
+      # print("--------------------------------")
+      # print(transposed_imageparms)
 
       # Loop over all images
       for IM in range(0,5):
          AIA[IM,IXS] = AI[IM]
          ASA[IXS] = ASA[IXS] + IMP[IM] * AI[IM]
-         # print IMP[IM]
-         # print AI[IM]
+         # print(IMP[IM])
+         # print(AI[IM])
          X = XI[IM] # Image X location
          Y = YI[IM] # Image Y location
 
@@ -213,6 +212,8 @@ def plot_binary(GM1, GM2, D, cof1, cof2, NPN=400):
    ax1.plot(critical_points_x2, critical_points_y2, 'r,')
    ax1.plot(caustic_points_x1, caustic_points_y1, 'b,')
    ax1.plot(caustic_points_x2, caustic_points_y2, 'b,')
+
+   print np.array_equal(caustic_points_y1, caustic_points_y2);
    # Render trajectory
    ax1.plot(XSA, YSA, 'k-')
    # Annotate

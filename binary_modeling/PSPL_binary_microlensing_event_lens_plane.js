@@ -189,6 +189,10 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
   var sourceOutline;
   var lensedImageOutlines;
 
+  // caustic and crit
+  var caustic = null;
+  var crit = null;
+
   //sort of derived variables? but not really? (canvas/context)
   var canvas = document.getElementById("lensPlaneCanvas")
   var context = canvas.getContext("2d");
@@ -281,9 +285,9 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
   }
 
   function initLenses(isBinary=binaryFlag) {
-
-    ring1radiusX = eventModule.calculateThetaE(get_mas=true, useBinaryMass=false, lensToUse=1) * xPixelScale;
-    ring1radiusY = eventModule.calculateThetaE(get_mas=true, useBinaryMass=false, lensToUse=1) * yPixelScale;
+    var ring1radius_mas = eventModule.calculateThetaE(get_mas=true, useBinaryMass=false, lensToUse=1);
+    var ring1radiusX = ring1radius_mas * xPixelScale;
+    var ring1radiusY = ring1radius_mas * yPixelScale;
 
     lens1 = new Lens(0, 0, lensRadius, lensColor,
                      lensOutlineWidth, lensOutlineColor,
@@ -291,8 +295,9 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
                      ringColor, ringWidth, dashedRingLength, dashedRingSpacing);
 
     if (isBinary === true) {
-      ring2radiusX = eventModule.calculateThetaE(get_mas=true, useBinaryMass=false, lensToUse=2) * xPixelScale;
-      ring2radiusY = eventModule.calculateThetaE(get_mas=true, useBinaryMass=false, lensToUse=2) * yPixelScale;
+      var ring2radius_mas = eventModule.calculateThetaE(get_mas=true, useBinaryMass=false, lensToUse=2);
+      var ring2radiusX = ring2radius_mas * xPixelScale;
+      var ring2radiusY = ring2radius_mas * yPixelScale;
 
       var lensSep = eventModule.lensSep;
       lens1.updatePos(-lensSep/2, 0);
@@ -1136,6 +1141,18 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
       }
     }
 
+    function drawCaustic() {
+      if (caustic === null) {
+        var causticNormalized = eventModule.causticNormalized;
+        // caustic = causticNormalized;
+        // window.alert(causticNormalized);
+      }
+    }
+
+    function drawCrit() {
+      // var critNormalized = eventModule.critNormalized;
+    }
+
     clearPic();
     drawBackgrounds();
     drawBorder();
@@ -1164,19 +1181,23 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
     }
     // drawPointLensedImages();
     drawLens(lens1);
-    if (isBinary === true) {
-      drawLens(lens2);
-    }
-
     // drawPointLensedImages();
     if (isBinary === true) {
+      // draw second lens
+      drawLens(lens2);
+
+      // draw caustic
+      drawCaustic();
+
       if (separateBinaryRingsFlag === true) {
+
         // draw separate rings for each lens
         drawRing(lens1);
         drawRing(lens2);
       }
       else {
-        // draw the combined ring shape
+        // draw the combined ring shape: the critical curve
+        drawCrit();
       }
     }
     else { // single, non-binary lens

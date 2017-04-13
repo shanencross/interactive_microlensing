@@ -38,19 +38,10 @@ var bin_len_faster = (function() {
     GM2 = 1 - GM1
 
     console.time();
-    // findCausticsAndCritCurves(GM1, GM2, D);
-    findCausticsAndCritCurves_numeric(GM1, GM2, D);
+    var causticAndCrit = findCausticAndCritCurves_numeric(GM1, GM2, D);
     console.timeEnd();
-    //
-    // console.time();
-    // // findCausticsAndCritCurves(GM1, GM2, D);
-    // findCausticsAndCritCurves_numeric(GM1, GM2, D);
-    // console.timeEnd();
-    //
-    // console.time();
-    // // findCausticsAndCritCurves(GM1, GM2, D);
-    // findCausticsAndCritCurves_numeric(GM1, GM2, D);
-    // console.timeEnd();
+
+    console.log(causticAndCrit.caustic.y1)
 
     // # Evaluate the (linear) trajectory path
     // # NXS is the trajectory length (NPN points)
@@ -146,12 +137,13 @@ var bin_len_faster = (function() {
         normalizedSourcePositions: normalizedSourcePositions,
         normalizedImagePositions: normalizedImagePositions,
         magnifs: ASA,
+        causticAndCrit: causticAndCrit,
       };
     }
   }
 
 
-  function findCausticsAndCritCurves_numeric(GM1=0.5, GM2=0.5, D=0.5) {
+  function findCausticAndCritCurves_numeric(GM1=0.5, GM2=0.5, D=0.5) {
     var IP = -1;
     var D2 = D * D;
     var D4 = D2 * D2;
@@ -162,145 +154,278 @@ var bin_len_faster = (function() {
 
     // # Estimate criticals and caustics
     // # Perform repeat calculations with masses swapped over
+    // Debug: Wait, why is this looped at all? Removing loop for now...
+    // for (var IQ=0; IQ<2; IQ++) {
+    var IR = _.range(1, NR);
+    // var IR = Array(NR).fill().map((e,i)=>i+1);
 
-    for (var IQ=0; IQ<2; IQ++) {
-      var IR = _.range(1, NR);
-      // var IR = Array(NR).fill().map((e,i)=>i+1);
+    var R = numeric.mul(IR, DR);
+    var R2 = numeric.mul(R, R);
+    var R4 = numeric.mul(R2, R2);
 
-      var R = numeric.mul(IR, DR);
-      var R2 = numeric.mul(R, R);
-      var R4 = numeric.mul(R2, R2);
+    var GM1S = GM1 * GM1;
+    var GM2S = GM2 * GM2;
+    var GMXM = GM1 * GM2;
+    var R2P = numeric.add(R2, 4 * D2);
+    var R4M = numeric.sub(R4, GM2S);
 
-      var GM1S = GM1 * GM1;
-      var GM2S = GM2 * GM2;
-      var GMXM = GM1 * GM2;
-      var R2P = numeric.add(R2, 4 * D2);
-      var R4M = numeric.sub(R4, GM2S);
+    // A = 16 * D2 * R2 * (R4M - GMXM)
+    // 16 * D2 * R2
+    var A_part1 = numeric.mul(16 * D2, R2)
+    // (R4M - GMXM)
+    var A_paren1 = numeric.sub(R4M, GMXM);
+    // A_part1 * A_paren1
+    var A = numeric.mul(A_part1, A_paren1);
 
-      // A = 16 * D2 * R2 * (R4M - GMXM)
-      // 16 * D2 * R2
-      var A_part1 = numeric.mul(16 * D2, R2)
-      // (R4M - GMXM)
-      var A_paren1 = numeric.sub(R4M, GMXM);
-      // A_part1 * A_paren1
-      var A = numeric.mul(A_part1, A_paren1);
+    // 8 * R * D * (GMXM * R2 - (R2 + 4 * D2) * R4M)
+    // (R2 + 4 * D2)
+    var B_paren1 = numeric.add(R2, 4 * D2);
 
-      // 8 * R * D * (GMXM * R2 - (R2 + 4 * D2) * R4M)
-      // (R2 + 4 * D2)
-      var B_paren1 = numeric.add(R2, 4 * D2);
+    // GMXM * R2 - (B_paren1) * R4M
+    var B_paren2 = numeric.sub(numeric.mul(GMXM, R2),
+                                 numeric.mul(B_paren1, R4M));
+    // 8 * R * D * (B_paren2)
+    var B = numeric.mul(8 * D,
+                        numeric.mul(R,
+                                    B_paren2));
 
-      // GMXM * R2 - (B_paren1) * R4M
-      var B_paren2 = numeric.sub(numeric.mul(GMXM, R2),
-                                   numeric.mul(B_paren1, R4M));
-      // 8 * R * D * (B_paren2)
-      var B = numeric.mul(8 * D,
-                          numeric.mul(R,
-                                      B_paren2));
+    //  C = (R2P * R2P) * R4M - GM1S * R4
+    //      - 2 * GMXM * R2 * (R2 + 4 * D2)
 
-      //  C = (R2P * R2P) * R4M - GM1S * R4
-      //      - 2 * GMXM * R2 * (R2 + 4 * D2)
+    // (R2P * R2P)
+    var C_paren1 = numeric.mul(R2P, R2P);
+    // (R2 + 4 * D2)
+    var C_paren2 = numeric.add(R2, 4 * D2);
+    // (C_paren1) * R4M - GM1S * R4
+    var C_part1 = numeric.sub(numeric.mul(C_paren1, R4M),
+                                numeric.mul(GM1S, R4));
+    // 2 * GMXM * R2 * (C_paren2)
+    var C_part2 = numeric.mul(2 * GMXM,
+                              numeric.mul(R2,
+                                          C_paren2));
+    // C_part1 - C_part2
+    var C = numeric.sub(C_part1, C_part2);
 
-      // (R2P * R2P)
-      var C_paren1 = numeric.mul(R2P, R2P);
-      // (R2 + 4 * D2)
-      var C_paren2 = numeric.add(R2, 4 * D2);
-      // (C_paren1) * R4M - GM1S * R4
-      var C_part1 = numeric.sub(numeric.mul(C_paren1, R4M),
-                                  numeric.mul(GM1S, R4));
-      // 2 * GMXM * R2 * (C_paren2)
-      var C_part2 = numeric.mul(2 * GMXM,
-                                numeric.mul(R2,
-                                            C_paren2));
-      // C_part1 - C_part2
-      var C = numeric.sub(C_part1, C_part2);
+    // C = C + 16 * GM1 * GM2 * D2 * R2
+    // 16 * GM1 * GM2 * D2 * R2
+    var C_product = numeric.mul(16 * D2 * GM1 * GM2, R2);
+    // C + C_product
+    C = numeric.add(C, C_product);
 
-      // C = C + 16 * GM1 * GM2 * D2 * R2
-      // 16 * GM1 * GM2 * D2 * R2
-      var C_product = numeric.mul(16 * D2 * GM1 * GM2, R2);
-      // C + C_product
-      C = numeric.add(C, C_product);
+    // # Calculate the determinant DT
+    // DT = B * B - 4 * A * C
+    var DT = numeric.sub(numeric.mul(B,
+                                     B),
+                         numeric.mul(4,
+                                     numeric.mul(A,
+                                                 C)));
 
-      // # Calculate the determinant DT
-      // DT = B * B - 4 * A * C
-      var DT = numeric.sub(numeric.mul(B,
-                                       B),
-                           numeric.mul(4,
-                                       numeric.mul(A,
-                                                   C)));
-
-      // # When the determinant is >= 0 calculate the values of cos(theta) C1, C2
-      // # Modify relevant arrays accordingly
-      var DTge0 = [];
-      var DTge0_sqrt = [];
-      var DTge0_neg_sqrt = [];
-      var R_DTgt0 = [];
-      var R2_DTgt0 = [];
-      var B_DTgt0 = [];
-      var A_DTgt0 = [];
-      for (var i=0; i<DT.length; i++) {
-        // might need "almostEquals" here
-        if (DT[i] >= 0 || almostEquals(DT[i], 0) === true) {
-          DTge0.push(DT[i]);
-          var DT_element_sqrt = Math.sqrt(DT[i]);
-          DTge0_sqrt.push(DT_element_sqrt);
-          DTge0_neg_sqrt.push(-DT_element_sqrt);
-          R_DTgt0.push(R[i]);
-          R2_DTgt0.push(R2[i]);
-          B_DTgt0.push(B[i]);
-          A_DTgt0.push(A[i]);
-        }
+    // # When the determinant is >= 0 calculate the values of cos(theta) C1, C2
+    // # Modify relevant arrays accordingly
+    var DTge0 = [];
+    var DTge0_sqrt = [];
+    var DTge0_neg_sqrt = [];
+    var R_DTgt0 = [];
+    var R2_DTgt0 = [];
+    var B_DTgt0 = [];
+    var A_DTgt0 = [];
+    for (var i=0; i<DT.length; i++) {
+      // might need "almostEquals" here
+      if (DT[i] >= 0 || almostEquals(DT[i], 0) === true) {
+        DTge0.push(DT[i]);
+        var DT_element_sqrt = Math.sqrt(DT[i]);
+        DTge0_sqrt.push(DT_element_sqrt);
+        DTge0_neg_sqrt.push(-DT_element_sqrt);
+        R_DTgt0.push(R[i]);
+        R2_DTgt0.push(R2[i]);
+        B_DTgt0.push(B[i]);
+        A_DTgt0.push(A[i]);
       }
-
-      var C_denominator = numeric.mul(2, A_DTgt0);
-      var C1_numerator = numeric.sub(DTge0_sqrt, B_DTgt0)
-      var C2_numerator = numeric.sub(DTge0_neg_sqrt, B_DTgt0);
-      //
-      var C1 = numeric.div(C1_numerator, C_denominator);
-      var C2 = numeric.div(C2_numerator, C_denominator);
-
-      var idxC1le1 = [];
-      var idxC2le1 = [];
-      for (var i=0; i<C1.length; i++) {
-        if (Math.abs(C1[i]) <= 1 || almostEquals(C1[i], 1) === true) {
-          idxC1le1.push(i);
-        }
-
-        if (Math.abs(C2[i]) <= 1 || almostEquals(C2[i], 1) === true) {
-          idxC2le1.push(i);
-        }
-      }
-
     }
 
+    // # Evaluate C1, C2
+    var C_denominator = numeric.mul(2, A_DTgt0);
+    var C1_numerator = numeric.sub(DTge0_sqrt, B_DTgt0)
+    var C2_numerator = numeric.sub(DTge0_neg_sqrt, B_DTgt0);
+    //
+    var C1 = numeric.div(C1_numerator, C_denominator);
+    var C2 = numeric.div(C2_numerator, C_denominator);
 
 
-      // # Evaluate C1, C2
+    // # When abs(C1) or abs(C2) are <=1 append point to critical and caustic curves
+    // # Isolate the indexes of where the absolute values of C1 and C2 are <= 1
+    var idxC1le1 = [];
+    var idxC2le1 = [];
 
-      // DEBUG: temp test
+    for (var i=0; i<C1.length; i++) {
+      if (Math.abs(C1[i]) <= 1 || almostEquals(C1[i], 1) === true) {
+        idxC1le1.push(i);
+      }
 
-      // Note: count exceeds zero for NR > 53131 (when DR = 0.00001).
-      // It seems that every element after element 53131 is >= 0.
-      // No idea if this is relevant to anything
-      //
-      // var count = 0;
-      // for (var i=0; i<DT.length; i++) {
-      //   var element = DT[i];
-      //   if (element >= 0)
-      //     count++;
-      // }
-      // console.log(count);
+      if (Math.abs(C2[i]) <= 1 || almostEquals(C2[i], 1) === true) {
+        idxC2le1.push(i);
+      }
+    }
 
-      // # When the determinant is >= 0 calculate the values of cos(theta) C1, C2
-      // DTge0 = np.compress(DT >= 0, DT)
-      // # Modify relevant arrays accordingly
-      // R_DTgt0 = np.compress(DT >= 0, R)
-      // R2_DTgt0 = np.compress(DT >= 0, R2)
-      // B_DTgt0 = np.compress(DT >= 0, B)
-      // A_DTgt0 = np.compress(DT >= 0, A)
+    // # Set up subsamples from relevant arrays
+    var Rmod2_C1 = []; // Debug: optimize by setting array length from start?
+    var R2mod2_C1 = [];
+    var C1le1 = [];
+    for (var i=0; i<idxC1le1.length; i++) {
+      var index = idxC1le1[i];
+      Rmod2_C1.push(R_DTgt0[index]);
+      R2mod2_C1.push(R2_DTgt0[index]);
+      C1le1.push(C1[index]);
+    }
 
+    var Rmod2_C2 = [];
+    var R2mod2_C2 = [];
+    var C2le1 = [];
+    for (var i=0; i<idxC2le1.length; i++) {
+      var index = idxC2le1[i];
+      Rmod2_C2.push(R_DTgt0[index]);
+      R2mod2_C2.push(R2_DTgt0[index]);
+      C2le1.push(C2[index]);
+    }
+
+    var X1 = numeric.mul(Rmod2_C1, C1le1);
+    var X2 = numeric.mul(Rmod2_C2, C2le1);
+
+    var S1_paren = numeric.sub(1, numeric.mul(C1le1, C1le1));
+    var S1 = numeric.sqrt(S1_paren);
+
+    var S2_paren = numeric.sub(1, numeric.mul(C2le1, C2le1));
+    var S2 = numeric.sqrt(S2_paren);
+
+    var Y1 = numeric.mul(Rmod2_C1, S1);
+    var Y2 = numeric.mul(Rmod2_C2, S2);
+
+    var X_C1 = numeric.sub(X1, D);
+    var X_C2 = numeric.sub(X2, D);
+
+    var Y_C1 = Y1;
+    var Y_C2 = Y2;
+
+    // # Append to critical points
+    var PXCRIT_C1 = numeric.mul(IP, X_C1);
+    var PYCRIT_C1 = numeric.mul(IP, Y_C1);
+
+    var PXCRIT_C2 = numeric.mul(IP, X_C2);
+    var PYCRIT_C2 = numeric.mul(IP, Y_C2);
+
+    var critical_points_x1 = PXCRIT_C1.concat(PXCRIT_C2);
+    var critical_points_x2 = critical_points_x1; // Debug: make a copy of the array?
+
+    var critical_points_y1 = PYCRIT_C1.concat(PYCRIT_C2);
+    var critical_points_y2 = numeric.neg(PYCRIT_C1).concat(numeric.neg(PYCRIT_C2));
+
+    // # Set up arrays to use for mapping to caustics
+    var RD2_C1 = numeric.add(R2mod2_C1, 4 * D2);
+    var RD2_C2 = numeric.add(R2mod2_C2, 4 * D2);
+
+    var UP1_C1 = numeric.sub(X1, 2 * D);
+    var UP1_C2 = numeric.sub(X2, 2 * D);
+
+    var UP2_C1 = X1;
+    var UP2_C2 = X2;
+
+    var DN1_C1 = numeric.sub(RD2_C1, numeric.mul(4 * D, X1));
+    var DN1_C2 = numeric.sub(RD2_C2, numeric.mul(4 * D, X2));
+
+    var DN2_C1 = R2mod2_C1;
+    var DN2_C2 = R2mod2_C2;
+
+    // # Map critical curves to caustics
+    var XC_C1_part1 = numeric.mul(GM1, numeric.div(UP1_C1, DN1_C1));
+    var XC_C1_part2 = numeric.mul(GM2, numeric.div(UP2_C1, DN2_C1));
+    var XC_C1 = numeric.sub(numeric.sub(X1, XC_C1_part1), XC_C1_part2);
+
+    var XC_C2_part1 = numeric.mul(GM1, numeric.div(UP1_C2, DN1_C2));
+    var XC_C2_part2 = numeric.mul(GM2, numeric.div(UP2_C2, DN2_C2));
+    var XC_C2 = numeric.sub(numeric.sub(X1, XC_C2_part1), XC_C2_part2);
+
+    var XC_C1 = numeric.sub(XC_C1, D);
+    var XC_C2 = numeric.sub(XC_C2, D);
+
+    var YC_C1_part1 = numeric.div(GM1, DN1_C1);
+    var YC_C1_part2 = numeric.div(GM2, DN2_C1);
+    var YC_C1_part3 = numeric.sub(1.0, YC_C1_part1);
+    var YC_C1_part4 = numeric.sub(YC_C1_part3, YC_C1_part2);
+    var YC_C1 = numeric.mul(Y1, YC_C1_part4);
+
+
+    var YC_C2_part1 = numeric.div(GM1, DN1_C2);
+    var YC_C2_part2 = numeric.div(GM2, DN2_C2);
+    var YC_C2_part3 = numeric.sub(1.0, YC_C2_part1);
+    var YC_C2_part4 = numeric.sub(YC_C2_part3, YC_C2_part2);
+    var YC_C2 = numeric.mul(Y2, YC_C2_part4);
+
+    var PXCAUS_C1 = numeric.mul(IP, XC_C1);
+    var PXCAUS_C2 = numeric.mul(IP, XC_C2);
+
+    var PYCAUS_C1 = numeric.mul(IP, YC_C1);
+    var PYCAUS_C2 = numeric.mul(IP, YC_C2);
+
+    var caustic_points_x1 = PXCAUS_C1.concat(PXCAUS_C2);
+    var caustic_points_x2 = caustic_points_x1; // Debug: make a copy of the array?
+
+    var caustic_points_y1 = PYCAUS_C1.concat(PYCAUS_C2);
+    var caustic_points_y2 = numeric.neg(PYCAUS_C1).concat(numeric.neg(PYCAUS_C2));
+
+    var caustic = {
+      x1: caustic_points_x1,
+      x2: caustic_points_x2,
+      y1: caustic_points_y1,
+      y2: caustic_points_y2,
+    };
+
+    var crit = {
+      x1: critical_points_x1,
+      x2: critical_points_x2,
+      y1: critical_points_y1,
+      y2: critical_points_y2,
+    };
+
+    var causticAndCritCurves = {
+      caustic: caustic,
+      crit: crit,
+    };
+
+    return causticAndCritCurves;
+
+    // # Swap the masses and repeat the calculation
+    // var GM0 = GM1;
+    // GM1 = GM2;
+    // GM2 = GM0;
+    // IP = -IP;
+    // }
+
+    // # Evaluate C1, C2
+
+    // DEBUG: temp test
+
+    // Note: count exceeds zero for NR > 53131 (when DR = 0.00001).
+    // It seems that every element after element 53131 is >= 0.
+    // No idea if this is relevant to anything
+    //
+    // var count = 0;
+    // for (var i=0; i<DT.length; i++) {
+    //   var element = DT[i];
+    //   if (element >= 0)
+    //     count++;
+    // }
+    // console.log(count);
+
+    // # When the determinant is >= 0 calculate the values of cos(theta) C1, C2
+    // DTge0 = np.compress(DT >= 0, DT)
+    // # Modify relevant arrays accordingly
+    // R_DTgt0 = np.compress(DT >= 0, R)
+    // R2_DTgt0 = np.compress(DT >= 0, R2)
+    // B_DTgt0 = np.compress(DT >= 0, B)
+    // A_DTgt0 = np.compress(DT >= 0, A)
   }
 
-  function findCausticsAndCritCurves(GM1=0.5, GM2=0.5, D=0.5) {
+  function findCausticAndCritCurves(GM1=0.5, GM2=0.5, D=0.5) {
     var IP = -1;
     var D2 = D * D;
     var D4 = D2 * D2;
@@ -411,6 +536,6 @@ var bin_len_faster = (function() {
 
   return {
     plot_binary: plot_binary,
-    findCausticsAndCritCurves: findCausticsAndCritCurves,
+    findCausticAndCritCurves: findCausticAndCritCurves,
   };
 })();

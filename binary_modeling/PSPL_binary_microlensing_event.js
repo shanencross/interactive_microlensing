@@ -66,6 +66,9 @@ var PSPL_binary_microlensing_event = (function() {
   var Drel; // kpc
   var thetaE; // radians (or should we use milliarcsecond?)
 
+  // lightcurve information
+  var lightcurveData = null;
+
   // tracks whether u0 is to be held fixed while other quantities vary
   var fixU0;
 
@@ -647,6 +650,7 @@ var PSPL_binary_microlensing_event = (function() {
   }
 
   function redrawCanvases() {
+    window.alert(lightcurveData);
     if (typeof PSPL_binary_microlensing_event_lens_plane !== "undefined")
       PSPL_binary_microlensing_event_lens_plane.redraw();
 
@@ -658,8 +662,9 @@ var PSPL_binary_microlensing_event = (function() {
       // PSPL_microlensing_event_animation.updatePlayback("stepForward", updateFrame=true);
       // PSPL_microlensing_event_animation.updatePlayback("redraw");
     }
-    else
+    else {
       plotLightcurve();
+    }
   }
 
   function updateGraph(shift) {
@@ -917,8 +922,6 @@ var PSPL_binary_microlensing_event = (function() {
     drawAxisLabels();
   }
 
-  var lightcurveData = undefined;
-
   function plotLightcurveAlone(tDayFinal=xAxisFinalDay, inputData, fromEquation=fromEquationDefault, dashedCurve=false) {
     // draw a single lightcurve (dashed or solid) up to a given time
 
@@ -934,7 +937,7 @@ var PSPL_binary_microlensing_event = (function() {
         curveData = inputData;
       }
       else { // no input parameter given
-        if (lightcurveData !== undefined) { // module lightcurve variable already initialized
+        if (lightcurveData !== null) { // module lightcurve variable already initialized
           curveData = lightcurveData; // use module variable in function
         }
         else { // module lightcurve variable not initialized yet
@@ -1083,6 +1086,7 @@ var PSPL_binary_microlensing_event = (function() {
 
       var times = numeric.linspace(xAxisInitialDay, xAxisFinalDay, NPN);
       var magnifs = binaryCaclulationResults.magnifs;
+      var causticAndCritNormalized = binaryCaclulationResults.causticAndCrit; // units of thetaE
 
       console.log(`(binary) times.length: ${times.length}`);
       console.log(`(binary) magnifs.length: ${magnifs.length}`);
@@ -1102,7 +1106,11 @@ var PSPL_binary_microlensing_event = (function() {
         magnifs.push(magnif);
       }
     }
-      var curveData = {times:times, magnifs:magnifs};
+      var curveData = {
+        times:times,
+        magnifs:magnifs,
+        causticNormalized: causticAndCritNormalized.caustic,
+        critNormalized: causticAndCritNormalized.crit};
 
       var autoScaleMagnifHeight = false;
 
@@ -1192,6 +1200,15 @@ var PSPL_binary_microlensing_event = (function() {
     // for calculating thetaE for individual lens masses, in addition to the
     // thetaE of the summed lens masses
     calculateThetaE: calculateThetaE,
+
+    // get caustic and critical curve data points,
+    // normalized in units of (binary) thetaE
+    get causticNormalized() {
+      if (lightcurveData !== null)
+        return lightcurveData.caustic; },
+    get critNormalized() {
+      if (lightcurveData !== null)
+        return lightcurveData; },
 
     // for debugging
     getU: getU,
