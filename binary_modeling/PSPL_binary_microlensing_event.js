@@ -220,6 +220,7 @@ var PSPL_binary_microlensing_event = (function() {
     // initialize plot scale/range vars
     updatePlotScaleAndRange(dayWidthDefault, magnifHeightDefault,
                             xAxisInitialDayDefault, yAxisInitialMagnifDefault);
+    updateCurveData();
 
     // display lightcurve after all modules have been loaded
     window.onload = function() { plotLightcurve(); }
@@ -941,6 +942,7 @@ var PSPL_binary_microlensing_event = (function() {
           curveData = lightcurveData; // use module variable in function
         }
         else { // module lightcurve variable not initialized yet
+          // window.alert("lightcurveData uninitialized; updating");
           updateCurveData(); // initialize module variable
           curveData = lightcurveData; // use newly initialized module variable in function
         }
@@ -1106,20 +1108,20 @@ var PSPL_binary_microlensing_event = (function() {
         magnifs.push(magnif);
       }
     }
-      var curveData = {
-        times:times,
-        magnifs:magnifs,
-        causticNormalized: causticAndCritNormalized.caustic,
-        critNormalized: causticAndCritNormalized.crit};
+    var curveData = {
+      times:times,
+      magnifs:magnifs,
+      causticNormalized: causticAndCritNormalized.caustic,
+      critNormalized: causticAndCritNormalized.crit};
 
-      var autoScaleMagnifHeight = false;
+    var autoScaleMagnifHeight = false;
 
-      if (autoScaleMagnifHeight === true) {
-        var maxMagnif = math.max(curveData.magnifs);
-        updatePlotScaleAndRange(undefined, maxMagnif+1, undefined, 0.5);
-        // updateGridRange(xGridStepDefault, (maxMagnif+1)/10);
-      }
-      lightcurveData = curveData;
+    if (autoScaleMagnifHeight === true) {
+      var maxMagnif = math.max(curveData.magnifs);
+      updatePlotScaleAndRange(undefined, maxMagnif+1, undefined, 0.5);
+      // updateGridRange(xGridStepDefault, (maxMagnif+1)/10);
+    }
+    lightcurveData = curveData;
   }
 
   function toggleFiniteSource() {
@@ -1204,11 +1206,14 @@ var PSPL_binary_microlensing_event = (function() {
     // get caustic and critical curve data points,
     // normalized in units of (binary) thetaE
     get causticNormalized() {
-      if (lightcurveData !== null)
-        return lightcurveData.caustic; },
+      if (lightcurveData !== null && lightcurveData !== undefined)
+        return lightcurveData.causticNormalized;
+    },
+
     get critNormalized() {
-      if (lightcurveData !== null)
-        return lightcurveData; },
+      if (lightcurveData !== null && lightcurveData !== undefined)
+        return lightcurveData.critNormalized;
+    },
 
     // for debugging
     getU: getU,

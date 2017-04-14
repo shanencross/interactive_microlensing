@@ -1141,16 +1141,99 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
       }
     }
 
-    function drawCaustic() {
-      if (caustic === null) {
-        var causticNormalized = eventModule.causticNormalized;
-        // caustic = causticNormalized;
-        // window.alert(causticNormalized);
+
+    function unNormalizeCurve(normalizedCurve) {
+      var curve = {};
+      _.forOwn(normalizedCurve, function(coordList, coordKey) {
+        curve[coordKey] = numeric.mul(coordList, eventModule.thetaE_mas)
+        // window.alert(key);
+      });
+      return curve;
+    }
+
+    function pixelizeCoordList(coordList, axis="x") {
+      var pixelizedCoordList = new Array(coordList.length);
+
+      for (var i=0; i<coordList.length; i++) {
+        if (axis === "y")
+          pixelizedCoordList[i] = thetaYtoPixel(coordList[i]);
+        else
+          pixelizedCoordList[i] = thetaXtoPixel(coordList[i]);
       }
+
+      return pixelizedCoordList
+    }
+
+    function pixelizeCurve(curve) {
+      var pixelizedCurve = {};
+      _.forOwn(curve, function(coordList, coordKey) {
+        pixelizedCurve[coordKey] = pixelizeCoordList(coordList, coordKey[0]);
+        // window.alert(key);
+      });
+      return pixelizedCurve;
+    }
+
+    function drawCaustic() {
+      drawCurve(eventModule.causticNormalized);
     }
 
     function drawCrit() {
-      // var critNormalized = eventModule.critNormalized;
+      drawCurve(eventModule.critNormalized);
+    }
+
+    function drawCurve(curveNormalized, color1="purple", color2="green") {
+      var curve = unNormalizeCurve(curveNormalized);
+      var pixelCurve = pixelizeCurve(curve);
+
+      var drawPoints = true;
+      var drawLines = false;
+
+      if (drawPoints === true) {
+        // window.alert(pixelcurve.x1.length);
+        for (var i=1; i<pixelCurve.x1.length; i+=1) {
+          var x1 = pixelCurve.x1[i];
+          var y1 = pixelCurve.y1[i];
+          context.fillStyle = color1;
+          // context.strokeStyle = color1;
+          // context.beginPath();
+          // context.arc(x1, y1, 1, 0, 2*Math.PI, false);
+          context.fillRect(x1, y1, 1, 1);
+          // context.fill();
+          // context.stroke()
+
+          context.fillStyle = color2;
+          // context.strokeStyle = color2;
+          var x2 = pixelCurve.x2[i];
+          var y2 = pixelCurve.y2[i];
+          // context.beginPath();
+          // context.arc(x2, y2, 1, 0, 2*Math.PI, false);
+          context.fillRect(x2, y2, 1, 1);
+          // context.fill();
+          // context.stroke();
+        }
+      }
+
+      if (drawLines === true) {
+        context.beginPath();
+        context.moveTo(pixelCurve.x1[0], pixelCurve.y1[0]);
+        window.alert(pixelCurve.x1.length);
+        for (var i=1; i<pixelCurve.x1.length/10; i+=1) {
+          var x1 = pixelCurve.x1[i];
+          var y1 = pixelCurve.y1[i];
+          context.strokeStyle = color1;
+          context.lineTo(x1, y1);
+
+          // // context.fillStyle = color2;
+          // context.strokeStyle = color2;
+          // var x2 = pixelCurve.x2[i];
+          // var y2 = pixelCurve.y2[i];
+          // context.beginPath();
+          // // context.arc(x2, y2, 1, 0, 2*Math.PI, false);
+          // // context.fill();
+          // context.stroke();
+        }
+        context.stroke();
+      }
     }
 
     clearPic();
@@ -1188,6 +1271,12 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
 
       // draw caustic
       drawCaustic();
+      var critCurveFlag = true;
+
+      if (critCurveFlag === true) {
+        // draw the combined ring shape: the critical curve
+        drawCrit();
+      }
 
       if (separateBinaryRingsFlag === true) {
 
@@ -1195,10 +1284,7 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
         drawRing(lens1);
         drawRing(lens2);
       }
-      else {
-        // draw the combined ring shape: the critical curve
-        drawCrit();
-      }
+
     }
     else { // single, non-binary lens
       drawRing(lens1);

@@ -147,8 +147,9 @@ var bin_len_faster = (function() {
     var D4 = D2 * D2;
 
     // var NR = 300000; // # Points to use to plot critical curves and caustics
-    var NR = 300000; // DEBUG temp value
-    var DR = 0.00001; // # Used to define the sampling density of the caustics
+    var NR = 30000; // DEBUG temp value
+    // var DR = 0.00001; // # Used to define the sampling density of the caustics
+    var DR = 0.0001; // DEBUG temp value
 
     // # Estimate criticals and caustics
     // # Perform repeat calculations with masses swapped over
@@ -340,7 +341,7 @@ var bin_len_faster = (function() {
 
     var XC_C2_part1 = numeric.mul(GM1, numeric.div(UP1_C2, DN1_C2));
     var XC_C2_part2 = numeric.mul(GM2, numeric.div(UP2_C2, DN2_C2));
-    var XC_C2 = numeric.sub(numeric.sub(X1, XC_C2_part1), XC_C2_part2);
+    var XC_C2 = numeric.sub(numeric.sub(X2, XC_C2_part1), XC_C2_part2);
 
     var XC_C1 = numeric.sub(XC_C1, D);
     var XC_C2 = numeric.sub(XC_C2, D);
@@ -350,7 +351,6 @@ var bin_len_faster = (function() {
     var YC_C1_part3 = numeric.sub(1.0, YC_C1_part1);
     var YC_C1_part4 = numeric.sub(YC_C1_part3, YC_C1_part2);
     var YC_C1 = numeric.mul(Y1, YC_C1_part4);
-
 
     var YC_C2_part1 = numeric.div(GM1, DN1_C2);
     var YC_C2_part2 = numeric.div(GM2, DN2_C2);
