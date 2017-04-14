@@ -222,7 +222,8 @@ var PSPL_binary_microlensing_event = (function() {
                             xAxisInitialDayDefault, yAxisInitialMagnifDefault);
 
     // display lightcurve after all modules have been loaded
-    window.onload = plotLightcurve;
+    window.onload = function() { plotLightcurve(); }
+    // window.onload = redrawCanvases;
     console.log(`tE: ${tE}`);
     console.log(`thetaE: ${thetaE}`);
     console.log(`Drel: ${Drel}`);
@@ -650,7 +651,6 @@ var PSPL_binary_microlensing_event = (function() {
   }
 
   function redrawCanvases() {
-    window.alert(lightcurveData);
     if (typeof PSPL_binary_microlensing_event_lens_plane !== "undefined")
       PSPL_binary_microlensing_event_lens_plane.redraw();
 
