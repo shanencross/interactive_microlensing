@@ -37,9 +37,9 @@ var bin_len_faster = (function() {
 
     GM2 = 1 - GM1
 
-    console.time();
+    // console.time();
     var causticAndCrit = findCausticAndCritCurves_numeric(GM1, GM2, D);
-    console.timeEnd();
+    // console.timeEnd();
 
     // # Evaluate the (linear) trajectory path
     // # NXS is the trajectory length (NPN points)

@@ -1185,8 +1185,8 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
       var curve = unNormalizeCurve(curveNormalized);
       var pixelCurve = pixelizeCurve(curve);
 
-      var drawPoints = true;
-      var drawLines = false;
+      var drawPoints = false;
+      var drawLines = true;
 
       if (drawPoints === true) {
         // window.alert(pixelcurve.x1.length);
@@ -1217,7 +1217,7 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
         context.beginPath();
         context.moveTo(pixelCurve.x1[0], pixelCurve.y1[0]);
         window.alert(pixelCurve.x1.length);
-        for (var i=1; i<pixelCurve.x1.length/10; i+=1) {
+        for (var i=1; i<pixelCurve.x1.length; i+=1) {
           var x1 = pixelCurve.x1[i];
           var y1 = pixelCurve.y1[i];
           context.strokeStyle = color1;
