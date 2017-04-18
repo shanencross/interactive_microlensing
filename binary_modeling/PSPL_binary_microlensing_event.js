@@ -1083,6 +1083,18 @@ var PSPL_binary_microlensing_event = (function() {
       console.log(`(binary) xAxisFinalDay: ${xAxisFinalDay}`);
       console.log(`(binary) thetaE_mas: ${thetaE_mas}`);
 
+
+      var windowAlertParamDebugFlag = false;
+
+      if (windowAlertParamDebugFlag === true) {
+        window.alert(`\
+          GM1: ${GM1}
+          GM2: ${GM2}
+          D: ${D}
+          cof1: ${cof1}
+          cof2: ${cof2}`);
+      }
+
       var binaryCaclulationResults = bin_len_faster.plot_binary(GM1, GM2, D, cof1, cof2,
                                                                 minXLM, maxXLM, NPN);
 

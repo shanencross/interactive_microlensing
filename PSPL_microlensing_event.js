@@ -211,7 +211,7 @@ var PSPL_microlensing_event = (function() {
     console.log(`Drel: ${Drel}`);
     console.log(`mu: ${mu}`);
   }
- 
+
   function initListeners() {
     tEslider.addEventListener("input", function() { updateParam("tE"); }, false);
     tEslider.addEventListener("change", function() { updateParam("tE"); }, false);
@@ -525,6 +525,7 @@ var PSPL_microlensing_event = (function() {
     }
     else
       plotLightcurve();
+      // plotLightcurve(xAxisInitialDay);
   }
 
   function updateGraph(shift) {

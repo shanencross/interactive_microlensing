@@ -339,8 +339,10 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
     var sourcePosY = eventModule.thetaY;
     sourcePos = {x: getThetaX(eventModule.xAxisInitialDay), y: sourcePosY};
 
-    if (animation === false)
-      sourcePos.x = xAxisFinalThetaX;
+    if (animation === false) {
+      // sourcePos.x = xAxisFinalThetaX;
+      // sourcePos.x = xAxisInitialThetaX;
+    }
   }
 
   function redraw(animation=animationFlag, debug=debugFlag) {
@@ -1173,20 +1175,20 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
       return pixelizedCurve;
     }
 
-    function drawCaustic() {
-      drawCurve(eventModule.causticNormalized);
+    function drawCaustic(color1="purple", color2="green") {
+      drawCurve(eventModule.causticNormalized, color1, color2);
     }
 
-    function drawCrit() {
-      drawCurve(eventModule.critNormalized);
+    function drawCrit(color1="purple", color2="green") {
+      drawCurve(eventModule.critNormalized, color1, color2);
     }
 
     function drawCurve(curveNormalized, color1="purple", color2="green") {
       var curve = unNormalizeCurve(curveNormalized);
       var pixelCurve = pixelizeCurve(curve);
 
-      var drawPoints = false;
-      var drawLines = true;
+      var drawPoints = true;
+      var drawLines = false;
 
       if (drawPoints === true) {
         // window.alert(pixelcurve.x1.length);
@@ -1270,12 +1272,12 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
       drawLens(lens2);
 
       // draw caustic
-      drawCaustic();
+      drawCaustic("purple", "green");
       var critCurveFlag = true;
 
       if (critCurveFlag === true) {
         // draw the combined ring shape: the critical curve
-        drawCrit();
+        drawCrit("indigo", "darkGreen");
       }
 
       if (separateBinaryRingsFlag === true) {
