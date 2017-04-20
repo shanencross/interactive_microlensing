@@ -32,7 +32,7 @@ var PSPL_microlensing_event_animation = (function() {
     timeReadout.innerHTML = Number(time).toFixed(4);
     initListeners();
   }
-  
+
   function updateMinAndMaxTimes(min, max) {
 
 	// default to min/max values of lightcurve plot time axis
@@ -45,7 +45,7 @@ var PSPL_microlensing_event_animation = (function() {
     minTime = min;
     maxTime = max;
   }
-  
+
   function initListeners() {
     stepBackButton.addEventListener("click", function() { updatePlayback("stepBack"); }, false);
     playButton.addEventListener("click", function() { updatePlayback("play"); }, false);
@@ -101,7 +101,7 @@ var PSPL_microlensing_event_animation = (function() {
 
   function animateFrameSource() {
     // update source thetaX position for new time
-    lensPlaneModule.sourcePos.x = lensPlaneModule.getThetaX(time);
+    // lensPlaneModule.sourcePos.x = lensPlaneModule.getThetaX(time);
     lensPlaneModule.redraw();
   }
 

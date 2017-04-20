@@ -214,8 +214,7 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
   var numExtraPointsDefault = 360;
 
   // debug flags
-  var animationFlag = false;
-  var debugFlag = false;
+  var animationFlag = true;
   var centerLayoutFlag = false;
   var drawGridFlag = true;
   var drawFullLensedImagesFlag = true; //NOTE: Hammers performance currently
@@ -241,11 +240,11 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
   // values) after initializations and slider updates),
   // because we NEED parameters intialized first to do drawing and scaling
 
-  function init(animation=animationFlag, debug=debugFlag) {
+  function init(animation=animationFlag) {
     initListeners();
     updateScaleAndRangeValues();
     initLenses();
-    initSourcePos();
+    initSourcePos(animation=animation);
     initSourceRadius();
     redraw();
   }
@@ -340,13 +339,13 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
     sourcePos = {x: getThetaX(eventModule.xAxisInitialDay), y: sourcePosY};
 
     if (animation === false) {
-      // sourcePos.x = xAxisFinalThetaX;
+      sourcePos.x = xAxisFinalThetaX;
       // sourcePos.x = xAxisInitialThetaX;
     }
   }
 
-  function redraw(animation=animationFlag, debug=debugFlag) {
-    updateDrawingValues(animation=animation, debug=debug);
+  function redraw(animation=animationFlag) {
+    updateDrawingValues(animation=animation);
     drawPic();
   }
 
@@ -376,7 +375,9 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
     updateGridRange(xGridStepDefault, yGridStepDefault); // initialize gridline vars
   }
 
-  function updateDrawingValues() {
+  function updateDrawingValues(animation=animationFlag) {
+    if (animation === true)
+      sourcePos.x = getThetaX(eventModule.xAxisInitialDay);
     sourcePos.y = getThetaYpathValue(sourcePos.x); // update source thetaY
 
     // makes sure "0.0000" is displayed instead of "-0.0000" if rounding error
