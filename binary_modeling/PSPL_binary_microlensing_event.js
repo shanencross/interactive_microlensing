@@ -1,5 +1,5 @@
 console.log = function() {} // uncomment this to disable all console.log messages
-console.log("Executing PSPL_microlensing_event.js");
+console.log("Executing PSPL_binary_microlensing_event.js");
 
 // "revealing pattern" module object for this script file
 var PSPL_binary_microlensing_event = (function() {
@@ -564,8 +564,8 @@ var PSPL_binary_microlensing_event = (function() {
   }
 
   function updateParam(param) {
-    if (typeof PSPL_microlensing_event_animation !== "undefined") {
-      if (PSPL_microlensing_event_animation.running === true) {
+    if (typeof PSPL_binary_microlensing_event_animation !== "undefined") {
+      if (PSPL_binary_microlensing_event_animation.running === true) {
         console.log("Can't modify paramters while animation is playing right now.")
       }
     }
@@ -652,14 +652,15 @@ var PSPL_binary_microlensing_event = (function() {
   }
 
   function redrawCanvases() {
-    if (typeof PSPL_binary_microlensing_event_lens_plane !== "undefined")
+    if (typeof PSPL_binary_microlensing_event_lens_plane !== "undefined") {
       PSPL_binary_microlensing_event_lens_plane.redraw();
+    }
 
-    if (typeof PSPL_microlensing_event_animation != "undefined") {
-      plotLightcurve(PSPL_microlensing_event_animation.time);
+    if (typeof PSPL_binary_microlensing_event_animation != "undefined") {
+      plotLightcurve(PSPL_binary_microlensing_event_animation.time);
 
       //redraw current animation frame
-      PSPL_microlensing_event_animation.animateFrame();
+      PSPL_binary_microlensing_event_animation.animateFrame();
       // PSPL_microlensing_event_animation.updatePlayback("stepForward", updateFrame=true);
       // PSPL_microlensing_event_animation.updatePlayback("redraw");
     }

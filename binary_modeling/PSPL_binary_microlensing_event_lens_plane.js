@@ -376,8 +376,8 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
   }
 
   function updateDrawingValues(animation=animationFlag) {
-    if (animation === true)
-      sourcePos.x = getThetaX(eventModule.xAxisInitialDay);
+    // if (animation === true) 
+    //   sourcePos.x = getThetaX(eventModule.xAxisInitialDay);
     sourcePos.y = getThetaYpathValue(sourcePos.x); // update source thetaY
 
     // makes sure "0.0000" is displayed instead of "-0.0000" if rounding error
