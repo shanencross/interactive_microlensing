@@ -232,6 +232,8 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
   var binaryFlag = true;
   var separateBinaryRingsFlag = true; // desplay separate rings for each lens;
                                       // for debugging/testing
+  var causticCurveFlag = true; // display caustic curve
+  var critCurveFlag = true; // display critical curve
 
   var updateOnSliderMovementFlag = eventModule.updateOnSliderMovementFlag;
   var updateOnSliderReleaseFlag = eventModule.updateOnSliderReleaseFlag;
@@ -376,7 +378,7 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
   }
 
   function updateDrawingValues(animation=animationFlag) {
-    // if (animation === true) 
+    // if (animation === true)
     //   sourcePos.x = getThetaX(eventModule.xAxisInitialDay);
     sourcePos.y = getThetaYpathValue(sourcePos.x); // update source thetaY
 
@@ -1197,46 +1199,93 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
           var x1 = pixelCurve.x1[i];
           var y1 = pixelCurve.y1[i];
           context.fillStyle = color1;
-          // context.strokeStyle = color1;
-          // context.beginPath();
-          // context.arc(x1, y1, 1, 0, 2*Math.PI, false);
           context.fillRect(x1, y1, 1, 1);
-          // context.fill();
-          // context.stroke()
 
           context.fillStyle = color2;
-          // context.strokeStyle = color2;
           var x2 = pixelCurve.x2[i];
           var y2 = pixelCurve.y2[i];
-          // context.beginPath();
-          // context.arc(x2, y2, 1, 0, 2*Math.PI, false);
           context.fillRect(x2, y2, 1, 1);
-          // context.fill();
-          // context.stroke();
         }
       }
 
       if (drawLines === true) {
+        var pointSeparationThreshold = 1; // minimum pixel separation allowed
+                                                 // between points that we connect
+                                                 // with lines
         context.beginPath();
         context.moveTo(pixelCurve.x1[0], pixelCurve.y1[0]);
-        window.alert(pixelCurve.x1.length);
+        // window.alert(pixelCurve.x1.length);
+
+        var prevX1;
+        var prevY1;
+        // debugging: for length 16220, line starts displaying wrong at i=2411
         for (var i=1; i<pixelCurve.x1.length; i+=1) {
           var x1 = pixelCurve.x1[i];
           var y1 = pixelCurve.y1[i];
-          context.strokeStyle = color1;
-          context.lineTo(x1, y1);
 
-          // // context.fillStyle = color2;
-          // context.strokeStyle = color2;
-          // var x2 = pixelCurve.x2[i];
-          // var y2 = pixelCurve.y2[i];
-          // context.beginPath();
-          // // context.arc(x2, y2, 1, 0, 2*Math.PI, false);
-          // // context.fill();
-          // context.stroke();
+          if (prevX1 !== undefined && prevY1 !== undefined) {
+            var x1Diff = x1 - prevX1;
+            var y1Diff = y1 - prevY1;
+
+            var dist1 = Math.sqrt(x1Diff*x1Diff + y1Diff*y1Diff);
+
+            if (dist1 > pointSeparationThreshold) {
+              // window.alert("i: " + i + "\nlength: " + pixelCurve.x1.length
+              //              + "\n\nprevX1: " + prevX1 + "\nprevY1: " + prevY1
+              //              + "\n\nx1: " + x1 + "\ny1: " + y1
+              //              + "\n\ndist1: " + dist1);
+
+              context.moveTo(x1, y1);
+            }
+            else {
+              context.lineTo(x1, y1);
+            }
+          }
+          else
+            context.lineTo(x1, y1);
+
+          prevX1 = x1;
+          prevY1 = y1;
         }
+        context.strokeStyle = color1;
         context.stroke();
+
+        context.beginPath();
+        context.moveTo(pixelCurve.x2[0], pixelCurve.y2[0]);
+        var prevX2;
+        var prevY2;
+        // debugging: for length 16220, line starts displaying wrong at i=2411
+        for (var i=1; i<pixelCurve.x2.length; i+=1) {
+          var x2 = pixelCurve.x2[i];
+          var y2 = pixelCurve.y2[i];
+
+          if (prevX2 !== undefined && prevY2 !== undefined) {
+            var x2Diff = x2 - prevX2;
+            var y2Diff = y2 - prevY2;
+
+            var dist2 = Math.sqrt(x2Diff*x2Diff + y2Diff*y2Diff);
+
+            if (dist2 > pointSeparationThreshold) {
+              // window.alert("i: " + i + "\nlength: " + pixelCurve.x2.length
+              //              + "\n\nprevX2: " + prevX2 + "\nprevY2: " + prevY2
+              //              + "\n\nx2: " + x2 + "\ny2: " + y2
+              //              + "\n\ndist2: " + dist2);
+
+              context.moveTo(x2, y2);
+            }
+            else {
+              context.lineTo(x2, y2);
+            }
+          }
+          else
+            context.lineTo(x2, y2);
+
+          prevX2 = x2;
+          prevY2 = y2;
+        }
       }
+      context.strokeStyle = color2;
+      context.stroke();
     }
 
     clearPic();
@@ -1272,9 +1321,10 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
       // draw second lens
       drawLens(lens2);
 
-      // draw caustic
-      drawCaustic("purple", "green");
-      var critCurveFlag = true;
+      if (causticCurveFlag === true) {
+        // draw caustic
+        drawCaustic("purple", "green");
+      }
 
       if (critCurveFlag === true) {
         // draw the combined ring shape: the critical curve

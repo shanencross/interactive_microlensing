@@ -204,9 +204,9 @@ var PSPL_microlensing_event_lens_plane = (function() {
   }
 
   function initSourceRadius() {
-    //sourceRadius = 4/xPixelScale; // source radius in mas
+    sourceRadius = 4/xPixelScale; // source radius in mas
     // sourceRadius = 0.0133; // mas
-    sourceRadius = 0.0636; // mas
+    // sourceRadius = 0.0636; // mas
 
     lensedImageRadius = sourceRadius*xPixelScale;
     updateSourceRadiusSlider();
@@ -229,7 +229,7 @@ var PSPL_microlensing_event_lens_plane = (function() {
 
   function initSourcePos(animation=animationFlag, debug=debugFlag) {
     var sourcePosY = eventModule.thetaY;
-    sourcePos = {x: null, y: sourcePosY};
+    sourcePos = {x: getThetaX(eventModule.xAxisInitialDay), y: sourcePosY};
 
     if (animation === false)
       sourcePos.x = xAxisFinalThetaX;
@@ -240,7 +240,6 @@ var PSPL_microlensing_event_lens_plane = (function() {
 
   function redraw(animation=animationFlag, debug=debugFlag) {
     updateDrawingValues(animation=animation, debug=debug);
-    window.alert(sourcePos.x);
     drawPic();
   }
 
@@ -271,8 +270,8 @@ var PSPL_microlensing_event_lens_plane = (function() {
   }
 
   function updateDrawingValues(animation=animationFlag) {
-    if (animation === true)
-      sourcePos.x = getThetaX(eventModule.xAxisInitialDay);
+    // if (animation === true)
+    //   sourcePos.x = getThetaX(eventModule.xAxisInitialDay);
     sourcePos.y = eventModule.thetaY; // update source thetaY
 
     // makes sure "0.0000" is displayed instead of "-0.0000" if rounding error

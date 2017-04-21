@@ -1049,7 +1049,9 @@ var PSPL_binary_microlensing_event = (function() {
       var minXLM = getThetaX(xAxisInitialDay);
       var maxXLM = getThetaX(xAxisFinalDay);
 
-      var NPN = 4000;
+      var NPN = 4000; // Number of points for lightcurve
+      var NR = 30000; // Number of points for critical and caustic curves
+      var DR = 3.0/NR; // Sampling density of critical and caustic curve points
 
       if (debug === true) {
         // GM1 = 0.2;
@@ -1097,7 +1099,7 @@ var PSPL_binary_microlensing_event = (function() {
       }
 
       var binaryCaclulationResults = bin_len_faster.plot_binary(GM1, GM2, D, cof1, cof2,
-                                                                minXLM, maxXLM, NPN);
+                                                                minXLM, maxXLM, NPN, NR, DR);
 
       var times = numeric.linspace(xAxisInitialDay, xAxisFinalDay, NPN);
       var magnifs = binaryCaclulationResults.magnifs;
