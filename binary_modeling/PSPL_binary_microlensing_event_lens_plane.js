@@ -1150,8 +1150,9 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
     function unNormalizeCurve(normalizedCurve) {
       var curve = {};
       _.forOwn(normalizedCurve, function(coordList, coordKey) {
-        curve[coordKey] = numeric.mul(coordList, eventModule.thetaE_mas)
-        // window.alert(key);
+        if (coordKey !== "transitionIndex") {
+          curve[coordKey] = numeric.mul(coordList, eventModule.thetaE_mas)
+        }
       });
       return curve;
     }
@@ -1172,8 +1173,9 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
     function pixelizeCurve(curve) {
       var pixelizedCurve = {};
       _.forOwn(curve, function(coordList, coordKey) {
-        pixelizedCurve[coordKey] = pixelizeCoordList(coordList, coordKey[0]);
-        // window.alert(key);
+        if (coordKey !== "transitionIndex") {
+          pixelizedCurve[coordKey] = pixelizeCoordList(coordList, coordKey[0]);
+        }
       });
       return pixelizedCurve;
     }
@@ -1186,22 +1188,94 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
       drawCurve(eventModule.critNormalized, color1, color2);
     }
 
+    function setPixel(imageData, x, y, r, g, b, a) {
+
+      if (x >= picLeftBorder && x <= picRightBorder
+          && y >= picTopBorder && y <= picBottomBorder) {
+        index = (x + y * imageData.width) * 4;
+        imageData.data[index+0] = r;
+        imageData.data[index+1] = g;
+        imageData.data[index+2] = b;
+        imageData.data[index+3] = a;
+      }
+    }
+
+    function setPicPixel(imageData, x, y, r, g, b, a) {
+      // only draw if inside graph borders
+
+      var xList = [x];
+      var yList = [y];
+
+      xList.push(x + 1);
+      yList.push(y);
+
+      xList.push(x - 1);
+      yList.push(y3 = y);
+
+      xList.push(x);
+      yList.push(y + 1);
+
+      xList.push(x);
+      yList.push(y - 1);
+
+      // xList.push(x + 1);
+      // yList.push(y + 1);
+
+      // xList.push(x - 1);
+      // yList.push(y + 1);
+
+      // xList.push(x + 1);
+      // yList.push(y - 1);
+
+      // xList.push(x - 1);
+      // yList.push(y - 1);
+
+      for (var i=0; i<xList.length; i++) {
+        setPixel(imageData, xList[i], yList[i], r, g, b, a);
+      }
+  }
+
     function drawCurve(curveNormalized, color1="purple", color2="green") {
       var curve = unNormalizeCurve(curveNormalized);
       var pixelCurve = pixelizeCurve(curve);
 
-      var drawPoints = true;
+      var drawPointsDebugTest = true;
+      var drawPoints = false;
       var drawLines = false;
 
+      if (drawPointsDebugTest === true) {
+        context.beginPath();
+
+        var imageData = context.getImageData(0, 0, canvas.width, canvas.height); // only do this once per page
+
+        for (var i=1; i<pixelCurve.x1.length; i+=1) {
+          var x1 = Math.round(pixelCurve.x1[i]);
+          var y1 = Math.round(pixelCurve.y1[i]);
+          setPicPixel(imageData, x1, y1, 138, 43, 226, 255);
+          // context.fillRect(x1, y1, 1, 1);
+          // window.alert(x1 + " " + y1);
+        }
+
+        for (var i=1; i<pixelCurve.x2.length; i+=1) {
+          var x2 = Math.round(pixelCurve.x2[i]);
+          var y2 = Math.round(pixelCurve.y2[i]);
+          setPicPixel(imageData, x2, y2, 0, 128, 0, 255);
+        }
+
+        context.putImageData(imageData, 0, 0);
+      }
+
       if (drawPoints === true) {
-        // window.alert(pixelcurve.x1.length);
+        context.beginPath();
         for (var i=1; i<pixelCurve.x1.length; i+=1) {
           var x1 = pixelCurve.x1[i];
           var y1 = pixelCurve.y1[i];
           context.fillStyle = color1;
+          // context.fillStyle = "blue";
           context.fillRect(x1, y1, 1, 1);
 
           context.fillStyle = color2;
+          // context.fillStyle = "red";
           var x2 = pixelCurve.x2[i];
           var y2 = pixelCurve.y2[i];
           context.fillRect(x2, y2, 1, 1);
@@ -1218,6 +1292,7 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
 
         var prevX1;
         var prevY1;
+        // window.alert("length: " + pixelCurve.x1.length);
         // debugging: for length 16220, line starts displaying wrong at i=2411
         for (var i=1; i<pixelCurve.x1.length; i+=1) {
           var x1 = pixelCurve.x1[i];
@@ -1229,11 +1304,12 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
 
             var dist1 = Math.sqrt(x1Diff*x1Diff + y1Diff*y1Diff);
 
-            if (dist1 > pointSeparationThreshold) {
+            if (i === curveNormalized.transitionIndex ) {
               // window.alert("i: " + i + "\nlength: " + pixelCurve.x1.length
               //              + "\n\nprevX1: " + prevX1 + "\nprevY1: " + prevY1
               //              + "\n\nx1: " + x1 + "\ny1: " + y1
-              //              + "\n\ndist1: " + dist1);
+              //              + "\n\ndist1: " + dist1
+              //              + "\n\ntransitionIndex: " + curveNormalized.transitionIndex);
 
               context.moveTo(x1, y1);
             }
@@ -1265,7 +1341,7 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
 
             var dist2 = Math.sqrt(x2Diff*x2Diff + y2Diff*y2Diff);
 
-            if (dist2 > pointSeparationThreshold) {
+            if (i === curveNormalized.transitionIndex ) {
               // window.alert("i: " + i + "\nlength: " + pixelCurve.x2.length
               //              + "\n\nprevX2: " + prevX2 + "\nprevY2: " + prevY2
               //              + "\n\nx2: " + x2 + "\ny2: " + y2
@@ -1316,6 +1392,7 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
     }
     // drawPointLensedImages();
     drawLens(lens1);
+
     // drawPointLensedImages();
     if (isBinary === true) {
       // draw second lens

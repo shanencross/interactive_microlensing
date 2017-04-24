@@ -318,6 +318,9 @@ var bin_len_faster = (function() {
     var PXCRIT_C2 = numeric.mul(IP, X_C2);
     var PYCRIT_C2 = numeric.mul(IP, Y_C2);
 
+    var C1_C2_transitionIndex = PXCRIT_C1.length; // index where points transition
+                                                // from C1 points to C2 points
+
     var critical_points_x1 = PXCRIT_C1.concat(PXCRIT_C2);
     var critical_points_x2 = critical_points_x1; // Debug: make a copy of the array?
 
@@ -370,6 +373,7 @@ var bin_len_faster = (function() {
     var PYCAUS_C1 = numeric.mul(IP, YC_C1);
     var PYCAUS_C2 = numeric.mul(IP, YC_C2);
 
+
     var caustic_points_x1 = PXCAUS_C1.concat(PXCAUS_C2);
     var caustic_points_x2 = caustic_points_x1; // Debug: make a copy of the array?
 
@@ -381,6 +385,7 @@ var bin_len_faster = (function() {
       x2: caustic_points_x2,
       y1: caustic_points_y1,
       y2: caustic_points_y2,
+      transitionIndex: C1_C2_transitionIndex,
     };
 
     var crit = {
@@ -388,6 +393,7 @@ var bin_len_faster = (function() {
       x2: critical_points_x2,
       y1: critical_points_y1,
       y2: critical_points_y2,
+      transitionIndex: C1_C2_transitionIndex,
     };
 
     var causticAndCritCurves = {
