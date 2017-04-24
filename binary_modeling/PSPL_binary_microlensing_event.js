@@ -1,4 +1,4 @@
-console.log = function() {} // uncomment this to disable all console.log messages
+// console.log = function() {} // uncomment this to disable all console.log messages
 console.log("Executing PSPL_binary_microlensing_event.js");
 
 // "revealing pattern" module object for this script file
@@ -1046,8 +1046,8 @@ var PSPL_binary_microlensing_event = (function() {
 
       var incline_radians = incline * Math.PI/180;
       var cof1 = -Math.tan(incline_radians);
-      var minXLM = getThetaX(xAxisInitialDay);
-      var maxXLM = getThetaX(xAxisFinalDay);
+      var minXLM = getThetaX(xAxisInitialDay) / thetaE_mas;
+      var maxXLM = getThetaX(xAxisFinalDay) / thetaE_mas;
 
       var NPN = 4000; // Number of points for lightcurve
       var NR = 30000; // Number of points for critical and caustic curves
@@ -1105,6 +1105,8 @@ var PSPL_binary_microlensing_event = (function() {
       var magnifs = binaryCaclulationResults.magnifs;
       var causticAndCritNormalized = binaryCaclulationResults.causticAndCrit; // units of thetaE
 
+
+      // window.alert(times.length + " " + magnifs.length)
       console.log(`(binary) times.length: ${times.length}`);
       console.log(`(binary) magnifs.length: ${magnifs.length}`);
       // console.log(`(binary) times: ${times}`);
