@@ -21,7 +21,7 @@ import time
 # e: Instead it appears GM2 is set equal to 1 - GM1
 
 # Plot critical and caustic curves for the binary lens
-def plot_binary(GM1, GM2, D, cof1, cof2, NPN=400):
+def plot_binary(GM1, GM2, D, cof1, cof2, NPN=400, XLM=3):
    print("test GM1: %s" % GM1)
    print("test GM2: %s" % GM2)
    # Initialize arrays
@@ -37,7 +37,7 @@ def plot_binary(GM1, GM2, D, cof1, cof2, NPN=400):
    caustic_points_x2, caustic_points_y2  = np.array([]), np.array([])
 
    # Set plot limits
-   XLM = 3 # Trajectory from -XLM to +XLM R_E
+   # XLM = 3 # Trajectory from -XLM to +XLM R_E
 
    IP  = -1
    GM2 = 1 - GM1
@@ -46,8 +46,8 @@ def plot_binary(GM1, GM2, D, cof1, cof2, NPN=400):
    D2 = D * D
    D4 = D2 * D2
 
-   NR = 300000 # Points to use to plot critical curves and caustics
-   DR = 0.00001 # Used to define the sampling density of the caustics
+   NR = 30000 # Points to use to plot critical curves and caustics
+   DR = 0.0001 # Used to define the sampling density of the caustics
 
    # Estimate criticals and caustics
    # Perform repeat calculations with masses swapped over
@@ -125,14 +125,20 @@ def plot_binary(GM1, GM2, D, cof1, cof2, NPN=400):
       PYCAUS_C1, PYCAUS_C2 = IP * YC_C1, IP * YC_C2
 
       # Append to caustic points
+      print("caustic points length initial: %s" % len(caustic_points_x1))
       caustic_points_x1 = np.append(caustic_points_x1, PXCAUS_C1)
+      print("caustic points length with C1 appended: %s" % len(caustic_points_x1))
       caustic_points_x1 = np.append(caustic_points_x1, PXCAUS_C2)
+      print("caustic points length with C2 appended: %s" % len(caustic_points_x1))
       caustic_points_x2 = np.append(caustic_points_x2, PXCAUS_C1)
       caustic_points_x2 = np.append(caustic_points_x2, PXCAUS_C2)
       caustic_points_y1 = np.append(caustic_points_y1, PYCAUS_C1)
       caustic_points_y1 = np.append(caustic_points_y1, PYCAUS_C2)
       caustic_points_y2 = np.append(caustic_points_y2, -PYCAUS_C1)
       caustic_points_y2 = np.append(caustic_points_y2, -PYCAUS_C2)
+
+      print("crit points length: %s" % len(caustic_points_x1))
+      print("caustic points length: %s" % len(critical_points_x1))
       # Swap the masses and repeat the calculation
       GM0 = GM1
       GM1 = GM2
@@ -142,7 +148,7 @@ def plot_binary(GM1, GM2, D, cof1, cof2, NPN=400):
    # Evaluate the (linear) trajectory path
    # NXS is the trajectory length (NPN points)
    NXS = NPN
-   XLM = 3 # Trajectory from -XLM to +XLM R_E
+   # XLM = 3 # Trajectory from -XLM to +XLM R_E
    XSC = np.linspace(-XLM, XLM, NXS) # Trajectory from -XLM to +XLM R_E
    XSA = XSC
    # Specify the trajectory
@@ -263,8 +269,9 @@ def main():
    #                                0.5, -0.12, -0.03, 4000
 
 
-   GM1, GM2, D, cof1, cof2, NPN = 0.62, 0.38, \
-                                  2.5, -0.12, -0.03, 4000
+   GM1, GM2, D, cof1, cof2, NPN, XLM = 0.62, 0.38, \
+                                       1.2879032074382093, -0.12, -0.03, 4000, \
+                                       2.296056527594662
 
    print("GM1: %s" % (GM1))
    print("GM2: %s" % (GM2))
@@ -274,7 +281,7 @@ def main():
 
    global start_time
    start_time = time.time()
-   plot_binary(GM1, GM2, D, cof1, cof2, NPN)
+   plot_binary(GM1, GM2, D, cof1, cof2, NPN, XLM)
 
 if __name__ == "__main__":
    main()

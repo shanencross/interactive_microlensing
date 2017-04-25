@@ -328,7 +328,8 @@ var PSPL_binary_microlensing_event = (function() {
     t0 = 0;
     mu = 7;
     // mu = 20; // DEBUG value, TEMPORARY
-    lensSep = 1 * 0.8346900557366428; // mas (milliarcseconds)
+    // lensSep = 1 * 0.8346900557366428; // mas (milliarcseconds)
+    lensSep = 2.150;
     incline = Math.atan(0.12) * 180/Math.PI; // degrees
 
     // set derived quantities
@@ -1105,12 +1106,13 @@ var PSPL_binary_microlensing_event = (function() {
       var magnifs = binaryCaclulationResults.magnifs;
       var causticAndCritNormalized = binaryCaclulationResults.causticAndCrit; // units of thetaE
 
-
       // window.alert(times.length + " " + magnifs.length)
       console.log(`(binary) times.length: ${times.length}`);
       console.log(`(binary) magnifs.length: ${magnifs.length}`);
       // console.log(`(binary) times: ${times}`);
       // console.log(`(binary) magnifs: ${magnifs}`);
+      console.log(`(binary) crit.x1.length: ${causticAndCritNormalized.crit.x1.length}`);
+      console.log(`(binary) caustic.x1.length: ${causticAndCritNormalized.caustic.x1.length}`);
     }
 
     else  {
