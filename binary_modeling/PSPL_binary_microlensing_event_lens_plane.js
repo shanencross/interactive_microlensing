@@ -135,6 +135,17 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
   var lensedImageMinusColor = "green";
   var lensedImageMinusOutlineColor = "lime";
 
+  var causticColor1 = "fuchsia";
+  var causticColor2 = "purple";
+  causticColor1 = causticColor2; // when not debugging, these should be the same
+  var critColor1 = "orangeRed";
+  var critColor2 = "crimson";
+  critColor1 = critColor2; // when not debugging, these should be the same
+  var causticPointSizeX = 2;
+  var causticPointSizeY = 2;
+  var critPointSizeX = 2;
+  var critPointSizeY = 2;
+
   //base variables (tick labels)
   var tickLabelFont = "8pt Arial";
   var tickLabelColor = "black";
@@ -194,8 +205,15 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
   var crit = null;
 
   //sort of derived variables? but not really? (canvas/context)
-  var canvas = document.getElementById("lensPlaneCanvas")
-  var context = canvas.getContext("2d");
+  var mainCanvas = document.getElementById("lensPlaneCanvas");
+  var mainContext = mainCanvas.getContext("2d");
+
+  // off-screen canvas for critical/caustic curves
+  var curveCanvas = document.createElement("canvas");
+  curveCanvas.width = mainCanvas.width;
+  curveCanvas.height = mainCanvas.width;
+  var curveContext = curveCanvas.getContext("2d");
+
   var thetaXreadout = document.getElementById("thetaXreadout"); // readout of current source thetaX position
                                                                 // mainly for debugging, but may keep
   var sourceRadiusNormalizedReadout = document.getElementById("sourceRadiusNormalizedReadout");
@@ -248,6 +266,7 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
     initLenses();
     initSourcePos(animation=animation);
     initSourceRadius();
+    drawing.renderCurves();
     redraw();
   }
 
@@ -348,7 +367,7 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
 
   function redraw(animation=animationFlag) {
     updateDrawingValues(animation=animation);
-    drawPic();
+    drawing.drawPic();
   }
 
   function updateScaleAndRangeValues() {
@@ -670,8 +689,8 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
 
   function xDayToThetaX() {}
 
-  function drawPic(isBinary=binaryFlag) {
-    function clearPic() {
+  var drawing = (function(isBinary=binaryFlag, context=mainContext, canvas=mainCanvas) {
+    function clearPic(context=mainContext) {
       context.clearRect(picLeftBorder, picTopBorder, picWidth, picHeight);
     }
 
@@ -1146,7 +1165,6 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
       }
     }
 
-
     function unNormalizeCurve(normalizedCurve) {
       var curve = {};
       _.forOwn(normalizedCurve, function(coordList, coordKey) {
@@ -1180,12 +1198,33 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
       return pixelizedCurve;
     }
 
-    function drawCaustic(color1="purple", color2="green") {
-      drawCurve(eventModule.causticNormalized, color1, color2);
+    function renderCaustic(color1="purple", color2="green", pointSizeX,
+                          pointSizeY, context=curveContext) {
+      renderCurve(eventModule.causticNormalized, color1, color2, pointSizeX,
+                  pointSizeY, context);
     }
 
-    function drawCrit(color1="purple", color2="green") {
-      drawCurve(eventModule.critNormalized, color1, color2);
+    function renderCrit(color1="purple", color2="green", pointSizeX,
+                        pointSizeY, context=curveContext) {
+      renderCurve(eventModule.critNormalized, color1, color2, pointSizeX,
+                  pointSizeY, context);
+    }
+
+    function renderCurves(causColor1=causticColor1, causColor2=causticColor2,
+                          crtColor1=critColor1, crtColor2=critColor2,
+                          causPointSizeX=causticPointSizeX,
+                          causPointSizeY=causticPointSizeY,
+                          crtPointSizeX=critPointSizeX,
+                          crtPointSizeY=critPointSizeY,
+                          caustic=causticCurveFlag, crit=critCurveFlag,
+                          context=curveContext) {
+      clearPic(context); // clear off-screen canvas
+
+      if (caustic === true)
+        renderCaustic(causColor1, causColor2, causPointSizeX, causPointSizeY, context);
+
+      if (crit === true)
+        renderCrit(crtColor1, crtColor2, crtPointSizeX, crtPointSizeY, context);
     }
 
     function setPixel(imageData, x, y, r, g, b, a) {
@@ -1233,25 +1272,47 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
       for (var i=0; i<xList.length; i++) {
         setPixel(imageData, xList[i], yList[i], r, g, b, a);
       }
+    }
+
+    function colorToRGBA(color) {
+      // Returns the color as an array of [r, g, b, a] -- all range from 0 - 255
+      // color must be a valid canvas fillStyle. This will cover most anything
+      // you'd want to use.
+      // Examples:
+      // colorToRGBA('red')  # [255, 0, 0, 255]
+      // colorToRGBA('#f00') # [255, 0, 0, 255]
+      var tempCanvas = document.createElement('canvas');
+      tempCanvas.height = 1;
+      tempCanvas.width = 1;
+      var tempContext = tempCanvas.getContext('2d');
+      tempContext.fillStyle = color;
+      tempContext.fillRect(0, 0, 1, 1);
+      return tempContext.getImageData(0, 0, 1, 1).data;
   }
 
-    function drawCurve(curveNormalized, color1="purple", color2="green") {
+    function renderCurve(curveNormalized, color1="purple", color2="green",
+                         pointSizeX, pointSizeY, context=curveContext) {
       var curve = unNormalizeCurve(curveNormalized);
       var pixelCurve = pixelizeCurve(curve);
 
-      var drawPointsDebugTest = true;
-      var drawPoints = false;
-      var drawLines = false;
+      var drawPointsDebugTest = false; // fast, but looks kinda bad
+      var drawPoints = true;  // not quite as fast, but looks good
+      var drawCircles = false; // slow; don't use this
+      var drawLines = false; // fastest, but doesn't work right
 
       if (drawPointsDebugTest === true) {
-        context.beginPath();
 
+        var color1RGBA = colorToRGBA(color1);
+        var color2RGBA = colorToRGBA(color2);
+
+        context.beginPath();
         var imageData = context.getImageData(0, 0, canvas.width, canvas.height); // only do this once per page
 
         for (var i=1; i<pixelCurve.x1.length; i+=1) {
           var x1 = Math.round(pixelCurve.x1[i]);
           var y1 = Math.round(pixelCurve.y1[i]);
-          setPicPixel(imageData, x1, y1, 138, 43, 226, 255);
+          // debug default: 138, 43, 226, 255
+          setPicPixel(imageData, x1, y1, color1RGBA[0], color1RGBA[1], color1RGBA[2], color1RGBA[3]);
           // context.fillRect(x1, y1, 1, 1);
           // window.alert(x1 + " " + y1);
         }
@@ -1259,7 +1320,8 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
         for (var i=1; i<pixelCurve.x2.length; i+=1) {
           var x2 = Math.round(pixelCurve.x2[i]);
           var y2 = Math.round(pixelCurve.y2[i]);
-          setPicPixel(imageData, x2, y2, 0, 128, 0, 255);
+          // debug default: 0, 128, 0, 255);
+          setPicPixel(imageData, x2, y2, color2RGBA[0], color2RGBA[1], color2RGBA[2], color2RGBA[3]);
         }
 
         context.putImageData(imageData, 0, 0);
@@ -1267,18 +1329,58 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
 
       if (drawPoints === true) {
         context.beginPath();
-        for (var i=1; i<pixelCurve.x1.length; i+=1) {
+        if (color1 === color2) {
+          for (var i=0; i<pixelCurve.x1.length; i+=1) {
+            var x1 = pixelCurve.x1[i];
+            var y1 = pixelCurve.y1[i];
+            context.rect(x1-pointSizeX/2, y1-pointSizeY/2, pointSizeX, pointSizeY);
+
+            var x2 = pixelCurve.x2[i];
+            var y2 = pixelCurve.y2[i];
+            context.rect(x2-pointSizeX/2, y2-pointSizeY/2, pointSizeX, pointSizeY);
+          }
+          context.fillStyle = color1;
+          context.fill();
+        }
+        else {
+          for (var i=0; i<pixelCurve.x1.length; i+=1) {
+            var x1 = pixelCurve.x1[i];
+            var y1 = pixelCurve.y1[i];
+
+            context.rect(x1-pointSizeX/2, y1-pointSizeY/2, pointSizeX, pointSizeY);
+          }
+          context.fillStyle = color1;
+          context.fill();
+
+          context.beginPath();
+          for (var i=0; i<pixelCurve.x2.length; i+=1) {
+            var x2 = pixelCurve.x2[i];
+            var y2 = pixelCurve.y2[i];
+
+            context.rect(x2-pointSizeX/2, y2-pointSizeY/2, pointSizeX, pointSizeY);
+          }
+          context.fillStyle = color2;
+          context.fill();
+        }
+      }
+
+      if (drawCircles === true) {
+        context.fillStyle = color1;
+        for (var i=0; i<pixelCurve.x1.length; i+=1) {
           var x1 = pixelCurve.x1[i];
           var y1 = pixelCurve.y1[i];
-          context.fillStyle = color1;
-          // context.fillStyle = "blue";
-          context.fillRect(x1, y1, 1, 1);
+          context.beginPath();
+          context.arc(x1, y1, pointSizeX, 0, 2*Math.PI, false)
+          context.fill();
+        }
 
-          context.fillStyle = color2;
-          // context.fillStyle = "red";
+        context.fillStyle = color2;
+        for (var i=0; i<pixelCurve.x2.length; i+=1) {
           var x2 = pixelCurve.x2[i];
           var y2 = pixelCurve.y2[i];
-          context.fillRect(x2, y2, 1, 1);
+          context.beginPath();
+          context.arc(x2, y2, pointSizeX, 0, 2*Math.PI, false)
+          context.fill();
         }
       }
 
@@ -1359,70 +1461,81 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
           prevX2 = x2;
           prevY2 = y2;
         }
+        context.strokeStyle = color2;
+        context.stroke();
       }
-      context.strokeStyle = color2;
-      context.stroke();
     }
 
-    clearPic();
-    drawBackgrounds();
-    drawBorder();
-    drawGridlinesAndTicks();
-    toggleClippingRegion(turnOn=true);
-    drawSourcePath();
-    drawSource();
-    // drawSource(useOutline=true);
-    drawUarrow();
-    if (displayImageShapeFlag === true) {
-      if (eventModule.finiteSourceFlag === false)
-        drawPointLensedImages();
-      else {
-        if (clippingImageFlag === true) {
-          context.save();
-          context.beginPath();
-          context.rect(0, 0, canvas.width, context.canvas.height);
-          context.arc(lens1.pixelPos.x, lens1.pixelPos.y, ringRadius.x, 0, Math.PI * 2, true);
-          context.clip();
+    function drawRenderedCurves(context=mainContext, imgCanvas=curveCanvas) {
+      // Draw image from image canvas onto (most likely main) context
+      context.drawImage(imgCanvas, 0, 0);
+    }
+
+    function drawPic(isBinary=binaryFlag, context=mainContext, canvas=mainCanvas) {
+      clearPic();
+      drawBackgrounds();
+      drawBorder();
+      drawGridlinesAndTicks();
+      toggleClippingRegion(turnOn=true);
+      // drawSource(useOutline=true);
+      drawUarrow();
+      if (displayImageShapeFlag === true) {
+        if (eventModule.finiteSourceFlag === false)
+          drawPointLensedImages();
+        else {
+          if (clippingImageFlag === true) {
+            context.save();
+            context.beginPath();
+            context.rect(0, 0, canvas.width, context.canvas.height);
+            context.arc(lens1.pixelPos.x, lens1.pixelPos.y, ringRadius.x, 0, Math.PI * 2, true);
+            context.clip();
+          }
+          drawFullLensedImages(debug=false, fillOn=true, strokeOn=true);
+          //drawFullLensedImages(debug=true);
+          if (clippingImageFlag === true)
+            context.restore();
         }
-        drawFullLensedImages(debug=false, fillOn=true, strokeOn=true);
-        //drawFullLensedImages(debug=true);
-        if (clippingImageFlag === true)
-          context.restore();
       }
-    }
-    // drawPointLensedImages();
-    drawLens(lens1);
+      // drawPointLensedImages();
+      drawLens(lens1);
 
-    // drawPointLensedImages();
-    if (isBinary === true) {
-      // draw second lens
-      drawLens(lens2);
+      // drawPointLensedImages();
+      if (isBinary === true) {
+        // draw second lens
+        drawLens(lens2);
 
-      if (causticCurveFlag === true) {
-        // draw caustic
-        drawCaustic("purple", "green");
+        if (causticCurveFlag === true || critCurveFlag === true) {
+          // draw caustic and/or crit
+
+          drawRenderedCurves();
+          // context.fillRect(canvas.width/2, canvas.height/2, 50*Math.random(), 50);
+        }
+
+        if (separateBinaryRingsFlag === true) {
+
+          // draw separate rings for each lens
+          drawRing(lens1);
+          drawRing(lens2);
+        }
+
       }
-
-      if (critCurveFlag === true) {
-        // draw the combined ring shape: the critical curve
-        drawCrit("indigo", "darkGreen");
-      }
-
-      if (separateBinaryRingsFlag === true) {
-
-        // draw separate rings for each lens
+      else { // single, non-binary lens
         drawRing(lens1);
-        drawRing(lens2);
       }
 
-    }
-    else { // single, non-binary lens
-      drawRing(lens1);
+      drawSourcePath();
+      drawSource();
+
+      toggleClippingRegion(turnOn=false);
+      drawAxes();
     }
 
-    toggleClippingRegion(turnOn=false);
-    drawAxes();
-  }
+    return {
+      renderCurves: renderCurves,
+      drawPic: drawPic,
+    }
+
+  })();
 
   // executing script initialization
   init();
@@ -1432,6 +1545,7 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
     get sourcePos() { return sourcePos; }, // mas
     get xAxisInitialThetaX() { return xAxisInitialThetaX; }, // mas
     get sourceRadius() { return sourceRadius; }, // mas
+    renderCurves: drawing.renderCurves,
     redraw: redraw,
     getThetaX: getThetaX,
     initSourceRadius: initSourceRadius,

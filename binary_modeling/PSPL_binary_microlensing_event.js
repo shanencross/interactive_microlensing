@@ -1141,6 +1141,13 @@ var PSPL_binary_microlensing_event = (function() {
       // updateGridRange(xGridStepDefault, (maxMagnif+1)/10);
     }
     lightcurveData = curveData;
+
+    var prerenderCurves = true;
+
+    if (prerenderCurves === true &&
+        typeof PSPL_binary_microlensing_event_lens_plane !== "undefined") {
+      PSPL_binary_microlensing_event_lens_plane.renderCurves();
+    }
   }
 
   function toggleFiniteSource() {
