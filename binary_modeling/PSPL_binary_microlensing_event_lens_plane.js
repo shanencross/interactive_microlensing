@@ -148,8 +148,10 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
 
   var binaryLensedImagePointSizeX = 2;
   var binaryLensedImagePointSizeY = 2;
-  var binaryLensedImageOutlineColors = ["aqua", "teal", "orange", "black", "pink"];
-  var binaryLensedImageFillColors = ["pink", "aqua", "teal", "orange", "black"];
+  // var binaryLensedImageOutlineColors = ["aqua", "teal", "orange", "black", "pink"];
+  // var binaryLensedImageFillColors = ["pink", "aqua", "teal", "orange", "black"];
+  var binaryLensedImageOutlineColors = ["black", "black", "black", "black", "black"];
+  var binaryLensedImageFillColors = ["orange", "orange", "orange", "orange", "orange"];
 
   //base variables (tick labels)
   var tickLabelFont = "8pt Arial";
