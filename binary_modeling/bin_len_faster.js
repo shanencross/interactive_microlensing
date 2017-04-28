@@ -326,8 +326,11 @@ var bin_len_faster = (function() {
       var PXCRIT_C2 = numeric.mul(IP, X_C2);
       var PYCRIT_C2 = numeric.mul(IP, Y_C2);
 
-      var C1_C2_transitionIndex = PXCRIT_C1.length; // index where points transition
-                                                  // from C1 points to C2 points
+      // index where points transition
+      // from C1 points to C2 points;
+      // a gap we should jump over if connecting points with lines
+      // when drawing
+      var C1_C2_transitionIndex = PXCRIT_C1.length;
 
       // var critical_points_x1 = PXCRIT_C1.concat(PXCRIT_C2);
       // var critical_points_x2 = critical_points_x1; // Debug: make a copy of the array?

@@ -1052,7 +1052,10 @@ var PSPL_binary_microlensing_event = (function() {
 
       var NPN = 4000; // Number of points for lightcurve
       var NR = 30000; // Number of points for critical and caustic curves
-      var DR = 3.0/NR; // Sampling density of critical and caustic curve points
+
+      // Sampling density of critical and caustic curve points
+      // var DR = 3/NR;
+      var DR = 0.0003; // was 0.0001 by default, but this seems to work better
 
       if (debug === true) {
         // GM1 = 0.2;
@@ -1104,6 +1107,7 @@ var PSPL_binary_microlensing_event = (function() {
 
       var times = numeric.linspace(xAxisInitialDay, xAxisFinalDay, NPN);
       var magnifs = binaryCaclulationResults.magnifs;
+      var normalizedImagePositions = binaryCaclulationResults.normalizedImagePositions;
       var causticAndCritNormalized = binaryCaclulationResults.causticAndCrit; // units of thetaE
 
       // window.alert(times.length + " " + magnifs.length)
@@ -1130,6 +1134,8 @@ var PSPL_binary_microlensing_event = (function() {
     var curveData = {
       times:times,
       magnifs:magnifs,
+      // normalized (over thetaE) positions of the (five or three) lensed images
+      imagesNormalizedPos: normalizedImagePositions,
       causticNormalized: causticAndCritNormalized.caustic,
       critNormalized: causticAndCritNormalized.crit};
 
@@ -1228,6 +1234,13 @@ var PSPL_binary_microlensing_event = (function() {
     // for calculating thetaE for individual lens masses, in addition to the
     // thetaE of the summed lens masses
     calculateThetaE: calculateThetaE,
+
+
+    // normalized (over thetaE) positions of the (five or three) lensed images
+    get imagesNormalizedPos() {
+      if (lightcurveData !== null && lightcurveData !== undefined)
+        return lightcurveData.imagesNormalizedPos;
+    },
 
     // get caustic and critical curve data points,
     // normalized in units of (binary) thetaE
