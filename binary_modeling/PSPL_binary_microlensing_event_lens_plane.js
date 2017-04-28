@@ -148,7 +148,8 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
 
   var binaryLensedImagePointSizeX = 2;
   var binaryLensedImagePointSizeY = 2;
-  var binaryLensedImageColors = ["pink", "blue", "teal", "orange", "black"];
+  var binaryLensedImageOutlineColors = ["aqua", "teal", "orange", "black", "pink"];
+  var binaryLensedImageFillColors = ["pink", "aqua", "teal", "orange", "black"];
 
   //base variables (tick labels)
   var tickLabelFont = "8pt Arial";
@@ -207,6 +208,10 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
   // caustic and crit
   var caustic = null;
   var crit = null;
+
+  // positions of lensed images as function of time/source position
+  var lensedImagesPos;
+  var lensedImagesPixelPos;
 
   //sort of derived variables? but not really? (canvas/context)
   var mainCanvas = document.getElementById("lensPlaneCanvas");
@@ -1474,9 +1479,6 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
       context.drawImage(imgCanvas, 0, 0);
     }
 
-    var lensedImagesPos;
-    var lensedImagesPixelPos;
-
     function convertLensedImagesPos() {
       // Unnormalize positions of lensed images (originally normalized over
       // thetaE) and convert them to pixel positions. Store both angular and
@@ -1503,36 +1505,77 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
       lensedImagesPixelPos = imagesPixelPos;
     }
 
-    function drawBinaryPointLensedImages(colors=binaryLensedImageColors,
+    function getTimeFromThetaX(thetaX) {
+      // temp: very hacky
+        var yearToDay = 365.25; // day/year; const
+        var eqMu = eventModule.mu / yearToDay; // convert mu to milliarcseconds/day
+        var time = thetaX/eqMu + eventModule.t0
+        return time;
+    }
+
+    function drawBinaryPointLensedImages(outlineColors=binaryLensedImageOutlineColors,
+                                         fillColors=binaryLensedImageFillColors,
                                          pointSizeX=binaryLensedImagePointSizeX,
                                          pointSizeY=binaryLensedImagePointSizeY,
-                                         debugPlotAllPoints=true) {
+                                         debugPlotAllPoints=false) {
       if (lensedImagesPos === undefined) {
         // unnormalize and pixelize positions of lensed images
         convertLensedImagesPos();
       }
-      // console.log(`(binary) lensedImagesPixelPos[0].x.length: ${lensedImagesPixelPos[0].x.length}`);
 
 
+      // debug: this solution is hacky:
+      // the way this converts back and forth between time and position,
+      // and iterates through the time array to find the right index
+      // for the image position arrays, is not good;
+      // fix: restructure modules to keep track of the time array index
+
+      // also: the image colors appear to change when they really shouldn't
+      var useHackySolution = true;
+
+      if (useHackySolution === true) {
+        var time = getTimeFromThetaX(sourcePos.x);
+
+        var times = eventModule.times;
+
+        var timeIndex;
+        for (var i=0; i<times.length; i++) {
+          if (times[i] > time) {
+            timeIndex = i;
+            break;
+          }
+        }
+
+        if (timeIndex === undefined)
+          timeIndex = times.length-1;
+
+        for (var i=0; i<lensedImagesPixelPos.length; i++) {
+          var imagePixelPos = lensedImagesPixelPos[i];
+          var x = imagePixelPos.x[timeIndex];
+          var y = imagePixelPos.y[timeIndex];
+          context.beginPath();
+          context.strokeStyle = outlineColors[i];
+          context.fillStyle = fillColors[i];
+          context.arc(x, y, 4, 0, 2*Math.PI, false);
+          context.fill();
+          context.stroke();
+        }
+      }
 
       // debug: plots every x,y point in image arrays, coded by color, regardless of
       // time; produces some wacky looking curves; neato
       if (debugPlotAllPoints === true) {
         for (var i=0; i<lensedImagesPixelPos.length; i++) {
           var imagePixelPos = lensedImagesPixelPos[i];
-          console.log(`(binary): imagePixelPos.x.length: ${imagePixelPos.x.length}`)
-          console.log(`(binary): imagePixelPos.x[100]: ${imagePixelPos.x[100]}`)
-          console.log(`(binary): imagePixelPos.y[100]: ${imagePixelPos.y[100]}`)
           // context.rect(imagePixelPos.x[100], imagePixelPos.y[100], 10, 10);
 
           context.beginPath();
           for (var j=0; j<imagePixelPos.x.length; j++) {
-
             var x = imagePixelPos.x[j];
             var y = imagePixelPos.y[j];
             context.rect(x, y, pointSizeX, pointSizeY);
           }
-          context.fillStyle = colors[i];
+          context.fillStyle = fillColors[i];
           context.fill();
         }
       }

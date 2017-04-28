@@ -1048,6 +1048,8 @@ var PSPL_binary_microlensing_event = (function() {
       var incline_radians = incline * Math.PI/180;
       var cof1 = -Math.tan(incline_radians);
       var minXLM = getThetaX(xAxisInitialDay) / thetaE_mas;
+      // window.alert(minXLM*thetaE_mas);
+      // var minXLM = -0.5;
       var maxXLM = getThetaX(xAxisFinalDay) / thetaE_mas;
 
       var NPN = 4000; // Number of points for lightcurve
@@ -1260,11 +1262,17 @@ var PSPL_binary_microlensing_event = (function() {
         return lightcurveData.critNormalized;
     },
 
+    get times() {
+      if (lightcurveData !== null && lightcurveData !== undefined)
+        return lightcurveData.times;
+    },
+
     // for debugging
     getU: getU,
     getTimeTerm: getTimeTerm,
     getMagnif: getMagnif,
     updateCurveData: updateCurveData,
+    getThetaX: getThetaX,
 
     // for updating slider readout
     updateSliderReadout: updateSliderReadout,
