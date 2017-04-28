@@ -146,6 +146,10 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
   var critPointSizeX = 2;
   var critPointSizeY = 2;
 
+  var binaryLensedImagePointSizeX = 2;
+  var binaryLensedImagePointSizeY = 2;
+  var binaryLensedImageColors = ["pink", "blue", "teal", "orange", "black"];
+
   //base variables (tick labels)
   var tickLabelFont = "8pt Arial";
   var tickLabelColor = "black";
@@ -1471,24 +1475,68 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
     }
 
     var lensedImagesPos;
+    var lensedImagesPixelPos;
 
-    function unNormalizeLensedImagesPos() {
+    function convertLensedImagesPos() {
+      // Unnormalize positions of lensed images (originally normalized over
+      // thetaE) and convert them to pixel positions. Store both angular and
+      // pixel coordinates.
+
       var imagesNormalizedPos = eventModule.imagesNormalizedPos;
 
-      console.log(`(binary) imagesNormalizedPos.x.length: ${imagesNormalizedPos.x.length}`);
-      console.log(`(binary) imagesNormalizedPos.x.length: ${imagesNormalizedPos.x[0].length}`);
+      // console.log(`(binary) imagesNormalizedPos.x.length: ${imagesNormalizedPos.x.length}`);
+      // console.log(`(binary) imagesNormalizedPos.x.length: ${imagesNormalizedPos.x[0].length}`);
 
-      for (var i=0; i<imagesNormalizedPos.x.length; i++) {
+      var imageCount = imagesNormalizedPos.x.length;
+      imagesPos = new Array(imageCount);
+      imagesPixelPos = new Array(imageCount);
+      for (var i=0; i<imageCount; i++) {
         var curveNormalized = {x: imagesNormalizedPos.x[i], y: imagesNormalizedPos.y[i]};
         var curve = unNormalizeCurve(curveNormalized);
+        var pixelCurve = pixelizeCurve(curve);
+        imagesPos[i] = curve;
+        imagesPixelPos[i] = pixelCurve;
       }
 
+       // store result in global variables
+      lensedImagesPos = imagesPos;
+      lensedImagesPixelPos = imagesPixelPos;
     }
 
-    function drawBinaryPointLensedImages() {
+    function drawBinaryPointLensedImages(colors=binaryLensedImageColors,
+                                         pointSizeX=binaryLensedImagePointSizeX,
+                                         pointSizeY=binaryLensedImagePointSizeY,
+                                         debugPlotAllPoints=true) {
       if (lensedImagesPos === undefined) {
-        unNormalizeLensedImagesPos();
+        // unnormalize and pixelize positions of lensed images
+        convertLensedImagesPos();
       }
+      // console.log(`(binary) lensedImagesPixelPos[0].x.length: ${lensedImagesPixelPos[0].x.length}`);
+
+
+
+      // debug: plots every x,y point in image arrays, coded by color, regardless of
+      // time; produces some wacky looking curves; neato
+      if (debugPlotAllPoints === true) {
+        for (var i=0; i<lensedImagesPixelPos.length; i++) {
+          var imagePixelPos = lensedImagesPixelPos[i];
+          console.log(`(binary): imagePixelPos.x.length: ${imagePixelPos.x.length}`)
+          console.log(`(binary): imagePixelPos.x[100]: ${imagePixelPos.x[100]}`)
+          console.log(`(binary): imagePixelPos.y[100]: ${imagePixelPos.y[100]}`)
+          // context.rect(imagePixelPos.x[100], imagePixelPos.y[100], 10, 10);
+
+          context.beginPath();
+          for (var j=0; j<imagePixelPos.x.length; j++) {
+
+            var x = imagePixelPos.x[j];
+            var y = imagePixelPos.y[j];
+            context.rect(x, y, pointSizeX, pointSizeY);
+          }
+          context.fillStyle = colors[i];
+          context.fill();
+        }
+      }
+
     }
 
     function drawPic(isBinary=binaryFlag, displayImageShape=displayImageShapeFlag,
@@ -1552,6 +1600,7 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
 
     return {
       renderCurves: renderCurves,
+      convertLensedImagesPos: convertLensedImagesPos,
       drawPic: drawPic,
     }
 
@@ -1566,6 +1615,7 @@ var PSPL_binary_microlensing_event_lens_plane = (function() {
     get xAxisInitialThetaX() { return xAxisInitialThetaX; }, // mas
     get sourceRadius() { return sourceRadius; }, // mas
     renderCurves: drawing.renderCurves,
+    convertLensedImagesPos: drawing.convertLensedImagesPos,
     redraw: redraw,
     getThetaX: getThetaX,
     initSourceRadius: initSourceRadius,

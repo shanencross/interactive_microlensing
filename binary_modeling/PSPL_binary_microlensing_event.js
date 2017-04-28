@@ -1054,7 +1054,7 @@ var PSPL_binary_microlensing_event = (function() {
       var NR = 30000; // Number of points for critical and caustic curves
 
       // Sampling density of critical and caustic curve points
-      // var DR = 3/NR;
+      // var DR = 3/NR;vv
       var DR = 0.0003; // was 0.0001 by default, but this seems to work better
 
       if (debug === true) {
@@ -1153,6 +1153,12 @@ var PSPL_binary_microlensing_event = (function() {
     if (prerenderCurves === true &&
         typeof PSPL_binary_microlensing_event_lens_plane !== "undefined") {
       PSPL_binary_microlensing_event_lens_plane.renderCurves();
+    }
+
+    var updateLensedImages = true;
+    if (updateLensedImages === true &&
+        typeof PSPL_binary_microlensing_event_lens_plane !== "undefined") {
+      PSPL_binary_microlensing_event_lens_plane.convertLensedImagesPos();
     }
   }
 
