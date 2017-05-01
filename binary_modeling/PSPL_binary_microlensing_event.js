@@ -196,10 +196,6 @@ var PSPL_binary_microlensing_event = (function() {
 
   var resetGraphButton = document.getElementById("resetGraph");
 
-  // flag for whether graph is generated from calculating
-  // magnifications for a range of times from an equation,
-  // or from an input of time/magnification arrays
-  var fromEquationDefault = false; // const
   var centerLayout = false; // const
   var finiteSourceFlag = false; // toggle finite source effects
   var binaryFlag = true; // switch between binary and single lens modes
@@ -910,50 +906,42 @@ var PSPL_binary_microlensing_event = (function() {
     context.strokeRect(graphLeftBorder, graphTopBorder, graphWidth, graphHeight);
   }
 
-  function plotLightcurve(tDayFinal=xAxisFinalDay, inputData, fromEquation=fromEquationDefault) {
+  function plotLightcurve(tDayFinal=xAxisFinalDay, inputData) {
     // Draw plot background, as well as both complete (dashed) lightcurve and
     // partial (solid) lightcurve up to a given time
     // draw plot with gridlines, etc. (no axes or axis labels yet).
     initPlot();
     // draw complete lightcurve across entire time axis as dashed line
-    plotLightcurveAlone(xAxisFinalDay, inputData, fromEquation, dashedCurve=true);
+    plotLightcurveAlone(xAxisFinalDay, inputData, dashedCurve=true);
     // draw lightcurve up to the time argument as solid line
-    plotLightcurveAlone(tDayFinal, inputData, fromEquation, dashedCurve=false);
+    plotLightcurveAlone(tDayFinal, inputData, dashedCurve=false);
     // draw axes and their labels;
     // goes last because axes are IN FRONT of lightcurve
     drawAxes();
     drawAxisLabels();
   }
 
-  function plotLightcurveAlone(tDayFinal=xAxisFinalDay, inputData, fromEquation=fromEquationDefault, dashedCurve=false) {
+  function plotLightcurveAlone(tDayFinal=xAxisFinalDay, inputData, dashedCurve=false) {
     // draw a single lightcurve (dashed or solid) up to a given time
 
-    // console.log("fromEquation: " + fromEquation);
-    // console.log("inputData: " + inputData);
     var tDay, magnif;
-    if (fromEquation) {
-      tDay = xAxisInitialDay;
-      magnif = getMagnif(tDay);
+    if (inputData !== undefined) {
+      curveData = inputData;
     }
-    else {
-      if (inputData !== undefined) {
-        curveData = inputData;
+    else { // no input parameter given
+      if (lightcurveData !== null) { // module lightcurve variable already initialized
+        curveData = lightcurveData; // use module variable in function
       }
-      else { // no input parameter given
-        if (lightcurveData !== null) { // module lightcurve variable already initialized
-          curveData = lightcurveData; // use module variable in function
-        }
-        else { // module lightcurve variable not initialized yet
-          // window.alert("lightcurveData uninitialized; updating");
-          updateCurveData(); // initialize module variable
-          curveData = lightcurveData; // use newly initialized module variable in function
-        }
+      else { // module lightcurve variable not initialized yet
+        // window.alert("lightcurveData uninitialized; updating");
+        updateCurveData(); // initialize module variable
+        curveData = lightcurveData; // use newly initialized module variable in function
       }
-      var times = curveData.times;
-      var magnifs = curveData.magnifs;
-      tDay = times[0];
-      magnif = magnifs[0];
     }
+    var times = curveData.times;
+    var magnifs = curveData.magnifs;
+    tDay = times[0];
+    magnif = magnifs[0];
 
     context.save();
       // set up clipping region as graph region, so that curve does not
@@ -973,36 +961,18 @@ var PSPL_binary_microlensing_event = (function() {
 
       // Iterate over remaining days and draw lines from each pixel coordinate
       // to the next
-      if (!fromEquation) // Index tracks place in data arrays if reading in data
-        var index = 0; //
+
+      var index = 0; // // Index tracks place in data arrays if reading in data
       while (tDay < tDayFinal) {
-        // If calculating from equation, increment day by set amount and
-        // calculate magnification
-        if (fromEquation === true) {
-          tDay += dt;
-          magnif = getMagnif(tDay);
-        }
-        // If reading in data, proceed to the next elements for the
-        //  day and magnification arrays
-        else {
-          index += 1;
-          tDay = times[index];
-          magnif = magnifs[index];
-        }
+        // proceed to the next elements for the day and magnification arrays
+        index += 1;
+        tDay = times[index];
+        magnif = magnifs[index];
 
         var tPixel = xDayToPixel(tDay);
         var magnifPixel = yMagnifToPixel(magnif);
         context.lineTo(tPixel, magnifPixel);
       }
-      // console.log(index);
-      // if (!fromEquation) {
-      //   console.log(times.length);
-      //   console.log(times[index]);
-      // }
-      // else {
-      //   console.log(tDay);
-      //   console.log(dayWidth);
-      // }
 
       if (dashedCurve === true) {
         context.strokeStyle = dashedCurveColor;
