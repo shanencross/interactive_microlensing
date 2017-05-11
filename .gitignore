@@ -1,0 +1,9 @@
+libraries/
+downloaded_website_pages/
+PSPL_microlensing_event_old.html
+PSPL_microlensing_event_lens_plane_(website).js
+*.zip
+*.png
+*.txt
+*.pyc
+*.py
