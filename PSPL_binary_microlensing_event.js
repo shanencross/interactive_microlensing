@@ -1,12 +1,8 @@
-console.log = function() {} // uncomment this to disable all console.log messages
-console.log("Executing PSPL_microlensing_event.js");
-
-//NOTE: const keyword not compatible with IE -- should replace it with var and document what values are constant
-//NOTE update: const uses replaced with var, with comments marking them "const"
+// console.log = function() {} // uncomment this to disable all console.log messages
+console.log("Executing PSPL_binary_microlensing_event.js");
 
 // "revealing pattern" module object for this script file
-
-var PSPL_microlensing_event = (function() {
+var PSPL_binary_microlensing_event = (function() {
   var canvas = document.getElementById("lcurveCanvas");
   var context = canvas.getContext("2d");
 
@@ -54,18 +50,24 @@ var PSPL_microlensing_event = (function() {
   var sourceLensMinSeparation = 0.01; // kpc; const
 
   // base quantities set by user
-  var Ml; // solMass
+  var Ml1; // solMass
+  var Ml2; // solMass
   var Ds; // kpc: Ds =  Dl / (1 - 1/mu)
   var thetaY; // milliarcseconds (mas)
   var Dl; // kpc: Dl = Ds * (1 - 1/mu)
   var t0; // days
   var mu; // mas/yr: mu = thetaE / tE; mu = Ds / (Ds - Dl) = 1/(1 - Dl/Ds)
+  var lensSep;
+  var incline;
 
   // derived quantities
   var u0;
   var tE; // days
   var Drel; // kpc
   var thetaE; // radians (or should we use milliarcsecond?)
+
+  // lightcurve information
+  var lightcurveData = null;
 
   // tracks whether u0 is to be held fixed while other quantities vary
   var fixU0;
@@ -82,9 +84,11 @@ var PSPL_microlensing_event = (function() {
   var xAxisFinalDay;
   var yAxisFinalMagnif;
 
-  var dayWidthDefault = 32; // const
+  // var dayWidthDefault = 32; // const
+  var dayWidthDefault = 200; // debug value; temp
   var magnifHeightDefault = 10; // const
-  var xAxisInitialDayDefault = -16; // const
+  // var xAxisInitialDayDefault = -16; // const
+  var xAxisInitialDayDefault = -100; // debug value; temp
   var yAxisInitialMagnifDefault = 0.5; // const
 
   // gridlines
@@ -95,7 +99,8 @@ var PSPL_microlensing_event = (function() {
   var xGridStep;
   var yGridStep;
 
-  var xGridStepDefault = 2; // const
+  // var xGridStepDefault = 2; // const
+  var xGridStepDefault = 20; // debug value; temp
   var yGridStepDefault = 1; // const
 
   // Step increments used by debug buttons to alter range/scale
@@ -148,8 +153,11 @@ var PSPL_microlensing_event = (function() {
   var u0slider = document.getElementById("u0slider");
   var u0readout = document.getElementById("u0readout");
 
-  var MlSlider = document.getElementById("MlSlider");
-  var MlReadout = document.getElementById("MlReadout");
+  var Ml1slider = document.getElementById("Ml1slider");
+  var Ml1readout = document.getElementById("Ml1readout");
+
+  var Ml2slider = document.getElementById("Ml2slider");
+  var Ml2readout = document.getElementById("Ml2readout");
 
   var DsSlider = document.getElementById("DsSlider");
   var DsReadout = document.getElementById("DsReadout");
@@ -165,6 +173,12 @@ var PSPL_microlensing_event = (function() {
 
   var muSlider = document.getElementById("muSlider");
   var muReadout = document.getElementById("muReadout");
+
+  var inclineSlider = document.getElementById("inclineSlider");
+  var inclineReadout = document.getElementById("inclineReadout");
+
+  var lensSepSlider = document.getElementById("lensSepSlider");
+  var lensSepReadout = document.getElementById("lensSepReadout");
 
   var resetParamsButton = document.getElementById("resetParams");
   var fixU0checkbox = document.getElementById("fixU0checkbox");
@@ -182,18 +196,17 @@ var PSPL_microlensing_event = (function() {
 
   var resetGraphButton = document.getElementById("resetGraph");
 
-  var finiteSourceCheckbox = document.getElementById("finiteSourceCheckbox");
-
-  // flag for whether graph is generated from calculating
-  // magnifications for a range of times from an equation,
-  // or from an input of time/magnification arrays
-  var fromEquationDefault = false; // const
   var centerLayout = false; // const
-  var finiteSourceFlag = finiteSourceCheckbox.checked;
+  var finiteSourceFlag = false; // toggle finite source effects
+  var binaryFlag = true; // switch between binary and single lens modes
 
+  // controls whether plot updates when slider is moved
+  // or when slider is released
+  var updateOnSliderMovementFlag = false;
+  var updateOnSliderReleaseFlag = true;
 
   // window.onload = init;
-  // console.log(PSPL_microlensing_event_lens_plane);
+  // console.log(PSPL_binary_microlensing_event_lens_plane);
   init();
 
   function init() {
@@ -203,39 +216,67 @@ var PSPL_microlensing_event = (function() {
     // initialize plot scale/range vars
     updatePlotScaleAndRange(dayWidthDefault, magnifHeightDefault,
                             xAxisInitialDayDefault, yAxisInitialMagnifDefault);
+    updateCurveData();
 
     // display lightcurve after all modules have been loaded
-    window.onload = plotLightcurve;
+    window.onload = function() { plotLightcurve(); }
+    // window.onload = redrawCanvases;
     console.log(`tE: ${tE}`);
     console.log(`thetaE: ${thetaE}`);
     console.log(`Drel: ${Drel}`);
     console.log(`mu: ${mu}`);
+    console.log(`lensSep: ${lensSep}`);
   }
 
-  function initListeners() {
-    tEslider.addEventListener("input", function() { updateParam("tE"); }, false);
-    tEslider.addEventListener("change", function() { updateParam("tE"); }, false);
+  function initListeners(updateOnSliderMovement=updateOnSliderMovementFlag,
+                         updateOnSliderRelease=updateOnSliderReleaseFlag) {
 
-    u0slider.addEventListener("input", function() { updateParam("u0"); }, false);
-    u0slider.addEventListener("change", function() { updateParam("u0"); }, false);
+    // update plot when slider is moved
+    if (updateOnSliderMovement == true) {
+      tEslider.addEventListener("input", function() { updateParam("tE"); }, false);
+      u0slider.addEventListener("input", function() { updateParam("u0"); }, false);
+      Ml1slider.addEventListener("input", function() { updateParam("Ml1"); }, false);
+      Ml2slider.addEventListener("input", function() { updateParam("Ml2"); }, false);
+      DsSlider.addEventListener("input", function() { updateParam("Ds"); }, false);
+      thetaYslider.addEventListener("input", function() { updateParam("thetaY"); }, false);
+      DlSlider.addEventListener("input", function() { updateParam("Dl"); }, false);
+      t0slider.addEventListener("input", function() { updateParam("t0"); }, false);
+      muSlider.addEventListener("input", function() { updateParam("mu"); }, false);
+      inclineSlider.addEventListener("input", function() { updateParam("incline"); }, false);
+      lensSepSlider.addEventListener("input", function() { updateParam("lensSep"); }, false);
+    }
 
-    MlSlider.addEventListener("input", function() { updateParam("Ml"); }, false);
-    MlSlider.addEventListener("change", function() { updateParam("Ml"); }, false);
+    // update plot when slider is released
+    if (updateOnSliderRelease === true) {
+      tEslider.addEventListener("change", function() { updateParam("tE"); }, false);
+      u0slider.addEventListener("change", function() { updateParam("u0"); }, false);
+      Ml1slider.addEventListener("change", function() { updateParam("Ml1"); }, false);
+      Ml2slider.addEventListener("change", function() { updateParam("Ml2"); }, false);
+      DsSlider.addEventListener("change", function() { updateParam("Ds"); }, false);
+      thetaYslider.addEventListener("change", function() { updateParam("thetaY"); }, false);
+      DlSlider.addEventListener("change", function() { updateParam("Dl"); }, false);
+      t0slider.addEventListener("change", function() { updateParam("t0"); }, false);
+      muSlider.addEventListener("change", function() { updateParam("mu"); }, false);
+      inclineSlider.addEventListener("change", function() { updateParam("incline"); }, false);
+      lensSepSlider.addEventListener("change", function() { updateParam("lensSep"); }, false);
 
-    DsSlider.addEventListener("input", function() { updateParam("Ds"); }, false);
-    DsSlider.addEventListener("change", function() { updateParam("Ds"); }, false);
-
-    thetaYslider.addEventListener("input", function() { updateParam("thetaY"); }, false);
-    thetaYslider.addEventListener("change", function() { updateParam("thetaY"); }, false);
-
-    DlSlider.addEventListener("input", function() { updateParam("Dl"); }, false);
-    DlSlider.addEventListener("change", function() { updateParam("Dl"); }, false);
-
-    t0slider.addEventListener("input", function() { updateParam("t0"); }, false);
-    t0slider.addEventListener("change", function() { updateParam("t0"); }, false);
-
-    muSlider.addEventListener("input", function() { updateParam("mu"); }, false);
-    muSlider.addEventListener("change", function() { updateParam("mu"); }, false);
+      // if plot updates only upon slider release,
+      // update slider readout alone while slider is being moved,
+      // without recalculating/updating other sliders (until after current slider is released)
+      if (updateOnSliderMovement === false) {
+        tEslider.addEventListener("input", function() { updateSliderReadout(tEslider, tEreadout, "tE"); }, false);
+        u0slider.addEventListener("input", function() { updateSliderReadout(u0slider, u0readout, "u0"); }, false);
+        Ml1slider.addEventListener("input", function() { updateSliderReadout(Ml1slider, Ml1readout, "Ml1"); }, false);
+        Ml2slider.addEventListener("input", function() { updateSliderReadout(Ml2slider, Ml2readout, "Ml2"); }, false);
+        DsSlider.addEventListener("input", function() { updateSliderReadout(DsSlider, DsReadout, "Ds"); }, false);
+        thetaYslider.addEventListener("input", function() { updateSliderReadout(thetaYslider, thetaYreadout, "thetaY"); }, false);
+        DlSlider.addEventListener("input", function() { updateSliderReadout(DlSlider, DlReadout, "Dl"); }, false);
+        t0slider.addEventListener("input", function() { updateSliderReadout(t0slider, t0readout, "t0"); }, false);
+        muSlider.addEventListener("input", function() { updateSliderReadout(muSlider, muReadout, "mu"); }, false);
+        inclineSlider.addEventListener("input", function() { updateSliderReadout(inclineSlider, inclineReadout, "incline"); }, false);
+        lensSepSlider.addEventListener("input", function() { updateSliderReadout(lensSepSlider, lensSepReadout, "lensSep"); }, false);
+      }
+    }
 
     // reset buttons
     resetParamsButton.addEventListener("click", resetParams, false);
@@ -243,7 +284,6 @@ var PSPL_microlensing_event = (function() {
     // checkbox to hold u0 value fixed while varying other quantities besides thetaY
     fixU0checkbox.addEventListener("change", function() { fixU0 = fixU0checkbox.checked;
                                                           console.log(`fixU0: ${fixU0}`); }, false);
-
     // debug plot range/scale and reset buttons
     xLeftButton.addEventListener("click", function() { updateGraph("xLeft"); }, false);
     xRightButton.addEventListener("click", function() {updateGraph("xRight"); }, false);
@@ -256,7 +296,7 @@ var PSPL_microlensing_event = (function() {
     yZoomOutButton.addEventListener("click", function() { updateGraph("yZoomOut"); }, false);
 
     resetGraphButton.addEventListener("click", function() { updateGraph("reset"); }, false)
-    finiteSourceCheckbox.addEventListener("change", toggleFiniteSource, false);
+    // finiteSourceCheckbox.addEventListener("change", toggleFiniteSource, false);
     updateSliders(); // in case HTML slider values differ from actual starting values
   }
 
@@ -265,7 +305,7 @@ var PSPL_microlensing_event = (function() {
 
     // set base quantity defaults
     // tE = 10; // tE = thetaE / mu // old, don't use
-    // Ml = 0.1; // solMass
+    // Ml1 = 0.1; // solMass
     // Ds = 8.0; // kpc: Ds =  Dl / (1 - 1/mu)
     // thetaY = 0.0121; // milliarcseconds (mas)
     // Dl = 7.0; // kpc: Dl = Ds * (1 - 1/mu)
@@ -273,13 +313,20 @@ var PSPL_microlensing_event = (function() {
     // mu = 7; // mas/yr  (milliarcseconds/year): mu = thetaE / tE
 
     fixU0 = fixU0checkbox.checked
-    Ml = 0.1;
+    // Ml1 = 0.1;
+    // Ml2 = 0.1;
+    Ml1 = 1*0.62
+    Ml2 = 1*1 - Ml1;
     Ds = 8.0;
-    thetaY = -0.05463809952990817329;
+    // thetaY = -0.05463809952990817329;
+    thetaY =  -0.03 * 0.8346900557366428;
     Dl = 4.75;
     t0 = 0;
     mu = 7;
-
+    // mu = 20; // DEBUG value, TEMPORARY
+    // lensSep = 1 * 0.8346900557366428; // mas (milliarcseconds)
+    lensSep = 2.150;
+    incline = Math.atan(0.12) * 180/Math.PI; // degrees
 
     // set derived quantities
     updateDerivedQuantities(initializing=true);
@@ -313,10 +360,14 @@ var PSPL_microlensing_event = (function() {
   }
 
   function updateThetaE() {
+    thetaE = calculateThetaE();
+  }
+
+  function calculateThetaE(get_mas=false, useBinaryMass=binaryFlag, lensToUse=1) {
     /*
     G: m3 kg−1 s−2 (astropy value)
     c: 299792458.0; // m s-1 (astropy value)
-    Ml: solMass
+    Ml1: solMass
     Drel: kpc
 
     solMass -> kg: 1.9891e+30 kg/solMass
@@ -329,12 +380,35 @@ var PSPL_microlensing_event = (function() {
     var solMassToKg = 1.9891e30; // kg/solMass; const
     var kpcToM = 3.0856775814671917e19; // m/kpc; const
 
-    var eqMl = Ml * solMassToKg; // Ml converted for equation to kg
+    var eqMl1 = Ml1 * solMassToKg; // Ml1 converted for equation to kg
+    var eqMl2 = Ml2 * solMassToKg; // Ml2 converted for equation to kg
     var eqDrel = Drel * kpcToM; // Drel converted for equation to m
+
+    if (useBinaryMass === true) {
+      // var eqReducedMl = (eqMl1 * eqMl2)/(eqMl1 + eqMl2); // reduced mass from
+      //                                                    // Ml1 and Ml2 in kg
+      var eqTotalMl = eqMl1 + eqMl2; // total mass from Ml1 and Ml2 in kg
+
+      eqMl = eqTotalMl;
+    }
+
+    else { // single lens, not binary
+      if (lensToUse === 2) {
+        eqMl = eqMl2;
+      }
+      else { // lensToUse === 1 or otherwise
+        eqMl = eqMl1;
+      }
+    }
 
     // G is m^3 /(kg * s^2)
     // c is m/s
-    thetaE = Math.sqrt(4 * G * eqMl/(c*c*eqDrel)); // radians (i.e. unitless)
+    var thetaEresult = Math.sqrt(4 * G * eqMl/(c*c*eqDrel)); // radians (i.e. unitless)
+
+    if (get_mas === true)
+      thetaEresult = thetaEresult / masToRad;
+
+    return thetaEresult;
   }
 
   function updateTE(debug=false) {
@@ -347,21 +421,46 @@ var PSPL_microlensing_event = (function() {
       tE *= 1e10; // something is wrong; have to multiply by 1e9+ to get reasonable plot
   }
 
+  function updateSliderReadout(slider, readout, sliderName="") {
+    // Update individual slider readout to match slider value
+
+    var fixedDecimalPlace = 3; // Default value for tE, u0, thetaY, lensSep
+
+    if (sliderName === "Ml1" || sliderName === "Ml2")
+      fixedDecimalPlace = 6;
+
+    else if (sliderName === "Ds" || sliderName === "Dl" ||
+             sliderName === "mu"|| sliderName === "incline")
+      fixedDecimalPlace = 2;
+
+    else if (sliderName === "t0") {
+      fixedDecimalPlace = 1;
+    }
+    else if (sliderName === "sourceRadius") {
+      fixedDecimalePlace = 4;
+    }
+
+    readout.innerHTML = Number(slider.value).toFixed(fixedDecimalPlace);
+  }
+
   function updateSliders() {
     // maximum parameter values that can be displayed;
     // need to match up with max value on HTML sliders
     var tEmax = 365; // days
     var u0max = 2; // unitless (einstein radii)
-    var MlMax = 15; // solMass
+    var Ml1Max = 15; // solMass
+    var Ml2Max = 15; // solMass
     var DsMax = 8.5 // kpc
     var thetaYmax = 2; // mas
     var DlMax = 8.5 // kpc
     var t0max = 75 // days
     var muMax = 10 // milliarcseconds/year
+    // var lensSepMax = 0.7; // milliarcseconds
 
     // update slider values and readouts to reflect current variable values
     tEslider.value = tE;
-    tEreadout.innerHTML = Number(tEslider.value).toFixed(3);
+    // tEreadout.innerHTML = Number(tEslider.value).toFixed(3);
+    updateSliderReadout(tEslider, tEreadout, "tE");
     // add "+" once after exceeding maximum slider value;
     // NOTE: Very hacky. Improve this
     if (tE > tEmax) {
@@ -369,81 +468,111 @@ var PSPL_microlensing_event = (function() {
     }
 
     u0slider.value = u0;
-    u0readout.innerHTML = Number(u0slider.value).toFixed(3);
+    // u0readout.innerHTML = Number(u0slider.value).toFixed(3);
+    updateSliderReadout(u0slider, u0readout, "u0");
     if (u0 > u0max) {
       u0readout.innerHTML += "+";
     }
 
-    MlSlider.value = Ml;
-    MlReadout.innerHTML = Number(MlSlider.value).toFixed(6);
-    if (Ml > MlMax) {
-      MlReadout.innerHTML += "+";
+    Ml1slider.value = Ml1;
+    // Ml1readout.innerHTML = Number(Ml1slider.value).toFixed(6);
+    updateSliderReadout(Ml1slider, Ml1readout, "Ml1");
+    if (Ml1 > Ml1Max) {
+      Ml1readout.innerHTML += "+";
+    }
+
+    Ml2slider.value = Ml2;
+    // Ml2readout.innerHTML = Number(Ml2slider.value).toFixed(6);
+    updateSliderReadout(Ml2slider, Ml2readout, "Ml2");
+    if (Ml2 > Ml2Max) {
+      Ml2readout.innerHTML += "+";
     }
 
     DsSlider.value = Ds;
-    DsReadout.innerHTML = Number(DsSlider.value).toFixed(2);
+    // DsReadout.innerHTML = Number(DsSlider.value).toFixed(2);
+    updateSliderReadout(DsSlider, DsReadout, "Ds");
     if (Ds > DsMax) {
       DsReadout.innerHTML += "+";
     }
 
     thetaYslider.value = thetaY;
-    thetaYreadout.innerHTML = Number(thetaYslider.value).toFixed(3);
+    // thetaYreadout.innerHTML = Number(thetaYslider.value).toFixed(3);
+    updateSliderReadout(thetaYslider, thetaYreadout, "thetaY");
     if (thetaY > thetaYmax) {
       thetaYreadout.innerHTML += "+";
     }
 
     DlSlider.value = Dl;
-    DlReadout.innerHTML = Number(DlSlider.value).toFixed(2);
+    // DlReadout.innerHTML = Number(DlSlider.value).toFixed(2);
+    updateSliderReadout(DlSlider, DlReadout, "Dl");
     if (Dl > DlMax) {
       DlReadout.innerHTML += "+";
     }
 
     t0slider.value = t0;
-    t0readout.innerHTML = Number(t0slider.value).toFixed(1);
+    // t0readout.innerHTML = Number(t0slider.value).toFixed(1);
+    updateSliderReadout(t0slider, t0readout, "t0");
     if (t0 > t0max) {
       t0Readout.innerHTML += "+";
     }
 
     muSlider.value = mu;
-    muReadout.innerHTML = Number(muSlider.value).toFixed(2);
+    // muReadout.innerHTML = Number(muSlider.value).toFixed(2);
+    updateSliderReadout(muSlider, muReadout, "mu");
     if (mu > muMax) {
       muReadout.innerHTML += "+";
     }
 
+    inclineSlider.value = incline;
+    // inclineReadout.innerHTML = Number(inclineSlider.value).toFixed(2);
+    updateSliderReadout(inclineSlider, inclineReadout, "incline");
+
+    lensSepSlider.value = lensSep;
+    // lensSepReadout.innerHTML = Number(lensSepSlider.value).toFixed(3);
+    updateSliderReadout(lensSepSlider, lensSepReadout, "lensSep");
+    // if (lensSep > lensSepMax) {
+      // lensSepReadout.innerHTML += "+";
+    // }
+
     // update thetaE readout (no slider)
-    var thetaE_mas = thetaE / masToRad;
-    console.log(`thetaE (mas): ${thetaE_mas}`);
-    thetaEreadout.innerHTML = Number(thetaE_mas).toFixed(4);
+
+    if (thetaEreadout !== null) {
+      var thetaE_mas = thetaE / masToRad;
+      console.log(`thetaE (mas): ${thetaE_mas}`);
+      thetaEreadout.innerHTML = Number(thetaE_mas).toFixed(4);
+    }
   }
 
   function resetParams() {
     // reset lense curve parameters to defaults and redraw curve
     initParams();
     updateSliders();
-    if (typeof PSPL_microlensing_event_lens_plane !== "undefined")
-      PSPL_microlensing_event_lens_plane.initSourceRadius();
-    if (finiteSourceFlag == true)
-      updateCurveData();
+    if (typeof PSPL_binary_microlensing_event_lens_plane !== "undefined")
+      PSPL_binary_microlensing_event_lens_plane.initSourceRadius();
+    updateCurveData();
     redrawCanvases();
     // if (finiteSourceFlag === true)
     //   updateCurveData();
-    // if (typeof PSPL_microlensing_event_lens_plane !== "undefined") {
-    //   PSPL_microlensing_event_lens_plane.initSourceRadius(noRedraw=false);
-    //   PSPL_microlensing_event_lens_plane.redraw();
+    // if (typeof PSPL_binary_microlensing_event_lens_plane !== "undefined") {
+    //   PSPL_binary_microlensing_event_lens_plane.initSourceRadius(noRedraw=false);
+    //   PSPL_binary_microlensing_event_lens_plane.redraw();
     // }
     // plotLightcurve();
   }
 
   function updateParam(param) {
-    if (typeof PSPL_microlensing_event_animation !== "undefined") {
-      if (PSPL_microlensing_event_animation.running === true) {
+    if (typeof PSPL_binary_microlensing_event_animation !== "undefined") {
+      if (PSPL_binary_microlensing_event_animation.running === true) {
         console.log("Can't modify paramters while animation is playing right now.")
       }
     }
 
-    if (param === "Ml") {
-      Ml = Number(MlSlider.value);
-      // tE depends on thetaE which depends on Ml
+    if (param === "Ml1") {
+      Ml1 = Number(Ml1slider.value);
+      // tE depends on thetaE which depends on Ml1
+    }
+    else if (param === "Ml2") {
+      Ml2 = Number(Ml2slider.value);
     }
     else if (param === "Ds") {
       if (Number(DsSlider.value) > Dl) { // source must be farther than lens
@@ -491,14 +620,22 @@ var PSPL_microlensing_event = (function() {
        */
 
        // NOTE: Pretty hacky way of doing this
-       // modify Ml accordingly of tE is changed, where
-       // Ml is propotional to tE^2
-       Ml *= (tE/oldTE)*(tE/oldTE);
+       // modify Ml1 accordingly of tE is changed, where
+       // Ml1 is propotional to tE^2
+       Ml1 *= (tE/oldTE)*(tE/oldTE);
     }
     else if (param === "u0") {
       u0 = Number(u0slider.value);
       var thetaY_rad = u0 * thetaE; // thetaY in radians
       thetaY = thetaY_rad / masToRad; // converted to milliarcseconds (mas)
+    }
+
+    else if (param === "incline") {
+      incline = Number(inclineSlider.value);
+    }
+
+    else if (param === "lensSep") {
+      lensSep = Number(lensSepSlider.value);
     }
 
     // updates Drel, then thetaE, then tE, each of which depends on the last,
@@ -512,20 +649,21 @@ var PSPL_microlensing_event = (function() {
   }
 
   function redrawCanvases() {
-    if (typeof PSPL_microlensing_event_lens_plane !== "undefined")
-      PSPL_microlensing_event_lens_plane.redraw();
+    if (typeof PSPL_binary_microlensing_event_lens_plane !== "undefined") {
+      PSPL_binary_microlensing_event_lens_plane.redraw();
+    }
 
-    if (typeof PSPL_microlensing_event_animation != "undefined") {
-      plotLightcurve(PSPL_microlensing_event_animation.time);
+    if (typeof PSPL_binary_microlensing_event_animation != "undefined") {
+      plotLightcurve(PSPL_binary_microlensing_event_animation.time);
 
       //redraw current animation frame
-      PSPL_microlensing_event_animation.animateFrame();
+      PSPL_binary_microlensing_event_animation.animateFrame();
       // PSPL_microlensing_event_animation.updatePlayback("stepForward", updateFrame=true);
       // PSPL_microlensing_event_animation.updatePlayback("redraw");
     }
-    else
+    else {
       plotLightcurve();
-      // plotLightcurve(xAxisInitialDay);
+    }
   }
 
   function updateGraph(shift) {
@@ -768,51 +906,42 @@ var PSPL_microlensing_event = (function() {
     context.strokeRect(graphLeftBorder, graphTopBorder, graphWidth, graphHeight);
   }
 
-  function plotLightcurve(tDayFinal=xAxisFinalDay, inputData, fromEquation=fromEquationDefault) {
+  function plotLightcurve(tDayFinal=xAxisFinalDay, inputData) {
     // Draw plot background, as well as both complete (dashed) lightcurve and
     // partial (solid) lightcurve up to a given time
     // draw plot with gridlines, etc. (no axes or axis labels yet).
     initPlot();
     // draw complete lightcurve across entire time axis as dashed line
-    plotLightcurveAlone(xAxisFinalDay, inputData, fromEquation, dashedCurve=true);
+    plotLightcurveAlone(xAxisFinalDay, inputData, dashedCurve=true);
     // draw lightcurve up to the time argument as solid line
-    plotLightcurveAlone(tDayFinal, inputData, fromEquation, dashedCurve=false);
+    plotLightcurveAlone(tDayFinal, inputData, dashedCurve=false);
     // draw axes and their labels;
     // goes last because axes are IN FRONT of lightcurve
     drawAxes();
     drawAxisLabels();
   }
 
-  var lightcurveData = undefined;
-
-  function plotLightcurveAlone(tDayFinal=xAxisFinalDay, inputData, fromEquation=fromEquationDefault, dashedCurve=false) {
+  function plotLightcurveAlone(tDayFinal=xAxisFinalDay, inputData, dashedCurve=false) {
     // draw a single lightcurve (dashed or solid) up to a given time
 
-    // console.log("fromEquation: " + fromEquation);
-    // console.log("inputData: " + inputData);
     var tDay, magnif;
-    if (fromEquation) {
-      tDay = xAxisInitialDay;
-      magnif = getMagnif(tDay);
+    if (inputData !== undefined) {
+      curveData = inputData;
     }
-    else {
-      if (inputData !== undefined) {
-        curveData = inputData;
+    else { // no input parameter given
+      if (lightcurveData !== null) { // module lightcurve variable already initialized
+        curveData = lightcurveData; // use module variable in function
       }
-      else { // no input parameter given
-        if (lightcurveData !== undefined) { // module lightcurve variable already initialized
-          curveData = lightcurveData; // use module variable in function
-        }
-        else { // module lightcurve variable not initialized yet
-          updateCurveData(); // initialize module variable
-          curveData = lightcurveData; // use newly initialized module variable in function
-        }
+      else { // module lightcurve variable not initialized yet
+        // window.alert("lightcurveData uninitialized; updating");
+        updateCurveData(); // initialize module variable
+        curveData = lightcurveData; // use newly initialized module variable in function
       }
-      var times = curveData.times;
-      var magnifs = curveData.magnifs;
-      tDay = times[0];
-      magnif = magnifs[0];
     }
+    var times = curveData.times;
+    var magnifs = curveData.magnifs;
+    tDay = times[0];
+    magnif = magnifs[0];
 
     context.save();
       // set up clipping region as graph region, so that curve does not
@@ -832,36 +961,18 @@ var PSPL_microlensing_event = (function() {
 
       // Iterate over remaining days and draw lines from each pixel coordinate
       // to the next
-      if (!fromEquation) // Index tracks place in data arrays if reading in data
-        var index = 0; //
+
+      var index = 0; // // Index tracks place in data arrays if reading in data
       while (tDay < tDayFinal) {
-        // If calculating from equation, increment day by set amount and
-        // calculate magnification
-        if (fromEquation === true) {
-          tDay += dt;
-          magnif = getMagnif(tDay);
-        }
-        // If reading in data, proceed to the next elements for the
-        //  day and magnification arrays
-        else {
-          index += 1;
-          tDay = times[index];
-          magnif = magnifs[index];
-        }
+        // proceed to the next elements for the day and magnification arrays
+        index += 1;
+        tDay = times[index];
+        magnif = magnifs[index];
 
         var tPixel = xDayToPixel(tDay);
         var magnifPixel = yMagnifToPixel(magnif);
         context.lineTo(tPixel, magnifPixel);
       }
-      // console.log(index);
-      // if (!fromEquation) {
-      //   console.log(times.length);
-      //   console.log(times[index]);
-      // }
-      // else {
-      //   console.log(tDay);
-      //   console.log(dayWidth);
-      // }
 
       if (dashedCurve === true) {
         context.strokeStyle = dashedCurveColor;
@@ -879,19 +990,148 @@ var PSPL_microlensing_event = (function() {
     context.restore();
   }
 
-  function updateCurveData() {
-    var times = [];
-    var magnifs = [];
+  function getThetaX(t) {
+    var yearToDay = 365.25; // day/year; const
+    var eqMu = mu / yearToDay; // convert mu to milliarcseconds/day
+    var thetaX = eqMu * (t - t0);
+    return thetaX;
+  }
 
-    for (var tDay = xAxisInitialDay; tDay <= xAxisFinalDay; tDay += dt) {
-      var magnif = getMagnif(tDay);
-      // if (tDay === 0)
-      //   console.log("magnif: " + magnif);
-      times.push(tDay);
-      magnifs.push(magnif);
+  function updateCurveData() {
+    if (binaryFlag === true) {
+      // send GM1, GM2, D, cof1, cof2, minXLM, maxXLM, and NPN
+      // to bin_len_faster.plot_binary() function
+      var debug = false; // use debug values for binary variables
+
+      var thetaE_mas = thetaE / masToRad;
+      var totalMass = Ml1 + Ml2;
+      var GM1 = Ml1/totalMass;
+      var GM2 = Ml2/totalMass;
+      var D = (lensSep/2)/thetaE_mas; // "D" is the half-separation in units of
+
+      var cof2 = thetaY/thetaE_mas;
+
+      // var cof1 = incline; // DEBUG: temp, not correct;
+                          // cof1 should be negative slope,
+                          // incline should be degrees, need conversion
+
+      var incline_radians = incline * Math.PI/180;
+      var cof1 = -Math.tan(incline_radians);
+      var minXLM = getThetaX(xAxisInitialDay) / thetaE_mas;
+      // window.alert(minXLM*thetaE_mas);
+      // var minXLM = -0.5;
+      var maxXLM = getThetaX(xAxisFinalDay) / thetaE_mas;
+
+      var NPN = 4000; // Number of points for lightcurve
+      var NR = 30000; // Number of points for critical and caustic curves
+
+      // Sampling density of critical and caustic curve points
+      // var DR = 3/NR;vv
+      var DR = 0.0003; // was 0.0001 by default, but this seems to work better
+
+      if (debug === true) {
+        // GM1 = 0.2;
+        // GM2 = 0.8;
+        // D = 0.5;
+        // cof1 = 0;
+        // cof2 = -0.5;
+        // var thetaE_mas_temp = 0.6539599913692768;
+        // minXLM = -1.1617229221914211;
+        // maxXLM = 1.1617229221914211;
+        //
+        // NPN = 4000;
+
+        // GM1 = 0.61383532827548774
+        // GM2 = 1 - GM1;
+        // D = lensSep/2;
+        // cof1 = 0;
+        // cof2 = thetaY;
+        // NPN = 4000;
+      }
+
+      console.log(`(binary) GM1: ${GM1}`);
+      console.log(`(binary) GM2: ${GM2}`);
+      console.log(`(binary) D: ${D}`);
+
+      console.log(`(binary) cof1: ${cof1}`);
+      console.log(`(binary) cof2: ${cof2}`);
+      console.log(`(binary) NPN: ${NPN}`);
+      console.log(`(binary) minXLM: ${minXLM}`);
+      console.log(`(binary) maxXLM: ${maxXLM}`);
+      console.log(`(binary) xAxisInitialDay: ${xAxisInitialDay}`);
+      console.log(`(binary) xAxisFinalDay: ${xAxisFinalDay}`);
+      console.log(`(binary) thetaE_mas: ${thetaE_mas}`);
+
+
+      var windowAlertParamDebugFlag = false;
+
+      if (windowAlertParamDebugFlag === true) {
+        window.alert(`\
+          GM1: ${GM1}
+          GM2: ${GM2}
+          D: ${D}
+          cof1: ${cof1}
+          cof2: ${cof2}`);
+      }
+
+      var binaryCaclulationResults = bin_len_faster.plot_binary(GM1, GM2, D, cof1, cof2,
+                                                                minXLM, maxXLM, NPN, NR, DR);
+
+      var times = numeric.linspace(xAxisInitialDay, xAxisFinalDay, NPN);
+      var magnifs = binaryCaclulationResults.magnifs;
+      var normalizedImagePositions = binaryCaclulationResults.normalizedImagePositions;
+      var causticAndCritNormalized = binaryCaclulationResults.causticAndCrit; // units of thetaE
+
+      // window.alert(times.length + " " + magnifs.length)
+      console.log(`(binary) times.length: ${times.length}`);
+      console.log(`(binary) magnifs.length: ${magnifs.length}`);
+      // console.log(`(binary) times: ${times}`);
+      // console.log(`(binary) magnifs: ${magnifs}`);
+      console.log(`(binary) crit.x1.length: ${causticAndCritNormalized.crit.x1.length}`);
+      console.log(`(binary) caustic.x1.length: ${causticAndCritNormalized.caustic.x1.length}`);
     }
-    var curveData = {times:times, magnifs:magnifs};
+
+    else  {
+      var times = [];
+      var magnifs = [];
+
+      for (var tDay = xAxisInitialDay; tDay <= xAxisFinalDay; tDay += dt) {
+        var magnif = getMagnif(tDay);
+        // if (tDay === 0)
+          // console.log("magnif: " + magnif);
+        times.push(tDay);
+        magnifs.push(magnif);
+      }
+    }
+    var curveData = {
+      times:times,
+      magnifs:magnifs,
+      // normalized (over thetaE) positions of the (five or three) lensed images
+      imagesNormalizedPos: normalizedImagePositions,
+      causticNormalized: causticAndCritNormalized.caustic,
+      critNormalized: causticAndCritNormalized.crit};
+
+    var autoScaleMagnifHeight = false;
+
+    if (autoScaleMagnifHeight === true) {
+      var maxMagnif = math.max(curveData.magnifs);
+      updatePlotScaleAndRange(undefined, maxMagnif+1, undefined, 0.5);
+      // updateGridRange(xGridStepDefault, (maxMagnif+1)/10);
+    }
     lightcurveData = curveData;
+
+    var prerenderCurves = true;
+
+    if (prerenderCurves === true &&
+        typeof PSPL_binary_microlensing_event_lens_plane !== "undefined") {
+      PSPL_binary_microlensing_event_lens_plane.renderCurves();
+    }
+
+    var updateLensedImages = true;
+    if (updateLensedImages === true &&
+        typeof PSPL_binary_microlensing_event_lens_plane !== "undefined") {
+      PSPL_binary_microlensing_event_lens_plane.convertLensedImagesPos();
+    }
   }
 
   function toggleFiniteSource() {
@@ -936,7 +1176,7 @@ var PSPL_microlensing_event = (function() {
   // accessible via module object by code executed after this script
   return {
     // getters for variables we want to share
-    get Ml() { return Ml; }, // base modeling parameters
+    get Ml1() { return Ml1; }, // base modeling parameters
     get Ds() { return Ds; }, // kpc
     get thetaY() { return thetaY; }, // milliarcseconds (mas)
     get Dl() { return Dl; }, // kpc
@@ -948,8 +1188,14 @@ var PSPL_microlensing_event = (function() {
     get thetaE_mas() { return thetaE / masToRad; }, // milliarcseconds (mas)
     get tE() { return tE; }, // days
     get u0() { return u0; }, // unitless (units of thetaE)
+    get lensSep() { return lensSep; }, // milliarcseconds (mas)
+    get incline() { return incline; }, // degrees
 
     get finiteSourceFlag() { return finiteSourceFlag; }, // whether finite or point source is being used
+
+    // controls if plot updates when slider is moved and/or released
+    get updateOnSliderMovementFlag() { return updateOnSliderMovementFlag; },
+    get updateOnSliderReleaseFlag() { return updateOnSliderReleaseFlag; },
 
     // used for animation
     get dt() { return dt; }, // time step used for drawing curve (days)
@@ -963,11 +1209,43 @@ var PSPL_microlensing_event = (function() {
     // toggling finite source effects
     toggleFiniteSource: toggleFiniteSource,
 
+    // for calculating thetaE for individual lens masses, in addition to the
+    // thetaE of the summed lens masses
+    calculateThetaE: calculateThetaE,
+
+
+    // normalized (over thetaE) positions of the (five or three) lensed images
+    get imagesNormalizedPos() {
+      if (lightcurveData !== null && lightcurveData !== undefined)
+        return lightcurveData.imagesNormalizedPos;
+    },
+
+    // get caustic and critical curve data points,
+    // normalized in units of (binary) thetaE
+    get causticNormalized() {
+      if (lightcurveData !== null && lightcurveData !== undefined)
+        return lightcurveData.causticNormalized;
+    },
+
+    get critNormalized() {
+      if (lightcurveData !== null && lightcurveData !== undefined)
+        return lightcurveData.critNormalized;
+    },
+
+    get times() {
+      if (lightcurveData !== null && lightcurveData !== undefined)
+        return lightcurveData.times;
+    },
+
     // for debugging
     getU: getU,
     getTimeTerm: getTimeTerm,
     getMagnif: getMagnif,
     updateCurveData: updateCurveData,
+    getThetaX: getThetaX,
+
+    // for updating slider readout
+    updateSliderReadout: updateSliderReadout,
 
     // plotLightcurveSegment: plotLightcurveSegment,
     // initPlot: initPlot,
