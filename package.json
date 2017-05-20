@@ -2,7 +2,7 @@
   "name": "psbl-microlensing-simulator",
   "version": "1.0.0",
   "description": "PSBL (Point Source Binary Lens) Microlensing Event Simulator HTML5 web app",
-  "main": "PSPL_binary_microlensing_event.js",
+  "main": "src/main.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/shanencross/interactive_microlensing.git"
@@ -16,6 +16,7 @@
   "homepage": "https://github.com/shanencross/interactive_microlensing#readme",
   "dependencies": {
     "lodash": "4.17.4",
+    "mathjs": "3.13.1",
     "numeric": "1.2.6",
     "poly-roots": "1.0.8"
   },
