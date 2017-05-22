@@ -658,21 +658,21 @@ function updateParam(param) {
 }
 
 function redrawCanvases() {
-  if (typeof PSPL_binary_microlensing_event_lens_plane !== "undefined") {
-    PSPL_binary_microlensing_event_lens_plane.redraw();
-  }
+  // if (typeof PSPL_binary_microlensing_event_lens_plane !== "undefined") {
+  var lensPlaneModule = require("./PSPL_binary_microlensing_event_lens_plane.js")
+  lensPlaneModule.redraw();
+  // }
 
-  if (typeof PSPL_binary_microlensing_event_animation != "undefined") {
-    plotLightcurve(PSPL_binary_microlensing_event_animation.time);
+  var animationModule = require("./PSPL_binary_microlensing_event_animation.js");
+  // if (typeof PSPL_binary_microlensing_event_animation != "undefined") {
+  plotLightcurve(animationModule.time);
 
-    //redraw current animation frame
-    PSPL_binary_microlensing_event_animation.animateFrame();
-    // PSPL_microlensing_event_animation.updatePlayback("stepForward", updateFrame=true);
-    // PSPL_microlensing_event_animation.updatePlayback("redraw");
-  }
-  else {
-    plotLightcurve();
-  }
+  //redraw current animation frame
+  animationModule.animateFrame();
+  // }
+  // else {
+  //   plotLightcurve();
+  // }
 }
 
 function updateGraph(shift) {
@@ -1131,15 +1131,18 @@ function updateCurveData() {
 
   var prerenderCurves = true;
 
-  if (prerenderCurves === true &&
-      typeof PSPL_binary_microlensing_event_lens_plane !== "undefined") {
-    PSPL_binary_microlensing_event_lens_plane.renderCurves();
+  var lensPlaneModule = require("./PSPL_binary_microlensing_event_lens_plane.js");
+  // if (prerenderCurves === true &&
+      // typeof PSPL_binary_microlensing_event_lens_plane !== "undefined") {
+  if (prerenderCurves === true) {
+    lensPlaneModule.renderCurves();
   }
 
   var updateLensedImages = true;
-  if (updateLensedImages === true &&
-      typeof PSPL_binary_microlensing_event_lens_plane !== "undefined") {
-    PSPL_binary_microlensing_event_lens_plane.convertLensedImagesPos();
+  // if (updateLensedImages === true &&
+  //     typeof PSPL_binary_microlensing_event_lens_plane !== "undefined") {
+  if (updateLensedImages === true) {
+    lensPlaneModule.convertLensedImagesPos();
   }
 }
 
@@ -1224,7 +1227,6 @@ module.exports = {
   // for calculating thetaE for individual lens masses, in addition to the
   // thetaE of the summed lens masses
   calculateThetaE: calculateThetaE,
-
 
   // normalized (over thetaE) positions of the (five or three) lensed images
   get imagesNormalizedPos() {

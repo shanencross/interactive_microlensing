@@ -5,7 +5,6 @@ var _ = require("lodash");
 
 // var eventModule = PSPL_binary_microlensing_event;
 var eventModule = require("./PSPL_binary_microlensing_event.js")
-console.log("eventModule (from lensPlaneModule): " + Object.keys(eventModule));
 
 // base variables (borders)
 var picLeftBorder = 50;

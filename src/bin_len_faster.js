@@ -1,8 +1,9 @@
 console.log("Executing bin_len_faster.js");
-var bin_ima = require("./bin_ima.js")
 var _ =require("lodash");
 var numeric = require("numeric");
 var math = require("mathjs");
+
+var bin_ima = require("./bin_ima.js")
 
 function plot_binary(GM1=0.5, GM2=0.5, D=0.5, cof1=0.1, cof2=-0.5,
                              minXLM=-3, maxXLM=3, NPN=40, NR=30000,
