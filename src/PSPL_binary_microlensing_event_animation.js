@@ -14,9 +14,8 @@ var running = false;
 
 var minTime;
 var maxTime;
-var animationStep = 0.1; // (days) time step per frame of animation
+var animationStep = -0.1; // (days) time step per frame of animation
 var playbackControlStep = 5; // (days) time step for "stepBack" and "stepForward" playback commands
-console.log(minTime + " " + animationStep + " " + maxTime);
 
 var timeReadout = document.getElementById("timeReadout");
 var stepBackButton = document.getElementById("stepBack");
@@ -30,7 +29,10 @@ var roundingErrorThreshold = 1e-12; // if values passed to almostEquals have a s
 
 function init() {
   updateMinAndMaxTimes();
-  time = minTime;
+  if (animationStep >= 0)
+    time = minTime;
+  else
+    time = maxTime;
   timeReadout.innerHTML = Number(time).toFixed(4);
   initListeners();
 }
@@ -145,9 +147,10 @@ function updatePlayback(command="play", updateFrame=true) {
   else if (command === "play") {
     console.log("play");
     console.log(time);
-    if (time >= maxTime || almostEquals(time, maxTime) === true) {
+    if (time >= maxTime || almostEquals(time, maxTime) === true ||
+        time <= minTime || almostEquals(time, minTime) === true) {
       updatePlayback("timeReset");
-      console.log("At or past max time, resetting");
+      console.log("At or past time limit, reset");
     }
     running = true;
     run();
@@ -165,7 +168,16 @@ function updatePlayback(command="play", updateFrame=true) {
   else if (command === "timeReset") {
     console.log("reset time");
     running = false;
-    updateTime(minTime);
+
+    // if playing forwards (positive step), reset to minimum time
+    var newTime;
+    if (animationStep >= 0)
+      newTime = minTime;
+    // if playing backwards (negative step), reset to maximum time
+    else // animationStep < 0
+      newTime = maxTime;
+
+    updateTime(newTime);
     if (updateFrame === true)
       animateFrame();
   }

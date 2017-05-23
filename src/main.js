@@ -1,4 +1,4 @@
-console.log = function() {} // uncomment this to disable all console.log messages
+// console.log = function() {} // uncomment this to disable all console.log messages
 
 var eventModule = require("./PSPL_binary_microlensing_event.js")
 var lensPlaneModule = require("./PSPL_binary_microlensing_event_lens_plane.js");
