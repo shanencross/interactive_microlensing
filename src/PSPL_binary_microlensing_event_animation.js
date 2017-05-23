@@ -59,8 +59,16 @@ function initListeners() {
 function run() {
   if (running === true) {
     timer = window.setTimeout(run, 1000/fps);
-    updateTime(time+animationStep);
+
+    updateMinAndMaxTimes();
+    updateTime(time + animationStep);
+
     animateFrame();
+
+    if (time >= maxTime || almostEquals(time, maxTime) === true ||
+        time <= minTime || almostEquals(time, minTime) === true) {
+      updatePlayback("Pause");
+    }
   }
 }
 
@@ -69,8 +77,30 @@ function almostEquals(a, b, epsilon=roundingErrorThreshold) {
 }
 
 function updateTime(newTime) {
+
+  var newTimeOverMax = false;
+  var newTimeUnderMin = false;
+
+  // don't let time exceed maximum limit
+  if (newTime >= maxTime || almostEquals(newTime, maxTime) === true) {
+    newTime = maxTime;
+    newTimeOverMax = true;
+  }
+
+  // don't let time fall under minimum limit
+  if (newTime <= minTime || almostEquals(newTime, minTime) === true) {
+    newTime = minTime;
+    newTimeUnderMin = true;
+  }
+
+  // Pause animation if time has reached minimum or maximum limit
+  if (newTimeOverMax === true && newTimeUnderMin === true)
+    updatePlayback("Pause");
+
+  // update time property
   time = newTime;
 
+  // update time readout on page
   // makes sure we display "0.00" instead of "-0.00" if 0 time has rounding error
   var newTimeReadout = Number(time).toFixed(4);
   if (almostEquals(time, 0) === true) {
@@ -81,16 +111,6 @@ function updateTime(newTime) {
 
 function animateFrame() {
   console.log("animating frame");
-
-  // min/max times may have changed if lightcurve plot time axis scale/range has changed
-  updateMinAndMaxTimes();
-  // pause if we've reached the max time
-  if ( (time >= maxTime) || (almostEquals(time, maxTime) === true) ) {
-    console.log(`time ${time} is greater than or equal to (within rounding error threshold of ${roundingErrorThreshold}) maxTime ${maxTime}`);
-    updatePlayback("pause");
-    return;
-  }
-  console.log(`time ${time} is less than (within rounding error threshold of ${roundingErrorThreshold}) maxTime ${maxTime}`);
 
   eventModule.plotLightcurve(time); // animate frame for lightcurve
   animateFrameSource(); // animate frame for source movement on lens plane figure
@@ -116,7 +136,7 @@ function updatePlayback(command="play", updateFrame=true) {
 
   if (command === "stepBack") {
     console.log("step back");
-    if (time > minTime) {
+    if (time > minTime && almostEquals(time, minTime) === false) {
       updateTime(time - playbackControlStep);
       if (updateFrame === true)
         animateFrame();
@@ -138,11 +158,9 @@ function updatePlayback(command="play", updateFrame=true) {
   }
   else if (command === "stepForward") {
     console.log("step forward");
-    if (time < maxTime && almostEquals(time, maxTime) === false) {
-      updateTime(time + playbackControlStep);
-      if (updateFrame === true)
-        animateFrame();
-    }
+    updateTime(time + playbackControlStep);
+    if (updateFrame === true)
+      animateFrame();
   }
   else if (command === "timeReset") {
     console.log("reset time");
