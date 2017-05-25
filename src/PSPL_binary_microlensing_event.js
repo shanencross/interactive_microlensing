@@ -7,7 +7,10 @@ console.log("Executing PSPL_binary_microlensing_event.js");
 // var animationModule = require("./PSPL_binary_microlensing_event_animation.js")
 
 // used in updateCurveData
+var moduleLoader = require("./moduleLoader.js");
 var bin_len_faster = require("./bin_len_faster.js");
+
+var initialized = false; // whether module init function has been executed
 
 var canvas = document.getElementById("lcurveCanvas");
 var context = canvas.getContext("2d");
@@ -225,12 +228,14 @@ function init() {
 
   // display lightcurve after all modules have been loaded
   window.onload = function() { plotLightcurve(); }
-  // window.onload = redrawCanvases;
+  // plotLightcurve();
   console.log(`tE: ${tE}`);
   console.log(`thetaE: ${thetaE}`);
   console.log(`Drel: ${Drel}`);
   console.log(`mu: ${mu}`);
   console.log(`lensSep: ${lensSep}`);
+
+  initialized = true;
 }
 
 function initListeners(updateOnSliderMovement=updateOnSliderMovementFlag,
@@ -552,9 +557,13 @@ function resetParams() {
   // reset lense curve parameters to defaults and redraw curve
   initParams();
   updateSliders();
-  // if (typeof PSPL_binary_microlensing_event_lens_plane !== "undefined")
-  var lensPlaneModule = require("./PSPL_binary_microlensing_event_lens_plane.js");
-  lensPlaneModule.initSourceRadius();
+
+  var lensPlaneModule = moduleLoader.tryToLoad("./PSPL_binary_microlensing_event_lens_plane.js");
+
+  if (lensPlaneModule !== null && lensPlaneModule.initialized === true) {
+    lensPlaneModule.initSourceRadius();
+  }
+
   updateCurveData();
   redrawCanvases();
   // if (finiteSourceFlag === true)
@@ -567,14 +576,14 @@ function resetParams() {
 }
 
 function updateParam(param) {
-  // if (typeof PSPL_binary_microlensing_event_animation !== "undefined") {
+  var animationModule = moduleLoader.tryToLoad("./PSPL_binary_microlensing_event_animation.js");
 
-  var animationModule = require("./PSPL_binary_microlensing_event_animation.js")
-
-  if (animationModule.running === true) {
-    console.log("Can't modify paramters while animation is playing right now.")
+  if (animationModule !== null && animationModule.initialized === true) {
+    if (animationModule.running === true) {
+      console.log("Can't modify paramters while animation is playing right now.")
+    }
+    window.alert(animationModule.running);
   }
-  // }
 
   if (param === "Ml1") {
     Ml1 = Number(Ml1slider.value);
@@ -658,21 +667,22 @@ function updateParam(param) {
 }
 
 function redrawCanvases() {
-  // if (typeof PSPL_binary_microlensing_event_lens_plane !== "undefined") {
-  var lensPlaneModule = require("./PSPL_binary_microlensing_event_lens_plane.js")
-  lensPlaneModule.redraw();
-  // }
+  var lensPlaneModule = moduleLoader.tryToLoad("./PSPL_binary_microlensing_event_lens_plane.js");
 
-  var animationModule = require("./PSPL_binary_microlensing_event_animation.js");
-  // if (typeof PSPL_binary_microlensing_event_animation != "undefined") {
-  plotLightcurve(animationModule.time);
+  if (lensPlaneModule !== null && lensPlaneModule.initialized === true) {
+    lensPlaneModule.redraw();
+  }
 
-  //redraw current animation frame
-  animationModule.animateFrame();
-  // }
-  // else {
-  //   plotLightcurve();
-  // }
+  var animationModule = moduleLoader.tryToLoad("./PSPL_binary_microlensing_event_animation.js");
+
+  if (animationModule !== null && animationModule.initialized === true) {
+    plotLightcurve(animationModule.time);
+    //redraw current animation frame
+    animationModule.animateFrame();
+  }
+  else {
+    plotLightcurve();
+  }
 }
 
 function updateGraph(shift) {
@@ -1129,19 +1139,22 @@ function updateCurveData() {
   }
   lightcurveData = curveData;
 
+  var lensPlaneModule = moduleLoader.tryToLoad("./PSPL_binary_microlensing_event_lens_plane.js");
+
   var prerenderCurves = true;
 
-  var lensPlaneModule = require("./PSPL_binary_microlensing_event_lens_plane.js");
   // if (prerenderCurves === true &&
       // typeof PSPL_binary_microlensing_event_lens_plane !== "undefined") {
-  if (prerenderCurves === true) {
+  if (prerenderCurves === true && lensPlaneModule !== null &&
+      lensPlaneModule.initialized === true) {
     lensPlaneModule.renderCurves();
   }
 
   var updateLensedImages = true;
   // if (updateLensedImages === true &&
   //     typeof PSPL_binary_microlensing_event_lens_plane !== "undefined") {
-  if (updateLensedImages === true) {
+  if (updateLensedImages === true && lensPlaneModule !== null &&
+      lensPlaneModule.initialized === true) {
     lensPlaneModule.convertLensedImagesPos();
   }
 }
@@ -1188,7 +1201,8 @@ function getMagnif(t) {
 // accessible via module object by code executed after this script
 module.exports = {
   //initialization
-  init: init,
+  init: init, // initialization function
+  get initialized() { return initialized; }, // whether initialization is done
 
   // getters for variables we want to share
   get Ml1() { return Ml1; }, // base modeling parameters

@@ -6,6 +6,8 @@ console.log("Executing PSPL_binary_microlensing_event_animation.js");
 var eventModule = require("./PSPL_binary_microlensing_event.js");
 var lensPlaneModule = require("./PSPL_binary_microlensing_event_lens_plane.js");
 
+var initialized = false; // whether module init function has been executed
+
 var fps = 60; // frames rendered per second (ideally; runs slow in non-Chrome browsers now)
 
 var time;
@@ -35,6 +37,7 @@ function init() {
     time = maxTime;
   timeReadout.innerHTML = Number(time).toFixed(4);
   initListeners();
+  initialized = true;
 }
 
 function updateMinAndMaxTimes(min, max) {
@@ -185,7 +188,8 @@ function updatePlayback(command="play", updateFrame=true) {
 
 module.exports = {
   //initialization
-  init: init,
+  init: init, // initialization function
+  get initialized() { return initialized; }, // whether initialization is done
 
   get running() { return running; },
   get time() { return time; },

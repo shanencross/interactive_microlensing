@@ -1,10 +1,11 @@
 console.log("Executing PSPL_binary_microlensing_event_lens_plane.js");
 
-
 var _ = require("lodash");
 
 // var eventModule = PSPL_binary_microlensing_event;
 var eventModule = require("./PSPL_binary_microlensing_event.js")
+
+var initialized = false; // whether module init function has been executed
 
 // base variables (borders)
 var picLeftBorder = 50;
@@ -255,7 +256,7 @@ var updateOnSliderReleaseFlag = eventModule.updateOnSliderReleaseFlag;
 
 // called from PSPL_microlensing_event.js (or whichever script holds the parameter
 // values) after initializations and slider updates),
-// because we NEED parameters intialized first to do drawing and scaling
+// because we NEED parameters initialized first to do drawing and scaling
 
 function init(animation=animationFlag) {
   initListeners();
@@ -265,6 +266,8 @@ function init(animation=animationFlag) {
   initSourceRadius();
   drawing.renderCurves();
   redraw();
+
+  initialized = true;
 }
 
 function initListeners(updateOnSliderMovement=updateOnSliderMovementFlag,
@@ -1641,7 +1644,8 @@ var drawing = (function(isBinary=binaryFlag, context=mainContext, canvas=mainCan
 
 module.exports = {
   //initialization
-  init: init,
+  init: init, // initialization function
+  get initialized() { return initialized; }, // whether initialization is done
 
   get sourcePos() { return sourcePos; }, // mas
   get xAxisInitialThetaX() { return xAxisInitialThetaX; }, // mas
