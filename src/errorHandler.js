@@ -8,3 +8,7 @@ function handle(ex) {
     throw(ex);
   }
 }
+
+module.exports = {
+  handle: handle,
+};

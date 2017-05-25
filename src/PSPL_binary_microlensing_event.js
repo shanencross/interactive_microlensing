@@ -6,8 +6,8 @@ console.log("Executing PSPL_binary_microlensing_event.js");
 // used in updateParam()
 // var animationModule = require("./PSPL_binary_microlensing_event_animation.js")
 
-// used in updateCurveData
 var errorHandler = require("./errorHandler.js");
+// used in updateCurveData
 var bin_len_faster = require("./bin_len_faster.js");
 
 var initialized = false; // whether module init function has been executed

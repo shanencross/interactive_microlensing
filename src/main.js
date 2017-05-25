@@ -11,5 +11,4 @@ function init() {
   animationModule.init();
 }
 
-// window.onload = init;
-init();
+window.onload = init;
