@@ -7,7 +7,7 @@ console.log("Executing PSPL_binary_microlensing_event.js");
 // var animationModule = require("./PSPL_binary_microlensing_event_animation.js")
 
 // used in updateCurveData
-var moduleLoader = require("./moduleLoader.js");
+var errorHandler = require("./errorHandler.js");
 var bin_len_faster = require("./bin_len_faster.js");
 
 var initialized = false; // whether module init function has been executed
@@ -227,8 +227,8 @@ function init() {
   updateCurveData();
 
   // display lightcurve after all modules have been loaded
-  window.onload = function() { plotLightcurve(); }
-  // plotLightcurve();
+  // window.onload = function() { plotLightcurve(); }
+  plotLightcurve();
   console.log(`tE: ${tE}`);
   console.log(`thetaE: ${thetaE}`);
   console.log(`Drel: ${Drel}`);
@@ -558,9 +558,15 @@ function resetParams() {
   initParams();
   updateSliders();
 
-  var lensPlaneModule = moduleLoader.tryToLoad("./PSPL_binary_microlensing_event_lens_plane.js");
+  try {
+    var lensPlaneModule = require("./PSPL_binary_microlensing_event_lens_plane.js");
+  }
+  catch(ex) {
+    errorHandler.handle(ex);
+  }
 
-  if (lensPlaneModule !== null && lensPlaneModule.initialized === true) {
+
+  if (lensPlaneModule !== undefined && lensPlaneModule.initialized === true) {
     lensPlaneModule.initSourceRadius();
   }
 
@@ -576,15 +582,6 @@ function resetParams() {
 }
 
 function updateParam(param) {
-  var animationModule = moduleLoader.tryToLoad("./PSPL_binary_microlensing_event_animation.js");
-
-  if (animationModule !== null && animationModule.initialized === true) {
-    if (animationModule.running === true) {
-      console.log("Can't modify paramters while animation is playing right now.")
-    }
-    window.alert(animationModule.running);
-  }
-
   if (param === "Ml1") {
     Ml1 = Number(Ml1slider.value);
     // tE depends on thetaE which depends on Ml1
@@ -667,15 +664,25 @@ function updateParam(param) {
 }
 
 function redrawCanvases() {
-  var lensPlaneModule = moduleLoader.tryToLoad("./PSPL_binary_microlensing_event_lens_plane.js");
+  try {
+    var lensPlaneModule = require("./PSPL_binary_microlensing_event_lens_plane.js");
+  }
+  catch(ex) {
+    errorHandler.handle(ex);
+  }
 
-  if (lensPlaneModule !== null && lensPlaneModule.initialized === true) {
+  if (lensPlaneModule !== undefined && lensPlaneModule.initialized === true) {
     lensPlaneModule.redraw();
   }
 
-  var animationModule = moduleLoader.tryToLoad("./PSPL_binary_microlensing_event_animation.js");
+  try {
+    var animationModule = require("./PSPL_binary_microlensing_event_animation.js");
+  }
+  catch(ex) {
+    errorHandler.handle(ex);
+  }
 
-  if (animationModule !== null && animationModule.initialized === true) {
+  if (animationModule !== undefined && animationModule.initialized === true) {
     plotLightcurve(animationModule.time);
     //redraw current animation frame
     animationModule.animateFrame();
@@ -1139,21 +1146,22 @@ function updateCurveData() {
   }
   lightcurveData = curveData;
 
-  var lensPlaneModule = moduleLoader.tryToLoad("./PSPL_binary_microlensing_event_lens_plane.js");
+  try {
+    var lensPlaneModule = require("./PSPL_binary_microlensing_event_lens_plane.js");
+  }
+  catch(ex) {
+    errorHandler.handle(ex);
+  }
 
   var prerenderCurves = true;
 
-  // if (prerenderCurves === true &&
-      // typeof PSPL_binary_microlensing_event_lens_plane !== "undefined") {
-  if (prerenderCurves === true && lensPlaneModule !== null &&
+  if (prerenderCurves === true && lensPlaneModule !== undefined &&
       lensPlaneModule.initialized === true) {
     lensPlaneModule.renderCurves();
   }
 
   var updateLensedImages = true;
-  // if (updateLensedImages === true &&
-  //     typeof PSPL_binary_microlensing_event_lens_plane !== "undefined") {
-  if (updateLensedImages === true && lensPlaneModule !== null &&
+  if (updateLensedImages === true && lensPlaneModule !== undefined &&
       lensPlaneModule.initialized === true) {
     lensPlaneModule.convertLensedImagesPos();
   }
