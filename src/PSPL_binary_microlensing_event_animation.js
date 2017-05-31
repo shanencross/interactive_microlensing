@@ -1,3 +1,9 @@
+/** Animation module.
+  * Handles animated playback of microlensing event.
+  *
+  * @module PSPL_binary_microlensing_event_animation
+  */
+
 console.log("Executing PSPL_binary_microlensing_event_animation.js");
 
 // var eventModule = PSPL_binary_microlensing_event;
@@ -29,6 +35,7 @@ var timeResetButton = document.getElementById("timeReset");
 var roundingErrorThreshold = 1e-12; // if values passed to almostEquals have a smaller difference
                                     // than this, they will pass as "almost" equal
 
+/** init */
 function init() {
   updateMinAndMaxTimes();
   if (animationStep >= 0)
@@ -40,6 +47,7 @@ function init() {
   initialized = true;
 }
 
+/** updateMinAndMaxTimes */
 function updateMinAndMaxTimes(min, max) {
 
 // default to min/max values of lightcurve plot time axis
@@ -53,6 +61,7 @@ function updateMinAndMaxTimes(min, max) {
   maxTime = max;
 }
 
+/** initListeners */
 function initListeners() {
   stepBackButton.addEventListener("click", function() { updatePlayback("stepBack"); }, false);
   playButton.addEventListener("click", function() { updatePlayback("play"); }, false);
@@ -61,6 +70,7 @@ function initListeners() {
   timeResetButton.addEventListener("click", function() { updatePlayback("timeReset"); }, false);
 }
 
+/** run */
 function run() {
   if (running === true) {
     timer = window.setTimeout(run, 1000/fps);
@@ -77,10 +87,12 @@ function run() {
   }
 }
 
+/** almostEquals */
 function almostEquals(a, b, epsilon=roundingErrorThreshold) {
   return (Math.abs(a - b) < epsilon);
 }
 
+/** updateTime */
 function updateTime(newTime) {
 
   var newTimeOverMax = false;
@@ -114,6 +126,7 @@ function updateTime(newTime) {
   timeReadout.innerHTML = newTimeReadout; // update time readout
 }
 
+/** animateFrame */
 function animateFrame() {
   console.log("animating frame");
 
@@ -126,12 +139,14 @@ function animateFrame() {
   console.log("debugging magnif: " + String(magnif));
 }
 
+/** animateFrameSource */
 function animateFrameSource() {
   // update source thetaX position for new time
   lensPlaneModule.sourcePos.x = lensPlaneModule.getThetaX(time);
   lensPlaneModule.redraw();
 }
 
+/** updatePlayback */
 function updatePlayback(command="play", updateFrame=true) {
   //setting updateFrame to false lets us modify the internal frame without
   // actually updating the display, in case we want to issue multiple playback

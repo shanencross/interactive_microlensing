@@ -1,7 +1,14 @@
+/** Binary image modules.
+  * Calculates binary image parameters for a particular source position.
+  *
+  * @module bin_ima
+  */
+
 console.log("Executing bin_ima.js");
 var math = require("mathjs");
 var cpoly = require("poly-roots");
 
+/** bin_ima */
 function bin_ima(GM1=0.5, GM2=0.5, D=0.5, XS=0, YS=0, timeDebug=false) {
   // console.log("Executing bin_ima function");
   if (timeDebug === true)
@@ -317,10 +324,12 @@ function bin_ima(GM1=0.5, GM2=0.5, D=0.5, XS=0, YS=0, timeDebug=false) {
   return results;
 }
 
+/** almostEquals */
 function almostEquals(a, b, epsilon=1e-12) {
   return (Math.abs(a - b) < epsilon);
 }
 
+/** compareComplexNumToZero */
 function compareComplexNumToZero(num) {
   // if num "almost equals" 0: returns 0
   // else if num > 0: returns 1

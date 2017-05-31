@@ -1,3 +1,9 @@
+/** Binary lens module.
+  * Calculates binary image parameters for a range of source positions.
+  *
+  * @module bin_len_faster
+  */
+
 console.log("Executing bin_len_faster.js");
 var _ =require("lodash");
 var numeric = require("numeric");
@@ -5,6 +11,7 @@ var math = require("mathjs");
 
 var bin_ima = require("./bin_ima.js")
 
+/** plot_binary */
 function plot_binary(GM1=0.5, GM2=0.5, D=0.5, cof1=0.1, cof2=-0.5,
                              minXLM=-3, maxXLM=3, NPN=40, NR=30000,
                              DR=0.0001, debug=false) {
@@ -144,7 +151,7 @@ function plot_binary(GM1=0.5, GM2=0.5, D=0.5, cof1=0.1, cof2=-0.5,
   }
 }
 
-
+/** findCausticAndCritCurves */
 function findCausticAndCritCurves(GM1=0.5, GM2=0.5, D=0.5, NR=30000,
                                   DR=0.0001) {
   var IP = -1;
@@ -452,6 +459,7 @@ function findCausticAndCritCurves(GM1=0.5, GM2=0.5, D=0.5, NR=30000,
 }
 
 // NOTE: Hacky -- fix
+/** almostEquals */
 function almostEquals(a, b, epsilon=1e-12) {
   return (Math.abs(a - b) < epsilon);
 }

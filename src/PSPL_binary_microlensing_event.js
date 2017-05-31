@@ -1,3 +1,14 @@
+/** Event module.
+  * Handles calculation and drawing lightcurve plot for the microlensing.
+  * event.
+  *
+  * Depicts magnification vs. time curve for microlensing event.
+  *
+  * Also listens for events from related UI buttons/sliders.
+  *
+  * @module PSPL_binary_microlensing_event_animation
+  */
+
 console.log("Executing PSPL_binary_microlensing_event.js");
 
 // used in resetParams()
@@ -214,9 +225,7 @@ var binaryFlag = true; // switch between binary and single lens modes
 var updateOnSliderMovementFlag = false;
 var updateOnSliderReleaseFlag = true;
 
-// window.onload = init;
-// console.log(PSPL_binary_microlensing_event_lens_plane);
-
+/** init */
 function init() {
   initParams();
   initListeners();
@@ -238,6 +247,7 @@ function init() {
   initialized = true;
 }
 
+/** initListeners */
 function initListeners(updateOnSliderMovement=updateOnSliderMovementFlag,
                        updateOnSliderRelease=updateOnSliderReleaseFlag) {
 
@@ -310,6 +320,7 @@ function initListeners(updateOnSliderMovement=updateOnSliderMovementFlag,
   updateSliders(); // in case HTML slider values differ from actual starting values
 }
 
+/** initParams */
 function initParams() {
   // set lense curve parameters to defaults
 
@@ -342,6 +353,7 @@ function initParams() {
   updateDerivedQuantities(initializing=true);
 }
 
+/** updateDerivedQuantities */
 function updateDerivedQuantities(initializing=false) {
   updateDrel();
   updateThetaE();
@@ -355,24 +367,29 @@ function updateDerivedQuantities(initializing=false) {
   // console.log(`tE after: ${tE}`);
 }
 
+/** updateU0 */
 function updateU0() {
   var thetaY_rad = thetaY * masToRad; // convert from mas to radians
   u0 = thetaY_rad / thetaE; // unitless ("units" of thetaE)
 }
 
+/** updateThetaY */
 function updateThetaY() {
   var thetaE_mas = thetaE / masToRad ;// convert from radians to mas
   thetaY = u0 * thetaE_mas; // mas
 }
 
+/** updateDrel */
 function updateDrel() {
   Drel = 1/((1/Dl) - (1/Ds)); // kpc
 }
 
+/** updateThetaE */
 function updateThetaE() {
   thetaE = calculateThetaE();
 }
 
+/** calculateThetaE */
 function calculateThetaE(get_mas=false, useBinaryMass=binaryFlag, lensToUse=1) {
   /*
   G: m3 kg−1 s−2 (astropy value)
@@ -421,6 +438,7 @@ function calculateThetaE(get_mas=false, useBinaryMass=binaryFlag, lensToUse=1) {
   return thetaEresult;
 }
 
+/** updateTE */
 function updateTE(debug=false) {
   var yearToDay = 365.25; // day/year; const
 
@@ -431,6 +449,7 @@ function updateTE(debug=false) {
     tE *= 1e10; // something is wrong; have to multiply by 1e9+ to get reasonable plot
 }
 
+/** updateSliderReadout */
 function updateSliderReadout(slider, readout, sliderName="") {
   // Update individual slider readout to match slider value
 
@@ -453,6 +472,7 @@ function updateSliderReadout(slider, readout, sliderName="") {
   readout.innerHTML = Number(slider.value).toFixed(fixedDecimalPlace);
 }
 
+/** updateSliders */
 function updateSliders() {
   // maximum parameter values that can be displayed;
   // need to match up with max value on HTML sliders
@@ -553,6 +573,7 @@ function updateSliders() {
   }
 }
 
+/** resetParams */
 function resetParams() {
   // reset lense curve parameters to defaults and redraw curve
   initParams();
@@ -581,6 +602,7 @@ function resetParams() {
   // plotLightcurve();
 }
 
+/** updateParam */
 function updateParam(param) {
   if (param === "Ml1") {
     Ml1 = Number(Ml1slider.value);
@@ -663,6 +685,7 @@ function updateParam(param) {
   redrawCanvases();
 }
 
+/** redrawCanvases */
 function redrawCanvases() {
   try {
     var lensPlaneModule = require("./PSPL_binary_microlensing_event_lens_plane.js");
@@ -692,6 +715,7 @@ function redrawCanvases() {
   }
 }
 
+/** updateGraph */
 function updateGraph(shift) {
   console.log(shift);
   var xInit, yInit, xWidth, yHeight;
@@ -732,6 +756,7 @@ function updateGraph(shift) {
   plotLightcurve();
 }
 
+/** updateGridRange */
 function updateGridRange(xStep, yStep) {
   // update grid with new step values,
   // and/or update grid for new initial/final axis values using
@@ -780,20 +805,24 @@ function updateGridRange(xStep, yStep) {
   // console.log("yGridFinal: " + yGridFinal);
 }
 
+/** clearGraph */
 function clearGraph() {
   context.clearRect(graphLeftBorder, graphTopBorder, graphWidth, graphHeight);
 }
 
+/** xDayToPixel */
 function xDayToPixel(xPlotDay) {
   var xPlotPixel = (xPlotDay - xAxisInitialDay) * xPixelScale + graphLeftBorder;
   return xPlotPixel;
 }
 
+/** yMagnifToPixel */
 function yMagnifToPixel(yPlotMagnif) {
   var yPlotPixel = graphBottomBorder - (yPlotMagnif - yAxisInitialMagnif) * yPixelScale;
   return yPlotPixel;
 }
 
+/** drawAxes */
 function drawAxes() {
   context.beginPath();
 
@@ -826,6 +855,7 @@ function drawAxes() {
   context.stroke();
 }
 
+/** drawAxisLabels */
 function drawAxisLabels() {
   // x label
   context.font = axisLabelFont;
@@ -857,6 +887,7 @@ function drawAxisLabels() {
   }
 }
 
+/** updatePlotScaleAndRange */
 function updatePlotScaleAndRange(width, height, xInit, yInit) {
   // Change range/scale of plot
 
@@ -879,6 +910,7 @@ function updatePlotScaleAndRange(width, height, xInit, yInit) {
   updateGridRange();
 }
 
+/** initPlot */
 function initPlot() {
   clearGraph();
   // updatePlotScaleAndRange(undefined, undefined, undefined,
@@ -932,6 +964,7 @@ function initPlot() {
   context.strokeRect(graphLeftBorder, graphTopBorder, graphWidth, graphHeight);
 }
 
+/** plotLightcurve */
 function plotLightcurve(tDayFinal=xAxisFinalDay, inputData) {
   // Draw plot background, as well as both complete (dashed) lightcurve and
   // partial (solid) lightcurve up to a given time
@@ -947,6 +980,7 @@ function plotLightcurve(tDayFinal=xAxisFinalDay, inputData) {
   drawAxisLabels();
 }
 
+/** plotLightcurveAlone */
 function plotLightcurveAlone(tDayFinal=xAxisFinalDay, inputData, dashedCurve=false) {
   // draw a single lightcurve (dashed or solid) up to a given time
 
@@ -1016,6 +1050,7 @@ function plotLightcurveAlone(tDayFinal=xAxisFinalDay, inputData, dashedCurve=fal
   context.restore();
 }
 
+/** getThetaX */
 function getThetaX(t) {
   var yearToDay = 365.25; // day/year; const
   var eqMu = mu / yearToDay; // convert mu to milliarcseconds/day
@@ -1023,6 +1058,7 @@ function getThetaX(t) {
   return thetaX;
 }
 
+/** updateCurveData */
 function updateCurveData() {
   if (binaryFlag === true) {
     // send GM1, GM2, D, cof1, cof2, minXLM, maxXLM, and NPN
@@ -1167,6 +1203,7 @@ function updateCurveData() {
   }
 }
 
+/** toggleFiniteSource */
 function toggleFiniteSource() {
   finiteSourceFlag = !finiteSourceFlag;
   updateCurveData();
@@ -1174,17 +1211,19 @@ function toggleFiniteSource() {
 }
 
 // functions to calculate magnification from parameters for a given time
-
+/** getTimeTerm */
 function getTimeTerm(t) {
   var timeTerm = (t - t0)/tE; // unitless
   return timeTerm;
 }
 
+/** getU */
 function getU(timeTerm) {
   var u = Math.sqrt(u0*u0 + timeTerm*timeTerm); // unitless
   return u;
 }
 
+/** getMagnifFromU */
 function getMagnifFromU(u) {
   var magnifNumerator = u*u + 2;
   var magnifDenominator = u * Math.sqrt(u * u + 4);
@@ -1192,6 +1231,7 @@ function getMagnifFromU(u) {
   return magnif;
 }
 
+/** getMagnif */
 function getMagnif(t) {
   var timeTerm = getTimeTerm(t); // unitless
   var u = getU(timeTerm); // unitless

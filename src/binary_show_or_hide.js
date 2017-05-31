@@ -1,3 +1,8 @@
+/** Show/hide module.
+  * Allows HTML block to be toggled between being shown/hiden.
+  *
+  * @module show_or_hide
+  */
 console.log("Executing show_or_hide.js")
 
 var binary_show_or_hide = (function() {
