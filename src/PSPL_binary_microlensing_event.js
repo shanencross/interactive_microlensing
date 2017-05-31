@@ -6,7 +6,7 @@
   *
   * Also listens for events from related UI buttons/sliders.
   *
-  * @module PSPL_binary_microlensing_event_animation
+  * @module PSPL_binary_microlensing_event
   */
 
 console.log("Executing PSPL_binary_microlensing_event.js");
