@@ -6,14 +6,14 @@
   *
   * Also listens for events from related UI buttons/sliders.
   *
-  * @module PSPL_binary_microlensing_event_lens_plane
+  * @module PSBL_microlensing_event_lens_plane
   */
 
-console.log("Executing PSPL_binary_microlensing_event_lens_plane.js");
+console.log("Executing PSBL_microlensing_event_lens_plane.js");
 
 var _ = require("lodash");
 
-var eventModule = require("./PSPL_binary_microlensing_event.js")
+var eventModule = require("./PSBL_microlensing_event.js")
 
 var initialized = false; // whether module init function has been executed
 

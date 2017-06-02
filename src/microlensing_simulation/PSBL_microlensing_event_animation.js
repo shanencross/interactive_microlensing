@@ -1,16 +1,16 @@
 /** Animation module.
   * Handles animated playback of microlensing event.
   *
-  * @module PSPL_binary_microlensing_event_animation
+  * @module PSBL_microlensing_event_animation
   */
 
-console.log("Executing PSPL_binary_microlensing_event_animation.js");
+console.log("Executing PSBL_microlensing_event_animation.js");
 
-// var eventModule = PSPL_binary_microlensing_event;
-// var lensPlaneModule = PSPL_binary_microlensing_event_lens_plane;
+// var eventModule = PSBL_microlensing_event;
+// var lensPlaneModule = PSBL_microlensing_event_lens_plane;
 
-var eventModule = require("./PSPL_binary_microlensing_event.js");
-var lensPlaneModule = require("./PSPL_binary_microlensing_event_lens_plane.js");
+var eventModule = require("./PSBL_microlensing_event.js");
+var lensPlaneModule = require("./PSBL_microlensing_event_lens_plane.js");
 
 var initialized = false; // whether module init function has been executed
 

@@ -6,10 +6,10 @@
   *
   * Also listens for events from related UI buttons/sliders.
   *
-  * @module PSPL_binary_microlensing_event
+  * @module PSBL_microlensing_event
   */
 
-console.log("Executing PSPL_binary_microlensing_event.js");
+console.log("Executing PSBL_microlensing_event.js");
 
 var errorHandler = require("../utils/errorHandler.js");
 var bin_len_faster = require("./binary_calculation/bin_len_faster.js");
@@ -571,7 +571,7 @@ function resetParams() {
   updateSliders();
 
   try {
-    var lensPlaneModule = require("./PSPL_binary_microlensing_event_lens_plane.js");
+    var lensPlaneModule = require("./PSBL_microlensing_event_lens_plane.js");
   }
   catch(ex) {
     errorHandler.handle(ex);
@@ -672,7 +672,7 @@ function updateParam(param) {
 /** redrawCanvases */
 function redrawCanvases() {
   try {
-    var lensPlaneModule = require("./PSPL_binary_microlensing_event_lens_plane.js");
+    var lensPlaneModule = require("./PSBL_microlensing_event_lens_plane.js");
   }
   catch(ex) {
     errorHandler.handle(ex);
@@ -683,7 +683,7 @@ function redrawCanvases() {
   }
 
   try {
-    var animationModule = require("./PSPL_binary_microlensing_event_animation.js");
+    var animationModule = require("./PSBL_microlensing_event_animation.js");
   }
   catch(ex) {
     errorHandler.handle(ex);
@@ -1167,7 +1167,7 @@ function updateCurveData() {
   lightcurveData = curveData;
 
   try {
-    var lensPlaneModule = require("./PSPL_binary_microlensing_event_lens_plane.js");
+    var lensPlaneModule = require("./PSBL_microlensing_event_lens_plane.js");
   }
   catch(ex) {
     errorHandler.handle(ex);
