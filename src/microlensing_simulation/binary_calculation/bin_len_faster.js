@@ -1,7 +1,7 @@
 /** Binary lens module.
   * Calculates binary image parameters for a range of source positions.
   *
-  * @module bin_len_faster
+  * @module microlensing_simulation/binary_calculation/bin_len_faster
   */
 
 console.log("Executing bin_len_faster.js");

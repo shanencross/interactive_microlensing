@@ -4,7 +4,7 @@
   * Needed to handle exceptions raised when trying to load
   * a module that is not present.
   *
-  * @module errorHandler
+  * @module utils/errorHandler
   */
 
 console.log("Executing errorHandler.js");

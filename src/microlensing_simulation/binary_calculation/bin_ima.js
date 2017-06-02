@@ -1,7 +1,7 @@
 /** Binary image modules.
   * Calculates binary image parameters for a particular source position.
   *
-  * @module bin_ima
+  * @module microlensing_simulation/binary_calculation/bin_ima
   */
 
 console.log("Executing bin_ima.js");
