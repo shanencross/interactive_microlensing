@@ -11,15 +11,8 @@
 
 console.log("Executing PSPL_binary_microlensing_event.js");
 
-// used in resetParams()
-// var lensPlaneModule = require("./PSPL_binary_microlensing_event_lens_plane.js");
-
-// used in updateParam()
-// var animationModule = require("./PSPL_binary_microlensing_event_animation.js")
-
-var errorHandler = require("./errorHandler.js");
-// used in updateCurveData
-var bin_len_faster = require("./bin_len_faster.js");
+var errorHandler = require("../utils/errorHandler.js");
+var bin_len_faster = require("./binary_calculation/bin_len_faster.js");
 
 var initialized = false; // whether module init function has been executed
 
@@ -217,7 +210,6 @@ var yZoomOutButton = document.getElementById("yZoomOut");
 var resetGraphButton = document.getElementById("resetGraph");
 
 var centerLayout = false; // const
-var finiteSourceFlag = false; // toggle finite source effects
 var binaryFlag = true; // switch between binary and single lens modes
 
 // controls whether plot updates when slider is moved
@@ -316,7 +308,6 @@ function initListeners(updateOnSliderMovement=updateOnSliderMovementFlag,
   yZoomOutButton.addEventListener("click", function() { updateGraph("yZoomOut"); }, false);
 
   resetGraphButton.addEventListener("click", function() { updateGraph("reset"); }, false)
-  // finiteSourceCheckbox.addEventListener("change", toggleFiniteSource, false);
   updateSliders(); // in case HTML slider values differ from actual starting values
 }
 
@@ -593,13 +584,6 @@ function resetParams() {
 
   updateCurveData();
   redrawCanvases();
-  // if (finiteSourceFlag === true)
-  //   updateCurveData();
-  // if (typeof PSPL_binary_microlensing_event_lens_plane !== "undefined") {
-  //   PSPL_binary_microlensing_event_lens_plane.initSourceRadius(noRedraw=false);
-  //   PSPL_binary_microlensing_event_lens_plane.redraw();
-  // }
-  // plotLightcurve();
 }
 
 /** updateParam */
@@ -1203,13 +1187,6 @@ function updateCurveData() {
   }
 }
 
-/** toggleFiniteSource */
-function toggleFiniteSource() {
-  finiteSourceFlag = !finiteSourceFlag;
-  updateCurveData();
-  redrawCanvases();
-}
-
 // functions to calculate magnification from parameters for a given time
 /** getTimeTerm */
 function getTimeTerm(t) {
@@ -1237,11 +1214,6 @@ function getMagnif(t) {
   var u = getU(timeTerm); // unitless
   var magnif = getMagnifFromU(u); // unitless
 
-  if (finiteSourceFlag === true &&
-      typeof PSPL_microlensing_event_finite_source !== "undefined") {
-    magnif *= PSPL_microlensing_event_finite_source.getFiniteSourceFactor(u);
-  }
-
   return magnif;
 }
 
@@ -1268,8 +1240,6 @@ module.exports = {
   get lensSep() { return lensSep; }, // milliarcseconds (mas)
   get incline() { return incline; }, // degrees
 
-  get finiteSourceFlag() { return finiteSourceFlag; }, // whether finite or point source is being used
-
   // controls if plot updates when slider is moved and/or released
   get updateOnSliderMovementFlag() { return updateOnSliderMovementFlag; },
   get updateOnSliderReleaseFlag() { return updateOnSliderReleaseFlag; },
@@ -1282,9 +1252,6 @@ module.exports = {
 
   // redrawing both canvases
   redrawCanvases: redrawCanvases,
-
-  // toggling finite source effects
-  toggleFiniteSource: toggleFiniteSource,
 
   // for calculating thetaE for individual lens masses, in addition to the
   // thetaE of the summed lens masses

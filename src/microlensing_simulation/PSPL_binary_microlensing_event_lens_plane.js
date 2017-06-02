@@ -13,7 +13,6 @@ console.log("Executing PSPL_binary_microlensing_event_lens_plane.js");
 
 var _ = require("lodash");
 
-// var eventModule = PSPL_binary_microlensing_event;
 var eventModule = require("./PSPL_binary_microlensing_event.js")
 
 var initialized = false; // whether module init function has been executed
@@ -202,7 +201,6 @@ var sourcePixelPos; // pixel x and y values
 // var lens1pixelPos;
 // var lens2pixelPos;
 var ringRadius = {x: undefined, y: undefined}
-var lensedImages;
 var sourceOutline;
 var lensedImageOutlines;
 
@@ -449,24 +447,6 @@ function updateDrawingValues(animation=animationFlag) {
   // lens pixel position
   // lens1.pixelPos = {x:thetaXtoPixel(lens1.pos.x), y: thetaYtoPixel(lens1.pos.y)};
   initLenses();
-
-  // lensed image positions
-  lensedImages = getLensedImages(sourcePos);
-
-  // lensed image outlines
-  // NOTE: This hammers the performance signifcantly right now
-  if (drawFullLensedImagesFlag === true && eventModule.finiteSourceFlag === true) {
-    // sourceOutline = getCircleOutlineWithRecursion(radius=sourceRadius, thetaPos=sourcePos);
-    sourceOutline = getCircleOutline(radius=sourceRadius, thetaPos=sourcePos);
-    // setCircleOutline(radius=sourceRadius, thetaPos=sourcePos);
-    lensedImageOutlines = getLensedImageOutlines(sourceOutline);
-    // if (lensedImageOutlines.plus.length === sourceOutline.length) {
-    //   console.log(`lensedImageOutlines plus length !== sourceOutline length: ${lensedImageOutlines.plus.length} !== ${sourceOutline.length}`);
-    //   for (i in lensedImageOutlines.plus) {
-    //     console.log(`lensedImageOutlines plus: (${lensedImageOutlines.plus[i].pos.x}, ${lensedImageOutlines.plus[i].pos.y})`);
-    //   }
-    // }
-  }
 }
 
 /** thetaXtoPixel */
@@ -1278,7 +1258,8 @@ var drawing = (function(isBinary=binaryFlag, context=mainContext, canvas=mainCan
     // drawSource(useOutline=true);
     drawUarrow();
     if (displayImageShape === true && isBinary === false) {
-      if (eventModule.finiteSourceFlag === false)
+      if (eventModule.finiteSourceFlag === false ||
+          eventModule.finiteSourceFlag !== undefined)
         drawPointLensedImages();
       else {
         if (clippingImageFlag === true) {

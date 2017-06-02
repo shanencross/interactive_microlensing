@@ -5,9 +5,9 @@
   */
 // console.log = function() {} // uncomment this to disable all console.log messages
 
-var eventModule = require("./PSPL_binary_microlensing_event.js")
-var lensPlaneModule = require("./PSPL_binary_microlensing_event_lens_plane.js");
-var animationModule = require("./PSPL_binary_microlensing_event_animation.js");
+var eventModule = require("./microlensing_simulation/PSPL_binary_microlensing_event.js")
+var lensPlaneModule = require("./microlensing_simulation/PSPL_binary_microlensing_event_lens_plane.js");
+var animationModule = require("./microlensing_simulation/PSPL_binary_microlensing_event_animation.js");
 
 /** init */
 function init() {
