@@ -3,16 +3,6 @@
 <head>
   <meta charset="utf-8">
   <title>Point Source, Point Lens Binary Microlensing Event</title>
-
-  <!-- math library for complex numbers and matrices -->
-  <!-- <script src="libraries/math.min.js" type="text/javascript"></script> -->
-  <!-- other math library -->
-  <!-- <script src="libraries/numeric-1.2.6.min.js" type="text/javascript"></script> -->
-  <!-- possible alternative tool for some math and array calculations -->
-  <!-- <script src="libraries/lodash.js" type="text/javascript"></script> -->
-  <!-- root-finding related scripts -->
-  <!-- <script src="libraries/poly_roots.js"></script> -->
-
   <style>
     input[type="range"] {
     width: 300px;
@@ -58,29 +48,7 @@
     &theta;<sub>x</sub>: <span id="thetaXreadout">0.3066</span> mas
 
     &nbsp; &nbsp; &nbsp;
-  	<!-- &rho;: <span id="sourceRadiusNormalizedReadout">0.1105</span> -->
   </div>
-
-  <!--
-  <div style="text-align:center; position:relative; padding: 5px 10px;">
-
-    <a id="displayText" href="javascript:binary_show_or_hide.toggle();">+ Show Options For Finite Source Effects</a>
-
-    <div id="toggleText" style="display: none; padding: 5px 10px;">
-
-      <div>
-        <input type="checkbox" id="finiteSourceCheckbox"></input>Use finite source
-      </div>
-
-      <div>
-        source radius <input type="range" id="sourceRadiusSlider" min="0.0001" max="0.5000" step="0.0001" value="0.0133">
-        <span id="sourceRadiusReadout" style="display:inline-block;
-                        width:3.8em; text-align:right;">0.0133</span> mas
-      </div>
-
-    </div>
-  </div>
-  -->
 
   <div style="text-align:center; position:relative;">
     t<sub>E</sub> <input type="range" id="tEslider" min="0.001" max="365" step="0.001" value="6.293">
@@ -185,16 +153,6 @@
   <div style="text-align:center; position:relative;">
     <input type="button" id="resetGraph" value="Reset Range/Scale">
   </div>
-
-  <!-- Microlensing Event scripts -->
-  <!-- <script src="PSPL_microlensing_event_main.js"></script>
-  <script src="bin_ima.js"></script>
-  <script src="bin_len_faster.js"></script>
-  <script src="PSPL_binary_microlensing_event.js"></script>
-  <script src="PSPL_binary_microlensing_event_lens_plane.js"></script>
-  <script src="PSPL_binary_microlensing_event_animation.js"></script>
-  <script src="binary_show_or_hide.js"></script> -->
-
 
   <script src="../build/bundle.js"></script>
 </body>
