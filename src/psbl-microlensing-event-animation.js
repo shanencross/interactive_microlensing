@@ -9,8 +9,8 @@ console.log("Executing PSBL_microlensing_event_animation.js");
 // var eventModule = PSBL_microlensing_event;
 // var lensPlaneModule = PSBL_microlensing_event_lens_plane;
 
-var eventModule = require("./PSBL_microlensing_event.js");
-var lensPlaneModule = require("./PSBL_microlensing_event_lens_plane.js");
+var eventModule = require("./psbl-microlensing-event.js");
+var lensPlaneModule = require("./psbl-microlensing-event-lens-plane.js");
 
 var initialized = false; // whether module init function has been executed
 

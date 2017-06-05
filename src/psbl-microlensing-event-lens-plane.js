@@ -13,7 +13,7 @@ console.log("Executing PSBL_microlensing_event_lens_plane.js");
 
 var _ = require("lodash");
 
-var eventModule = require("./PSBL_microlensing_event.js")
+var eventModule = require("./psbl-microlensing-event.js")
 
 var initialized = false; // whether module init function has been executed
 

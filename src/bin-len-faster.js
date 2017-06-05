@@ -9,7 +9,7 @@ var _ =require("lodash");
 var numeric = require("numeric");
 var math = require("mathjs");
 
-var bin_ima = require("./bin_ima.js")
+var bin_ima = require("./bin-ima.js")
 
 /** plot_binary */
 function plot_binary(GM1=0.5, GM2=0.5, D=0.5, cof1=0.1, cof2=-0.5,
