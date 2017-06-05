@@ -3,6 +3,5 @@ build/
 reference/
 *.zip
 *.png
-*.txt
 *.pyc
 *.py

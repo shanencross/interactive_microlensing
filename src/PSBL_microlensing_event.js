@@ -6,13 +6,13 @@
   *
   * Also listens for events from related UI buttons/sliders.
   *
-  * @module microlensing_simulation/PSBL_microlensing_event
+  * @namespace PSBL_microlensing_event
   */
 
 console.log("Executing PSBL_microlensing_event.js");
 
-var errorHandler = require("../utils/errorHandler.js");
-var bin_len_faster = require("./binary_calculation/bin_len_faster.js");
+var errorHandler = require("./errorHandler.js");
+var bin_len_faster = require("./bin_len_faster.js");
 
 var initialized = false; // whether module init function has been executed
 

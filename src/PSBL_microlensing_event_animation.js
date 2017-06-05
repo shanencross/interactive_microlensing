@@ -1,7 +1,7 @@
 /** Animation module.
   * Handles animated playback of microlensing event.
   *
-  * @module microlensing_simulation/PSBL_microlensing_event_animation
+  * @module PSBL_microlensing_event_animation
   */
 
 console.log("Executing PSBL_microlensing_event_animation.js");
