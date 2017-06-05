@@ -41,6 +41,10 @@ event.</p>
 <p>Depicts the source&#39;s path across the sky when the lenses are held fixed.</p>
 <p>Also listens for events from related UI buttons/sliders.</p>
 </dd>
+<dt><a href="#module_utils">utils</a></dt>
+<dd><p>Uitilities module.
+Miscellaneous helper functions.</p>
+</dd>
 </dl>
 
 <a name="module_almost-equals"></a>
@@ -555,3 +559,8 @@ updateGridRange
 xDayToThetaX
 
 **Kind**: inner method of [<code>psbl-microlensing-event-lens-plane</code>](#module_psbl-microlensing-event-lens-plane)  
+<a name="module_utils"></a>
+
+## utils
+Uitilities module.Miscellaneous helper functions.
+
