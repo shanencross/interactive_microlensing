@@ -9,7 +9,7 @@ Calculates binary image parameters for a particular source position.</p>
 <dd><p>Binary lens module.
 Calculates binary image parameters for a range of source positions.</p>
 </dd>
-<dt><a href="#module_utils/errorHandler">utils/errorHandler</a></dt>
+<dt><a href="#module_handle-error">handle-error</a></dt>
 <dd><p>Error handler module.
 Handles exceptions.</p>
 <p>Needed to handle exceptions raised when trying to load
@@ -153,19 +153,12 @@ Binary image modules.Calculates binary image parameters for a particular source
 
 * [microlensing_simulation/binary_calculation/bin_ima](#module_microlensing_simulation/binary_calculation/bin_ima)
     * [~bin_ima()](#module_microlensing_simulation/binary_calculation/bin_ima..bin_ima)
-    * [~almostEquals()](#module_microlensing_simulation/binary_calculation/bin_ima..almostEquals)
     * [~compareComplexNumToZero()](#module_microlensing_simulation/binary_calculation/bin_ima..compareComplexNumToZero)
 
 <a name="module_microlensing_simulation/binary_calculation/bin_ima..bin_ima"></a>
 
 ### microlensing_simulation/binary_calculation/bin_ima~bin_ima()
 bin_ima
-
-**Kind**: inner method of [<code>microlensing_simulation/binary_calculation/bin_ima</code>](#module_microlensing_simulation/binary_calculation/bin_ima)  
-<a name="module_microlensing_simulation/binary_calculation/bin_ima..almostEquals"></a>
-
-### microlensing_simulation/binary_calculation/bin_ima~almostEquals()
-almostEquals
 
 **Kind**: inner method of [<code>microlensing_simulation/binary_calculation/bin_ima</code>](#module_microlensing_simulation/binary_calculation/bin_ima)  
 <a name="module_microlensing_simulation/binary_calculation/bin_ima..compareComplexNumToZero"></a>
@@ -183,7 +176,6 @@ Binary lens module.Calculates binary image parameters for a range of source pos
 * [bin_len_faster](#module_bin_len_faster)
     * [~plot_binary()](#module_bin_len_faster..plot_binary)
     * [~findCausticAndCritCurves()](#module_bin_len_faster..findCausticAndCritCurves)
-    * [~almostEquals()](#module_bin_len_faster..almostEquals)
 
 <a name="module_bin_len_faster..plot_binary"></a>
 
@@ -197,23 +189,17 @@ plot_binary
 findCausticAndCritCurves
 
 **Kind**: inner method of [<code>bin_len_faster</code>](#module_bin_len_faster)  
-<a name="module_bin_len_faster..almostEquals"></a>
+<a name="module_handle-error"></a>
 
-### bin_len_faster~almostEquals()
-almostEquals
-
-**Kind**: inner method of [<code>bin_len_faster</code>](#module_bin_len_faster)  
-<a name="module_utils/errorHandler"></a>
-
-## utils/errorHandler
+## handle-error
 Error handler module.Handles exceptions.Needed to handle exceptions raised when trying to loada module that is not present.
 
-<a name="module_utils/errorHandler..handle"></a>
+<a name="exp_module_handle-error--module.exports"></a>
 
-### utils/errorHandler~handle()
+### module.exports() ⏏
 handle
 
-**Kind**: inner method of [<code>utils/errorHandler</code>](#module_utils/errorHandler)  
+**Kind**: Exported function  
 <a name="module_main"></a>
 
 ## main
@@ -236,7 +222,6 @@ Animation module.Handles animated playback of microlensing event.
     * [~updateMinAndMaxTimes()](#module_PSBL_microlensing_event_animation..updateMinAndMaxTimes)
     * [~initListeners()](#module_PSBL_microlensing_event_animation..initListeners)
     * [~run()](#module_PSBL_microlensing_event_animation..run)
-    * [~almostEquals()](#module_PSBL_microlensing_event_animation..almostEquals)
     * [~updateTime()](#module_PSBL_microlensing_event_animation..updateTime)
     * [~animateFrame()](#module_PSBL_microlensing_event_animation..animateFrame)
     * [~animateFrameSource()](#module_PSBL_microlensing_event_animation..animateFrameSource)
@@ -264,12 +249,6 @@ initListeners
 
 ### PSBL_microlensing_event_animation~run()
 run
-
-**Kind**: inner method of [<code>PSBL_microlensing_event_animation</code>](#module_PSBL_microlensing_event_animation)  
-<a name="module_PSBL_microlensing_event_animation..almostEquals"></a>
-
-### PSBL_microlensing_event_animation~almostEquals()
-almostEquals
 
 **Kind**: inner method of [<code>PSBL_microlensing_event_animation</code>](#module_PSBL_microlensing_event_animation)  
 <a name="module_PSBL_microlensing_event_animation..updateTime"></a>
@@ -321,7 +300,6 @@ Lens Plane Module.Handles calculation and drawing of the lens plane plot for th
     * [~thetaYtoPixel()](#module_PSBL_microlensing_event_lens_plane..thetaYtoPixel)
     * [~getThetaX()](#module_PSBL_microlensing_event_lens_plane..getThetaX)
     * [~getThetaYpathValue()](#module_PSBL_microlensing_event_lens_plane..getThetaYpathValue)
-    * [~almostEquals()](#module_PSBL_microlensing_event_lens_plane..almostEquals)
     * [~updateGridRange()](#module_PSBL_microlensing_event_lens_plane..updateGridRange)
     * [~xDayToThetaX()](#module_PSBL_microlensing_event_lens_plane..xDayToThetaX)
 
@@ -428,12 +406,6 @@ getThetaX
 
 ### PSBL_microlensing_event_lens_plane~getThetaYpathValue()
 getThetaYpathValue
-
-**Kind**: inner method of [<code>PSBL_microlensing_event_lens_plane</code>](#module_PSBL_microlensing_event_lens_plane)  
-<a name="module_PSBL_microlensing_event_lens_plane..almostEquals"></a>
-
-### PSBL_microlensing_event_lens_plane~almostEquals()
-almostEquals
 
 **Kind**: inner method of [<code>PSBL_microlensing_event_lens_plane</code>](#module_PSBL_microlensing_event_lens_plane)  
 <a name="module_PSBL_microlensing_event_lens_plane..updateGridRange"></a>

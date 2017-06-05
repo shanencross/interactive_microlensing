@@ -8,6 +8,8 @@ console.log("Executing bin_ima.js");
 var math = require("mathjs");
 var cpoly = require("poly-roots");
 
+var almostEquals = require("./utils.js").almostEquals;
+
 /** bin_ima */
 function bin_ima(GM1=0.5, GM2=0.5, D=0.5, XS=0, YS=0, timeDebug=false) {
   // console.log("Executing bin_ima function");
@@ -322,11 +324,6 @@ function bin_ima(GM1=0.5, GM2=0.5, D=0.5, XS=0, YS=0, timeDebug=false) {
     console.timeEnd();
   // return scope; // DEBUG: temp
   return results;
-}
-
-/** almostEquals */
-function almostEquals(a, b, epsilon=1e-12) {
-  return (Math.abs(a - b) < epsilon);
 }
 
 /** compareComplexNumToZero */

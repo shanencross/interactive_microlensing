@@ -4,13 +4,13 @@
   * Needed to handle exceptions raised when trying to load
   * a module that is not present.
   *
-  * @module utils/errorHandler
+  * @module handle-error
   */
 
-console.log("Executing errorHandler.js");
+console.log("Executing handle-error.js");
 
 /** handle */
-function handle(ex) {
+module.exports = function handleError(ex) {
   if (ex instanceof Error && ex.code === "MODULE_NOT_FOUND") {
     console.log(ex.toString());
   }
@@ -18,7 +18,3 @@ function handle(ex) {
     throw(ex);
   }
 }
-
-module.exports = {
-  handle: handle,
-};

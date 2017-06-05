@@ -9,11 +9,13 @@
   * @module PSBL_microlensing_event_lens_plane
   */
 
-console.log("Executing PSBL_microlensing_event_lens_plane.js");
+console.log("Executing psbl-microlensing-event-lens-plane.js");
 
 var _ = require("lodash");
 
 var eventModule = require("./psbl-microlensing-event.js")
+
+var almostEquals = require("./utils.js").almostEquals;
 
 var initialized = false; // whether module init function has been executed
 
@@ -487,12 +489,6 @@ function getThetaYpathValue(thetaX) {
   return thetaYvalue;
 }
 
-// NOTE: Hacky -- fix
-/** almostEquals */
-function almostEquals(a, b, epsilon=1e-12) {
-  return (Math.abs(a - b) < epsilon);
-}
-
 /** updateGridRange */
 function updateGridRange(xStep, yStep, centerXgridOnZero=centerXgridOnZeroFlag,
                          centerYgridOnZero=centerYgridOnZeroFlag) {
@@ -507,7 +503,6 @@ function updateGridRange(xStep, yStep, centerXgridOnZero=centerXgridOnZeroFlag,
   }
 
   // update grid using current x/y axis initial and final values
-  // NOTE: hacky almostEquals solution to rounding error issue that isn't very readable: fix
   if ((centerXgridOnZero === true) && (xGridStep - Math.abs(xAxisInitialThetaX % xGridStep) > 1e-10))
    xGridInitial = xAxisInitialThetaX - (xAxisInitialThetaX % xGridStep);
   else
@@ -516,7 +511,6 @@ function updateGridRange(xStep, yStep, centerXgridOnZero=centerXgridOnZeroFlag,
 
   xGridFinal = xAxisFinalThetaX;
 
-  // NOTE: hacky almostEquals solution to rounding error issue that isn't very readable: fix
   if ((centerYgridOnZero === true) && (yGridStep - Math.abs(yAxisInitialThetaY % yGridStep) > 1e-10))
     yGridInitial = yAxisInitialThetaY - (yAxisInitialThetaY % yGridStep);
   else

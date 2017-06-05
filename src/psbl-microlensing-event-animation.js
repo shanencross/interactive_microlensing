@@ -4,13 +4,15 @@
   * @module PSBL_microlensing_event_animation
   */
 
-console.log("Executing PSBL_microlensing_event_animation.js");
+console.log("Executing psbl-microlensing-event-animation.js");
 
 // var eventModule = PSBL_microlensing_event;
 // var lensPlaneModule = PSBL_microlensing_event_lens_plane;
 
 var eventModule = require("./psbl-microlensing-event.js");
 var lensPlaneModule = require("./psbl-microlensing-event-lens-plane.js");
+
+var almostEquals = require("./utils.js").almostEquals;
 
 var initialized = false; // whether module init function has been executed
 
@@ -85,11 +87,6 @@ function run() {
       updatePlayback("Pause");
     }
   }
-}
-
-/** almostEquals */
-function almostEquals(a, b, epsilon=roundingErrorThreshold) {
-  return (Math.abs(a - b) < epsilon);
 }
 
 /** updateTime */

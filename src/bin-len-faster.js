@@ -11,6 +11,8 @@ var math = require("mathjs");
 
 var bin_ima = require("./bin-ima.js")
 
+var almostEquals = require("./utils.js").almostEquals;
+
 /** plot_binary */
 function plot_binary(GM1=0.5, GM2=0.5, D=0.5, cof1=0.1, cof2=-0.5,
                              minXLM=-3, maxXLM=3, NPN=40, NR=30000,
@@ -456,12 +458,6 @@ function findCausticAndCritCurves(GM1=0.5, GM2=0.5, D=0.5, NR=30000,
   };
 
   return causticAndCritCurves;
-}
-
-// NOTE: Hacky -- fix
-/** almostEquals */
-function almostEquals(a, b, epsilon=1e-12) {
-  return (Math.abs(a - b) < epsilon);
 }
 
 module.exports = {

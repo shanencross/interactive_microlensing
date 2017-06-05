@@ -9,10 +9,11 @@
   * @namespace PSBL_microlensing_event
   */
 
-console.log("Executing PSBL_microlensing_event.js");
+console.log("Executing psbl-microlensing-event.js");
 
-var errorHandler = require("./error-handler.js");
 var bin_len_faster = require("./bin-len-faster.js");
+
+var handleError = require("./utils.js").handleError;
 
 var initialized = false; // whether module init function has been executed
 
@@ -574,7 +575,7 @@ function resetParams() {
     var lensPlaneModule = require("./psbl-microlensing-event-lens-plane.js");
   }
   catch(ex) {
-    errorHandler.handle(ex);
+    handleError(ex);
   }
 
 
@@ -675,7 +676,7 @@ function redrawCanvases() {
     var lensPlaneModule = require("./psbl-microlensing-event-lens-plane.js");
   }
   catch(ex) {
-    errorHandler.handle(ex);
+    handleError(ex);
   }
 
   if (lensPlaneModule !== undefined && lensPlaneModule.initialized === true) {
@@ -686,7 +687,7 @@ function redrawCanvases() {
     var animationModule = require("./psbl-microlensing-event-animation.js");
   }
   catch(ex) {
-    errorHandler.handle(ex);
+    handleError(ex);
   }
 
   if (animationModule !== undefined && animationModule.initialized === true) {
@@ -1170,7 +1171,7 @@ function updateCurveData() {
     var lensPlaneModule = require("./psbl-microlensing-event-lens-plane.js");
   }
   catch(ex) {
-    errorHandler.handle(ex);
+    handleError(ex);
   }
 
   var prerenderCurves = true;

@@ -1,5 +1,9 @@
 # Useful command line entries for developers
-Assumes you're using bash shell. Certain commands won't work on Windows
+Assumes you're using bash shell.
+
+On windows, you must replace forward slashes (/) with backslashes (\\).
+
+Even then, certain commands won't work on Windows
 (e.g. commands using * for file/directory names)
 
 Assume console commands are executed from top folder of repository.
@@ -37,6 +41,11 @@ This way, console output for errors will give their location in the original
 .js files, rather than their location in bundle.js. However, this creates a
 larger sized file and should be omitted for bundle.js used in production.
 
+Build bundle JS file, ignoring any missing files called for by require:
+```
+node_modules/.bin/browserify src/main.js -o build/bundle.js --ignore-missing
+```
+
 Continually rebuild bundle JS file whenever scripts are modified:
 ```
 node_modules/.bin/watchify src/main.js -o build/bundle.js
@@ -46,6 +55,12 @@ Continually rebuild bundle JS file whenever scripts are modified with debug
 source maps:
 ```
 node_modules/.bin/watchify src/main.js -o build/bundle.js --debug
+```
+
+Continually rebuild bundle JS file whenve4r scripts are modified, ignoring any
+missing files called for by require:
+```
+node_modules/.bin/watchify src/main.js -o build/bundle.js --ignore-missing
 ```
 
 Alternatively, you can name bundle.js whatever you want, as long as you
