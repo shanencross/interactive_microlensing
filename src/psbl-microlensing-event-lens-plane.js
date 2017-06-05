@@ -6,7 +6,7 @@
   *
   * Also listens for events from related UI buttons/sliders.
   *
-  * @module PSBL_microlensing_event_lens_plane
+  * @module psbl-microlensing-event-lens-plane
   */
 
 console.log("Executing psbl-microlensing-event-lens-plane.js");

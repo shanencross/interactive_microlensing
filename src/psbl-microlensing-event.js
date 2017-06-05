@@ -6,7 +6,7 @@
   *
   * Also listens for events from related UI buttons/sliders.
   *
-  * @namespace PSBL_microlensing_event
+  * @module psbl-microlensing-event
   */
 
 console.log("Executing psbl-microlensing-event.js");
