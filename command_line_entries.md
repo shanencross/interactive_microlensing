@@ -1,9 +1,9 @@
 # Useful command line entries for developers
 Assumes you're using bash shell.
 
-On windows, you must replace forward slashes (/) with backslashes (\\).
+On Windows, you must replace forward slashes (/) with backslashes (\\).
 
-Even then, certain commands won't work on Windows
+Even then, certain commands won't work on Windows.
 (e.g. commands using * for file/directory names)
 
 Assume console commands are executed from top folder of repository.
@@ -57,7 +57,7 @@ source maps:
 node_modules/.bin/watchify src/main.js -o build/bundle.js --debug
 ```
 
-Continually rebuild bundle JS file whenve4r scripts are modified, ignoring any
+Continually rebuild bundle JS file whenver scripts are modified, ignoring any
 missing files called for by require:
 ```
 node_modules/.bin/watchify src/main.js -o build/bundle.js --ignore-missing
