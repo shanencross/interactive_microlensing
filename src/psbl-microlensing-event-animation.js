@@ -6,17 +6,16 @@
 
 console.log("Executing psbl-microlensing-event-animation.js");
 
-// var eventModule = PSBL_microlensing_event;
-// var lensPlaneModule = PSBL_microlensing_event_lens_plane;
-
 var eventModule = require("./psbl-microlensing-event.js");
 var lensPlaneModule = require("./psbl-microlensing-event-lens-plane.js");
 
 var almostEquals = require("./utils.js").almostEquals;
 
-var initialized = false; // whether module init function has been executed
+// whether module init function has been executed
+var initialized = false;
 
-var fps = 60; // frames rendered per second (ideally; runs slow in non-Chrome browsers now)
+// frames rendered per second (ideally; runs slow in non-Chrome browsers now)
+var fps = 60;
 
 var time;
 var timer;
@@ -24,8 +23,10 @@ var running = false;
 
 var minTime;
 var maxTime;
-var animationStep = 0.1; // (days) time step per frame of animation
-var playbackControlStep = 5; // (days) time step for "stepBack" and "stepForward" playback commands
+// (days) time step per frame of animation
+var animationStep = 0.1;
+// (days) time step for "stepBack" and "stepForward" playback commands
+var playbackControlStep = 5;
 
 var timeReadout = document.getElementById("timeReadout");
 var stepBackButton = document.getElementById("stepBack");
@@ -34,8 +35,9 @@ var pauseButton = document.getElementById("pause");
 var stepForwardButton = document.getElementById("stepForward");
 var timeResetButton = document.getElementById("timeReset");
 
-var roundingErrorThreshold = 1e-12; // if values passed to almostEquals have a smaller difference
-                                    // than this, they will pass as "almost" equal
+// if values passed to almostEquals have a smaller difference
+// than this, they will pass as "almost" equal
+var roundingErrorThreshold = 1e-12;
 
 /** init */
 function init() {
@@ -115,6 +117,7 @@ function updateTime(newTime) {
   time = newTime;
 
   // update time readout on page
+
   // makes sure we display "0.00" instead of "-0.00" if 0 time has rounding error
   var newTimeReadout = Number(time).toFixed(4);
   if (almostEquals(time, 0) === true) {
@@ -127,8 +130,10 @@ function updateTime(newTime) {
 function animateFrame() {
   console.log("animating frame");
 
-  eventModule.plotLightcurve(time); // animate frame for lightcurve
-  animateFrameSource(); // animate frame for source movement on lens plane figure
+  // animate frame for lightcurve
+  eventModule.plotLightcurve(time);
+  // animate frame for source movement on lens plane figure
+  animateFrameSource();
   console.log("TIME: " + time);
   var u = eventModule.getU(eventModule.getTimeTerm(time));
   var magnif = eventModule.getMagnif(time);
@@ -189,7 +194,9 @@ function updatePlayback(command="play", updateFrame=true) {
     if (animationStep >= 0)
       newTime = minTime;
     // if playing backwards (negative step), reset to maximum time
-    else // animationStep < 0
+
+    // animationStep < 0
+    else
       newTime = maxTime;
 
     updateTime(newTime);
@@ -200,8 +207,11 @@ function updatePlayback(command="play", updateFrame=true) {
 
 module.exports = {
   //initialization
-  init: init, // initialization function
-  get initialized() { return initialized; }, // whether initialization is done
+
+  // initialization function
+  init: init,
+  // whether initialization is done
+  get initialized() { return initialized; },
 
   get running() { return running; },
   get time() { return time; },

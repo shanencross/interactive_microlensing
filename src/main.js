@@ -3,9 +3,14 @@
   *
   * @module main
   */
-// console.log = function() {} // uncomment this to disable all console.log messages
 
-var eventModule = require("./psbl-microlensing-event.js")
+// set flag to true to disable all console output for performance
+var disableConsole = false;
+
+if (disableConsole === true)
+   console.log = function() {};
+
+var eventModule = require("./psbl-microlensing-event.js");
 var lensPlaneModule = require("./psbl-microlensing-event-lens-plane.js");
 var animationModule = require("./psbl-microlensing-event-animation.js");
 
