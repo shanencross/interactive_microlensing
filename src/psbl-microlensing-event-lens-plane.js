@@ -233,14 +233,14 @@ var curveContext = curveCanvas.getContext("2d");
 var thetaXreadout = document.getElementById("thetaXreadout");
 
 var sourceRadiusNormalizedReadout = document.getElementById("sourceRadiusNormalizedReadout");
-var imageShapeCheckbox = document.getElementById("imageShapeCheckbox");
+var displayImagesCheckbox = document.getElementById("displayImagesCheckbox");
 var sourceRadiusSlider = document.getElementById("sourceRadiusSlider");
 var sourceRadiusReadout = document.getElementById("sourceRadiusReadout");
 
 // if on, display shapes for the lensed images, not just points
 
 // toggled by checkbox
-var displayImageShapeFlag = false;
+var displayImagesFlag = false;
 
 // debug flags
 var animationFlag = true;
@@ -288,9 +288,12 @@ function init(animation=animationFlag) {
 /** initListeners */
 function initListeners(updateOnSliderMovement=updateOnSliderMovementFlag,
                        updateOnSliderRelease=updateOnSliderReleaseFlag) {
-  imageShapeCheckbox.addEventListener("change", function() { displayImageShapeFlag = imageShapeCheckbox.checked;
-                                                             redraw();
-                                                             console.log(`displayImageShapeFlag: ${displayImageShapeFlag}`); }, false);
+  displayImagesCheckbox.addEventListener("change",
+                                      function() {
+                                                   displayImagesFlag = displayImagesCheckbox.checked;
+                                                   redraw();
+                                                 },
+                                      false);
   console.log("(binary_lens_plane) updateOnSliderMovement: " + updateOnSliderMovement);
   console.log("(binary_lens_plane) updateOnSliderRelease: " + updateOnSliderRelease);
 
@@ -319,7 +322,7 @@ function initListeners(updateOnSliderMovement=updateOnSliderMovementFlag,
 }
 
 /** initLenses */
-function initLenses(isBinary=binaryFlag) {
+function initLenses() {
   var ring1radius_mas = eventModule.calculateThetaE(get_mas=true, useBinaryMass=false, lensToUse=1);
   var ring1radiusX = ring1radius_mas * xPixelScale;
   var ring1radiusY = ring1radius_mas * yPixelScale;
@@ -329,18 +332,16 @@ function initLenses(isBinary=binaryFlag) {
                    ring1radiusX, ring1radiusY,
                    ringColor, ringWidth, dashedRingLength, dashedRingSpacing);
 
-  if (isBinary === true) {
-    var ring2radius_mas = eventModule.calculateThetaE(get_mas=true, useBinaryMass=false, lensToUse=2);
-    var ring2radiusX = ring2radius_mas * xPixelScale;
-    var ring2radiusY = ring2radius_mas * yPixelScale;
+  var ring2radius_mas = eventModule.calculateThetaE(get_mas=true, useBinaryMass=false, lensToUse=2);
+  var ring2radiusX = ring2radius_mas * xPixelScale;
+  var ring2radiusY = ring2radius_mas * yPixelScale;
 
-    var lensSep = eventModule.lensSep;
-    lens1.updatePos(-lensSep/2, 0);
-    lens2 = new Lens(lensSep/2, 0, lensRadius, lensColor,
-                     lensOutlineWidth, lensOutlineColor,
-                     ring2radiusX, ring2radiusY,
-                     ringColor, ringWidth, dashedRingLength, dashedRingSpacing);
-  }
+  var lensSep = eventModule.lensSep;
+  lens1.updatePos(-lensSep/2, 0);
+  lens2 = new Lens(lensSep/2, 0, lensRadius, lensColor,
+                   lensOutlineWidth, lensOutlineColor,
+                   ring2radiusX, ring2radiusY,
+                   ringColor, ringWidth, dashedRingLength, dashedRingSpacing);
 }
 
 /** initSourceRadius */
@@ -531,7 +532,7 @@ function updateGridRange(xStep, yStep, centerXgridOnZero=centerXgridOnZeroFlag,
 /** xDayToThetaX */
 function xDayToThetaX() {}
 /** drawing */
-var drawing = (function(isBinary=binaryFlag, context=mainContext, canvas=mainCanvas) {
+var drawing = (function(context=mainContext, canvas=mainCanvas) {
   /** clearPic */
   function clearPic(context=mainContext) {
     context.clearRect(picLeftBorder, picTopBorder, picWidth, picHeight);
@@ -1222,7 +1223,7 @@ var drawing = (function(isBinary=binaryFlag, context=mainContext, canvas=mainCan
   }
 
   /** drawPic */
-  function drawPic(isBinary=binaryFlag, displayImageShape=displayImageShapeFlag,
+  function drawPic(displayImages=displayImagesFlag,
                    context=mainContext, canvas=mainCanvas) {
     clearPic();
     drawBackgrounds();
@@ -1230,50 +1231,24 @@ var drawing = (function(isBinary=binaryFlag, context=mainContext, canvas=mainCan
     drawGridlinesAndTicks();
     toggleClippingRegion(turnOn=true);
     drawUarrow();
-    if (displayImageShape === true && isBinary === false) {
-      if (eventModule.finiteSourceFlag === false ||
-          eventModule.finiteSourceFlag !== undefined)
-        drawPointLensedImages();
-      else {
-        if (clippingImageFlag === true) {
-          context.save();
-          context.beginPath();
-          context.rect(0, 0, canvas.width, context.canvas.height);
-          context.arc(lens1.pixelPos.x, lens1.pixelPos.y, ringRadius.x, 0, Math.PI * 2, true);
-          context.clip();
-        }
-        drawFullLensedImages(debug=false, fillOn=true, strokeOn=true);
-        //drawFullLensedImages(debug=true);
-        if (clippingImageFlag === true)
-          context.restore();
-      }
-    }
-    // drawPointLensedImages();
+
     drawLens(lens1);
+    drawLens(lens2);
 
-    // drawPointLensedImages();
-    if (isBinary === true) {
-      // draw second lens
-      drawLens(lens2);
+    if (causticCurveFlag === true || critCurveFlag === true) {
+      // draw caustic and/or crit
 
-      if (causticCurveFlag === true || critCurveFlag === true) {
-        // draw caustic and/or crit
-
-        drawRenderedCurves();
-        // context.fillRect(canvas.width/2, canvas.height/2, 50*Math.random(), 50);
-      }
-
-      if (separateBinaryRingsFlag === true) {
-
-        // draw separate rings for each lens
-        drawRing(lens1);
-        drawRing(lens2);
-      }
-      drawBinaryPointLensedImages();
+      drawRenderedCurves();
     }
-    else { // single, non-binary lens
+
+    if (separateBinaryRingsFlag === true) {
+
+      // draw separate rings for each lens
       drawRing(lens1);
+      drawRing(lens2);
     }
+    if (displayImagesCheckbox.checked === true)
+      drawBinaryPointLensedImages();
     drawSourcePath();
     drawSource();
 
@@ -1292,7 +1267,7 @@ var drawing = (function(isBinary=binaryFlag, context=mainContext, canvas=mainCan
 // public properties to be stored in module object,
 // accessible via module object by code executed after this script
 module.exports = {
-  //initialization
+  // initialization
 
   // initialization function
   init: init,
