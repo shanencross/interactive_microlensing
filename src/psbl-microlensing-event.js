@@ -15,13 +15,16 @@ var bin_len_faster = require("./bin-len-faster.js");
 
 var handleError = require("./utils.js").handleError;
 
-var initialized = false; // whether module init function has been executed
+// whether module init function has been executed
+var initialized = false;
 
 var canvas = document.getElementById("lcurveCanvas");
 var context = canvas.getContext("2d");
 
-var graphLeftBorder = 50; // left border of graph x-pixel value, NOT including any trailing gridlines
-var graphTopBorder = 50; // top border of graph y-pixel value, NOT including any trailing gridlines
+// left border of graph x-pixel value, NOT including any trailing gridlines
+var graphLeftBorder = 50;
+ // top border of graph y-pixel value, NOT including any trailing gridlines
+var graphTopBorder = 50;
 
 var graphWidth = 400;
 var graphHeight = 300;
@@ -32,53 +35,72 @@ var graphRightTrail = 0;
 var graphTopTrail = 0;
 var graphBottomTrail = 10;
 
-var graphRightBorder = graphLeftBorder + graphWidth; // right border of graph x-pixel value, NOT including any trailing gridlines
-var graphBottomBorder = graphTopBorder + graphHeight; // bottom border of y-pixel value, NOT including any trailing gridlines
+// right border of graph x-pixel value, NOT including any trailing gridlines
+var graphRightBorder = graphLeftBorder + graphWidth;
+// bottom border of y-pixel value, NOT including any trailing gridlines
+var graphBottomBorder = graphTopBorder + graphHeight;
 
-var graphLeftTrailingBorder = graphLeftBorder - graphLeftTrail; // left border of graph x-pixel value, INCLUDING any trailing gridlines
-var graphRightTrailingBorder = graphRightBorder + graphRightTrail; // right border of graph x-pixel value, INCLUDING any trailing gridlines
-var graphTopTrailingBorder = graphTopBorder - graphTopTrail; // top border of graph y-pixel value, INCLUDING any trailing gridlines
-var graphBottomTrailingBorder = graphBottomBorder + graphBottomTrail; // bottom border of graph y-pixel value, INCLUDING any trailing gridlines
-
-// var graphRightBorder = canvas.width - 50; // right border of graph x-pixel value, NOT including any trailing gridlines
-// var graphBottomBorder = canvas.height - 50; // bottom border of graph y-pixel value
-// var graphWidth = graphRightBorder - graphLeftBorder;
-// var graphHeight = graphBottomBorder - graphTopBorder;
+// left border of graph x-pixel value, INCLUDING any trailing gridlines
+var graphLeftTrailingBorder = graphLeftBorder - graphLeftTrail;
+// right border of graph x-pixel value, INCLUDING any trailing gridlines
+var graphRightTrailingBorder = graphRightBorder + graphRightTrail;
+// top border of graph y-pixel value, INCLUDING any trailing gridlines
+var graphTopTrailingBorder = graphTopBorder - graphTopTrail;
+// bottom border of graph y-pixel value, INCLUDING any trailing gridlines
+var graphBottomTrailingBorder = graphBottomBorder + graphBottomTrail;
 
 var centerX = graphWidth/2 + graphLeftBorder;
 var centerY = graphHeight/2 + graphTopBorder;
 
-// slider parameters; only tE, t0, and thetaY work/have reasonable ranges/values
-// NOTE: There are/should be corellations between several of these for instance tE depends
-// on the rest, and mu depends on Ds and Dl;
-// need to figure that out so that updating one changes the related ones
-
 // Physical constants
-var G = 6.67384e-11; // m3 kg−1 s−2 (astropy value); const
-var c = 299792458.0; // m s-1 (astropy value); const
+
+// m3 kg−1 s−2 (astropy value); const
+var G = 6.67384e-11;
+ // m s-1 (astropy value); const
+var c = 299792458.0;
 
 // conversion constants
-var masToRad = 4.84813681109536e-9; // rad/mas; const
+
+// rad/mas; const
+var masToRad = 4.84813681109536e-9;
 
 // Dl slider/value is kept one "step" below Ds; determines size of that step
-var sourceLensMinSeparation = 0.01; // kpc; const
+
+// kpc; const
+var sourceLensMinSeparation = 0.01;
 
 // base quantities set by user
-var Ml1; // solMass
-var Ml2; // solMass
-var Ds; // kpc: Ds =  Dl / (1 - 1/mu)
-var thetaY; // milliarcseconds (mas)
-var Dl; // kpc: Dl = Ds * (1 - 1/mu)
-var t0; // days
-var mu; // mas/yr: mu = thetaE / tE; mu = Ds / (Ds - Dl) = 1/(1 - Dl/Ds)
+
+// solMass
+var Ml1;
+// solMass
+var Ml2;
+// kpc: Ds =  Dl / (1 - 1/mu)
+var Ds;
+// milliarcseconds (mas)
+var thetaY;
+// kpc: Dl = Ds * (1 - 1/mu)
+var Dl;
+// days
+var t0;
+// mas/yr:
+// ```
+// mu = thetaE / tE; mu = Ds / (Ds - Dl) = 1/(1 - Dl/Ds)
+// ```
+var mu;
 var lensSep;
 var incline;
 
 // derived quantities
+
+// unitless
 var u0;
-var tE; // days
-var Drel; // kpc
-var thetaE; // radians (or should we use milliarcsecond?)
+// days
+var tE;
+// kpc
+var Drel;
+// radians (or should we use milliarcsecond?)
+var thetaE;
 
 // lightcurve information
 var lightcurveData = null;
@@ -89,8 +111,10 @@ var fixU0;
 // plot scale
 var dayWidth;
 var magnifHeight;
-var xPixelScale; // pixels per day
-var yPixelScale; // pixels per magnif unit
+// pixels per day
+var xPixelScale;
+// pixels per magnif unit
+var yPixelScale;
 
 // plot range
 var xAxisInitialDay;
@@ -98,12 +122,14 @@ var yAxisInitialMagnif;
 var xAxisFinalDay;
 var yAxisFinalMagnif;
 
-// var dayWidthDefault = 32; // const
-var dayWidthDefault = 200; // debug value; temp
-var magnifHeightDefault = 10; // const
-// var xAxisInitialDayDefault = -16; // const
-var xAxisInitialDayDefault = -100; // debug value; temp
-var yAxisInitialMagnifDefault = 0.5; // const
+// arbitrarily chosen value; const
+var dayWidthDefault = 200;
+// const
+var magnifHeightDefault = 10;
+// arbitrarily chosen value; const
+var xAxisInitialDayDefault = -100;
+// const
+var yAxisInitialMagnifDefault = 0.5;
 
 // gridlines
 var xGridInitial;
@@ -113,9 +139,10 @@ var yGridFinal;
 var xGridStep;
 var yGridStep;
 
-// var xGridStepDefault = 2; // const
-var xGridStepDefault = 20; // debug value; temp
-var yGridStepDefault = 1; // const
+// arbitrarily chosen value; const
+var xGridStepDefault = 20;
+// const
+var yGridStepDefault = 1;
 
 // Step increments used by debug buttons to alter range/scale
 var xGraphShiftStep = 0.25;
@@ -144,7 +171,8 @@ var tickLabelFont = "10pt Arial";
 var tickLabelColor = "black";
 var tickLabelAlign = "center";
 var tickLabelBaseline = "middle";
-var tickLabelSpacing = 7; // spacking between tick label and end of trailing gridline
+// spacing between tick label and end of trailing gridline
+var tickLabelSpacing = 7;
 
 // axis label text aesthetics
 var xLabel = "time (days)";
@@ -210,8 +238,10 @@ var yZoomOutButton = document.getElementById("yZoomOut");
 
 var resetGraphButton = document.getElementById("resetGraph");
 
-var centerLayout = false; // const
-var binaryFlag = true; // switch between binary and single lens modes
+// const
+var centerLayout = false;
+// switch between binary and single lens modes
+var binaryFlag = true;
 
 // controls whether plot updates when slider is moved
 // or when slider is released
@@ -228,8 +258,6 @@ function init() {
                           xAxisInitialDayDefault, yAxisInitialMagnifDefault);
   updateCurveData();
 
-  // display lightcurve after all modules have been loaded
-  // window.onload = function() { plotLightcurve(); }
   plotLightcurve();
   console.log(`tE: ${tE}`);
   console.log(`thetaE: ${thetaE}`);
@@ -309,7 +337,8 @@ function initListeners(updateOnSliderMovement=updateOnSliderMovementFlag,
   yZoomOutButton.addEventListener("click", function() { updateGraph("yZoomOut"); }, false);
 
   resetGraphButton.addEventListener("click", function() { updateGraph("reset"); }, false)
-  updateSliders(); // in case HTML slider values differ from actual starting values
+   // in case HTML slider values differ from actual starting values
+  updateSliders();
 }
 
 /** initParams */
@@ -317,29 +346,32 @@ function initParams() {
   // set lense curve parameters to defaults
 
   // set base quantity defaults
-  // tE = 10; // tE = thetaE / mu // old, don't use
-  // Ml1 = 0.1; // solMass
-  // Ds = 8.0; // kpc: Ds =  Dl / (1 - 1/mu)
-  // thetaY = 0.0121; // milliarcseconds (mas)
-  // Dl = 7.0; // kpc: Dl = Ds * (1 - 1/mu)
-  // t0 = 0; // days
-  // mu = 7; // mas/yr  (milliarcseconds/year): mu = thetaE / tE
 
   fixU0 = fixU0checkbox.checked
-  // Ml1 = 0.1;
-  // Ml2 = 0.1;
+  // solMass
   Ml1 = 1*0.62
+  // solMass
   Ml2 = 1*1 - Ml1;
+  // kpc: Ds =  Dl / (1 - 1/mu)
   Ds = 8.0;
-  // thetaY = -0.05463809952990817329;
+  // milliarcseconds (mas)
   thetaY =  -0.03 * 0.8346900557366428;
+  // kpc:
+  // ```
+  // Dl = Ds * (1 - 1/mu)
+  // ```
   Dl = 4.75;
+  // days
   t0 = 0;
+  // mas/yr (milliarcseconds/year):
+  // ```
+  // mu = thetaE/tE
+  // ```
   mu = 7;
-  // mu = 20; // DEBUG value, TEMPORARY
-  // lensSep = 1 * 0.8346900557366428; // mas (milliarcseconds)
+  // mas (milliarcseconds)
   lensSep = 2.150;
-  incline = Math.atan(0.12) * 180/Math.PI; // degrees
+  // degrees
+  incline = Math.atan(0.12) * 180/Math.PI;
 
   // set derived quantities
   updateDerivedQuantities(initializing=true);
@@ -354,26 +386,29 @@ function updateDerivedQuantities(initializing=false) {
   else
     updateThetaY();
 
-  // console.log(`tE before: ${tE}`);
   updateTE();
-  // console.log(`tE after: ${tE}`);
 }
 
 /** updateU0 */
 function updateU0() {
-  var thetaY_rad = thetaY * masToRad; // convert from mas to radians
-  u0 = thetaY_rad / thetaE; // unitless ("units" of thetaE)
+  // convert from mas to radians
+  var thetaY_rad = thetaY * masToRad;
+  // unitless ("units" of thetaE)
+  u0 = thetaY_rad / thetaE;
 }
 
 /** updateThetaY */
 function updateThetaY() {
-  var thetaE_mas = thetaE / masToRad ;// convert from radians to mas
-  thetaY = u0 * thetaE_mas; // mas
+  // convert from radians to mas
+  var thetaE_mas = thetaE / masToRad ;
+  // mas
+  thetaY = u0 * thetaE_mas;
 }
 
 /** updateDrel */
 function updateDrel() {
-  Drel = 1/((1/Dl) - (1/Ds)); // kpc
+  // kpc
+  Drel = 1/((1/Dl) - (1/Ds));
 }
 
 /** updateThetaE */
@@ -396,31 +431,37 @@ function calculateThetaE(get_mas=false, useBinaryMass=binaryFlag, lensToUse=1) {
   m -> kpc: 3.240779289469756e-20 kpc/m
   */
 
-  var solMassToKg = 1.9891e30; // kg/solMass; const
-  var kpcToM = 3.0856775814671917e19; // m/kpc; const
+  // kg/solMass; const
+  var solMassToKg = 1.9891e30;
+  // m/kpc; const
+  var kpcToM = 3.0856775814671917e19;
 
-  var eqMl1 = Ml1 * solMassToKg; // Ml1 converted for equation to kg
-  var eqMl2 = Ml2 * solMassToKg; // Ml2 converted for equation to kg
-  var eqDrel = Drel * kpcToM; // Drel converted for equation to m
+  // Ml1 converted for equation to kg
+  var eqMl1 = Ml1 * solMassToKg;
+  // Ml2 converted for equation to kg
+  var eqMl2 = Ml2 * solMassToKg;
+  // Drel converted for equation to m
+  var eqDrel = Drel * kpcToM;
 
   if (useBinaryMass === true) {
-    // var eqReducedMl = (eqMl1 * eqMl2)/(eqMl1 + eqMl2); // reduced mass from
-    //                                                    // Ml1 and Ml2 in kg
-    var eqTotalMl = eqMl1 + eqMl2; // total mass from Ml1 and Ml2 in kg
+    // total mass from Ml1 and Ml2 in kg
+    var eqTotalMl = eqMl1 + eqMl2;
 
     eqMl = eqTotalMl;
   }
-
-  else { // single lens, not binary
+  else {
+    // single lens, not binary
     if (lensToUse === 2) {
       eqMl = eqMl2;
     }
-    else { // lensToUse === 1 or otherwise
+    // lensToUse === 1 or otherwise
+    else {
       eqMl = eqMl1;
     }
   }
 
   // G is m^3 /(kg * s^2)
+
   // c is m/s
   var thetaEresult = Math.sqrt(4 * G * eqMl/(c*c*eqDrel)); // radians (i.e. unitless)
 
@@ -431,21 +472,24 @@ function calculateThetaE(get_mas=false, useBinaryMass=binaryFlag, lensToUse=1) {
 }
 
 /** updateTE */
-function updateTE(debug=false) {
+function updateTE() {
   var yearToDay = 365.25; // day/year; const
 
-  var eqMu = mu * masToRad / yearToDay // mu converted for equation to rad/yr
+  // mu converted for equation to rad/yr
+  var eqMu = mu * masToRad / yearToDay
+
   // thetaE is in radians
-  tE = thetaE/eqMu; // days
-  if (debug)
-    tE *= 1e10; // something is wrong; have to multiply by 1e9+ to get reasonable plot
+
+  // days
+  tE = thetaE/eqMu;
 }
 
 /** updateSliderReadout */
 function updateSliderReadout(slider, readout, sliderName="") {
   // Update individual slider readout to match slider value
 
-  var fixedDecimalPlace = 3; // Default value for tE, u0, thetaY, lensSep
+  // Default value for tE, u0, thetaY, lensSep
+  var fixedDecimalPlace = 3;
 
   if (sliderName === "Ml1" || sliderName === "Ml2")
     fixedDecimalPlace = 6;
@@ -467,97 +511,94 @@ function updateSliderReadout(slider, readout, sliderName="") {
 /** updateSliders */
 function updateSliders() {
   // maximum parameter values that can be displayed;
+
   // need to match up with max value on HTML sliders
-  var tEmax = 365; // days
-  var u0max = 2; // unitless (einstein radii)
-  var Ml1Max = 15; // solMass
-  var Ml2Max = 15; // solMass
-  var DsMax = 8.5 // kpc
-  var thetaYmax = 2; // mas
-  var DlMax = 8.5 // kpc
-  var t0max = 75 // days
-  var muMax = 10 // milliarcseconds/year
-  // var lensSepMax = 0.7; // milliarcseconds
+
+  // days
+  var tEmax = 365;
+  // unitless (einstein radii)
+  var u0max = 2;
+  // solMass
+  var Ml1Max = 15;
+  // solMass
+  var Ml2Max = 15;
+  // kpc
+  var DsMax = 8.5
+  // mas
+  var thetaYmax = 2;
+  // kpc
+  var DlMax = 8.5
+  // days
+  var t0max = 75
+  // milliarcseconds/year
+  var muMax = 10
 
   // update slider values and readouts to reflect current variable values
   tEslider.value = tE;
   // tEreadout.innerHTML = Number(tEslider.value).toFixed(3);
   updateSliderReadout(tEslider, tEreadout, "tE");
   // add "+" once after exceeding maximum slider value;
+
   // NOTE: Very hacky. Improve this
   if (tE > tEmax) {
     tEreadout.innerHTML += "+";
   }
 
   u0slider.value = u0;
-  // u0readout.innerHTML = Number(u0slider.value).toFixed(3);
   updateSliderReadout(u0slider, u0readout, "u0");
   if (u0 > u0max) {
     u0readout.innerHTML += "+";
   }
 
   Ml1slider.value = Ml1;
-  // Ml1readout.innerHTML = Number(Ml1slider.value).toFixed(6);
   updateSliderReadout(Ml1slider, Ml1readout, "Ml1");
   if (Ml1 > Ml1Max) {
     Ml1readout.innerHTML += "+";
   }
 
   Ml2slider.value = Ml2;
-  // Ml2readout.innerHTML = Number(Ml2slider.value).toFixed(6);
   updateSliderReadout(Ml2slider, Ml2readout, "Ml2");
   if (Ml2 > Ml2Max) {
     Ml2readout.innerHTML += "+";
   }
 
   DsSlider.value = Ds;
-  // DsReadout.innerHTML = Number(DsSlider.value).toFixed(2);
   updateSliderReadout(DsSlider, DsReadout, "Ds");
   if (Ds > DsMax) {
     DsReadout.innerHTML += "+";
   }
 
   thetaYslider.value = thetaY;
-  // thetaYreadout.innerHTML = Number(thetaYslider.value).toFixed(3);
   updateSliderReadout(thetaYslider, thetaYreadout, "thetaY");
   if (thetaY > thetaYmax) {
     thetaYreadout.innerHTML += "+";
   }
 
-  DlSlider.value = Dl;
-  // DlReadout.innerHTML = Number(DlSlider.value).toFixed(2);
+  DlSlider.value = Dl;;
   updateSliderReadout(DlSlider, DlReadout, "Dl");
   if (Dl > DlMax) {
     DlReadout.innerHTML += "+";
   }
 
   t0slider.value = t0;
-  // t0readout.innerHTML = Number(t0slider.value).toFixed(1);
   updateSliderReadout(t0slider, t0readout, "t0");
   if (t0 > t0max) {
     t0Readout.innerHTML += "+";
   }
 
   muSlider.value = mu;
-  // muReadout.innerHTML = Number(muSlider.value).toFixed(2);
   updateSliderReadout(muSlider, muReadout, "mu");
   if (mu > muMax) {
     muReadout.innerHTML += "+";
   }
 
   inclineSlider.value = incline;
-  // inclineReadout.innerHTML = Number(inclineSlider.value).toFixed(2);
   updateSliderReadout(inclineSlider, inclineReadout, "incline");
 
   lensSepSlider.value = lensSep;
-  // lensSepReadout.innerHTML = Number(lensSepSlider.value).toFixed(3);
   updateSliderReadout(lensSepSlider, lensSepReadout, "lensSep");
-  // if (lensSep > lensSepMax) {
-    // lensSepReadout.innerHTML += "+";
-  // }
 
   // update thetaE readout (no slider)
-
   if (thetaEreadout !== null) {
     var thetaE_mas = thetaE / masToRad;
     console.log(`thetaE (mas): ${thetaE_mas}`);
@@ -597,7 +638,8 @@ function updateParam(param) {
     Ml2 = Number(Ml2slider.value);
   }
   else if (param === "Ds") {
-    if (Number(DsSlider.value) > Dl) { // source must be farther than lens
+    // source must be farther than lens
+    if (Number(DsSlider.value) > Dl) {
       Ds = Number(DsSlider.value);
     }
     // If Ds slider is less than or equal to Dl, we should set Ds to one step above Dl
@@ -610,7 +652,8 @@ function updateParam(param) {
     thetaY = Number(thetaYslider.value);
   }
   else if (param === "Dl") {
-    if (Number(DlSlider.value) < Ds) { // lens must be closer than source
+     // lens must be closer than source
+    if (Number(DlSlider.value) < Ds) {
       Dl = Number(DlSlider.value);
     }
     // If Dl slider is less than or equal to Dl, we should set Dl to one step below Ds
@@ -630,26 +673,19 @@ function updateParam(param) {
     console.log("Can't change tE yet (since it's a derived quantity)");
     var oldTE = tE;
     tE = Number(tEslider.value);
-    /*
-    thetaE = k * sqrt(M)
-    tE = thetaE / mu
 
-    tE = (k/mu) * sqrt(M)
-       = k2 * sqrt(M)
+    // NOTE: Pretty hacky way of doing this
 
-     M = (tE/k2)**2
-     M = k3 * tE**2
-     */
-
-     // NOTE: Pretty hacky way of doing this
-     // modify Ml1 accordingly of tE is changed, where
-     // Ml1 is propotional to tE^2
-     Ml1 *= (tE/oldTE)*(tE/oldTE);
+    // modify Ml1 accordingly of tE is changed, where
+    // Ml1 is propotional to tE^2
+    Ml1 *= (tE/oldTE)*(tE/oldTE);
   }
   else if (param === "u0") {
     u0 = Number(u0slider.value);
-    var thetaY_rad = u0 * thetaE; // thetaY in radians
-    thetaY = thetaY_rad / masToRad; // converted to milliarcseconds (mas)
+    // thetaY in radians
+    var thetaY_rad = u0 * thetaE;
+    // converted to milliarcseconds (mas)
+    thetaY = thetaY_rad / masToRad;
   }
 
   else if (param === "incline") {
@@ -661,9 +697,9 @@ function updateParam(param) {
   }
 
   // updates Drel, then thetaE, then tE, each of which depends on the last,
-  // and collectively depends on some of these base quantities;
+  // and collectively depends on some of these base quantities
+
   // not necessary for every option, but probably cleaner code this way
-  //
   updateDerivedQuantities();
   updateSliders();
   updateCurveData();
@@ -747,6 +783,7 @@ function updateGridRange(xStep, yStep) {
   // and/or update grid for new initial/final axis values using
 
   // if new step values are passed in, update grid step values;
+
   // otherwise leave grid steps unchanged when updating grid
   if ( xStep !== undefined && yStep !== undefined) {
     xGridStep = xStep;
@@ -780,14 +817,6 @@ function updateGridRange(xStep, yStep) {
     yGridFinal = yAxisFinalMagnif;
   else
     yGridFinal = yGridStep * (Math.floor(yAxisFinalMagnif / yGridStep));
-
-  // console.log(Math.floor)
-  // console.log("MathFloored xAxisInitialDay: " + Math.floor(xAxisInitialDay));
-  // console.log("xGridInitial: " + xGridInitial);
-  // console.log("xGridFinal: " + xGridFinal);
-  // console.log("MathFloored yAxisInitialMagnif: " + Math.floor(yAxisInitialMagnif));
-  // console.log("yGridInitial: " + yGridInitial);
-  // console.log("yGridFinal: " + yGridFinal);
 }
 
 /** clearGraph */
@@ -812,6 +841,7 @@ function drawAxes() {
   context.beginPath();
 
   // x axis
+
   // the -axisWidth/2 makes the x and y axes fully connect
   // at their intersection for all axis linewidths
   context.moveTo(graphLeftBorder - axisWidth/2, graphBottomBorder);
@@ -822,6 +852,7 @@ function drawAxes() {
   context.lineTo(graphLeftBorder, graphTopBorder - 15);
 
   // x axis arrow
+
   // NOTE: Doesn't look right for linewidth > 2
   context.moveTo(graphRightBorder + 15, graphBottomBorder);
   context.lineTo(graphRightBorder + 8, graphBottomBorder - 5);
@@ -829,6 +860,7 @@ function drawAxes() {
   context.lineTo(graphRightBorder + 8, graphBottomBorder + 5);
 
   // y axis arrow
+
   // NOTE: Doesn't look right for linewidth > 2
   context.moveTo(graphLeftBorder, graphTopBorder - 15);
   context.lineTo(graphLeftBorder - 5, graphTopBorder - 8);
@@ -876,8 +908,6 @@ function drawAxisLabels() {
 function updatePlotScaleAndRange(width, height, xInit, yInit) {
   // Change range/scale of plot
 
-  //  console.log("updatePlotScale: " + width + " " + height + " "
-  //                                  + xInit + " " + yInit);
   // plot scale
   if (width !== undefined)
     dayWidth = width;
@@ -898,10 +928,7 @@ function updatePlotScaleAndRange(width, height, xInit, yInit) {
 /** initPlot */
 function initPlot() {
   clearGraph();
-  // updatePlotScaleAndRange(undefined, undefined, undefined,
-  //                         undefined, undefined, 1.5);
-  // console.log("tE: " + tE);
-  // console.log("dayWidth: " + dayWidth);
+
   // fill in canvas background
   context.fillStyle = canvasBackgroundColor;
   context.fillRect(0, 0, canvas.width, canvas.height);
@@ -973,13 +1000,17 @@ function plotLightcurveAlone(tDayFinal=xAxisFinalDay, inputData, dashedCurve=fal
   if (inputData !== undefined) {
     curveData = inputData;
   }
-  else { // no input parameter given
-    if (lightcurveData !== null) { // module lightcurve variable already initialized
-      curveData = lightcurveData; // use module variable in function
+  // no input parameter given
+  else {
+    // module lightcurve variable already initialized
+    if (lightcurveData !== null) {
+      // use module variable in function
+      curveData = lightcurveData;
     }
-    else { // module lightcurve variable not initialized yet
-      // window.alert("lightcurveData uninitialized; updating");
-      updateCurveData(); // initialize module variable
+    // module lightcurve variable not initialized yet
+    else {
+      // initialize module variable
+      updateCurveData();
       curveData = lightcurveData; // use newly initialized module variable in function
     }
   }
@@ -996,7 +1027,8 @@ function plotLightcurveAlone(tDayFinal=xAxisFinalDay, inputData, dashedCurve=fal
     context.clip();
 
     if (dashedCurve === true)
-      context.setLineDash([dashedCurveLength, dashedCurveSpacing]); // turn on dashed lines
+      // turn on dashed lines
+      context.setLineDash([dashedCurveLength, dashedCurveSpacing]);
 
     // prepare to draw curve and move to initial pixel coordinate
     var tPixel = xDayToPixel(tDay);
@@ -1007,7 +1039,8 @@ function plotLightcurveAlone(tDayFinal=xAxisFinalDay, inputData, dashedCurve=fal
     // Iterate over remaining days and draw lines from each pixel coordinate
     // to the next
 
-    var index = 0; // // Index tracks place in data arrays if reading in data
+    // Index tracks place in data arrays if reading in data
+    var index = 0;
     while (tDay < tDayFinal) {
       // proceed to the next elements for the day and magnification arrays
       index += 1;
@@ -1037,8 +1070,10 @@ function plotLightcurveAlone(tDayFinal=xAxisFinalDay, inputData, dashedCurve=fal
 
 /** getThetaX */
 function getThetaX(t) {
-  var yearToDay = 365.25; // day/year; const
-  var eqMu = mu / yearToDay; // convert mu to milliarcseconds/day
+  // day/year; const
+  var yearToDay = 365.25;
+  // convert mu to milliarcseconds/day
+  var eqMu = mu / yearToDay;
   var thetaX = eqMu * (t - t0);
   return thetaX;
 }
@@ -1054,46 +1089,50 @@ function updateCurveData() {
     var totalMass = Ml1 + Ml2;
     var GM1 = Ml1/totalMass;
     var GM2 = Ml2/totalMass;
-    var D = (lensSep/2)/thetaE_mas; // "D" is the half-separation in units of
+    // "D" is the half-separation in units of ?? (debug: check units for D)
+    var D = (lensSep/2)/thetaE_mas;
 
     var cof2 = thetaY/thetaE_mas;
-
-    // var cof1 = incline; // DEBUG: temp, not correct;
-                        // cof1 should be negative slope,
-                        // incline should be degrees, need conversion
 
     var incline_radians = incline * Math.PI/180;
     var cof1 = -Math.tan(incline_radians);
     var minXLM = getThetaX(xAxisInitialDay) / thetaE_mas;
-    // window.alert(minXLM*thetaE_mas);
-    // var minXLM = -0.5;
     var maxXLM = getThetaX(xAxisFinalDay) / thetaE_mas;
 
-    var NPN = 4000; // Number of points for lightcurve
-    var NR = 30000; // Number of points for critical and caustic curves
+    // Number of points for lightcurve
+    var NPN = 4000;
+    // Number of points for critical and caustic curves
+    var NR = 30000;
 
     // Sampling density of critical and caustic curve points
-    // var DR = 3/NR;vv
-    var DR = 0.0003; // was 0.0001 by default, but this seems to work better
+    /* For a while, was using this so we could automatically change DR
+       when changing NR.
+
+       var DR = 3/NR;
+    */
+    // was 0.0001 by default, but this seems to work better
+    var DR = 0.0003;
 
     if (debug === true) {
-      // GM1 = 0.2;
-      // GM2 = 0.8;
-      // D = 0.5;
-      // cof1 = 0;
-      // cof2 = -0.5;
-      // var thetaE_mas_temp = 0.6539599913692768;
-      // minXLM = -1.1617229221914211;
-      // maxXLM = 1.1617229221914211;
-      //
-      // NPN = 4000;
+      // testing function with some default values
 
-      // GM1 = 0.61383532827548774
-      // GM2 = 1 - GM1;
-      // D = lensSep/2;
-      // cof1 = 0;
-      // cof2 = thetaY;
-      // NPN = 4000;
+      GM1 = 0.2;
+      GM2 = 0.8;
+      D = 0.5;
+      cof1 = 0;
+      cof2 = -0.5;
+      var thetaE_mas_temp = 0.6539599913692768;
+      minXLM = -1.1617229221914211;
+      maxXLM = 1.1617229221914211;
+
+      NPN = 4000;
+
+      GM1 = 0.61383532827548774
+      GM2 = 1 - GM1;
+      D = lensSep/2;
+      cof1 = 0;
+      cof2 = thetaY;
+      NPN = 4000;
     }
 
     console.log(`(binary) GM1: ${GM1}`);
@@ -1109,18 +1148,6 @@ function updateCurveData() {
     console.log(`(binary) xAxisFinalDay: ${xAxisFinalDay}`);
     console.log(`(binary) thetaE_mas: ${thetaE_mas}`);
 
-
-    var windowAlertParamDebugFlag = false;
-
-    if (windowAlertParamDebugFlag === true) {
-      window.alert(`\
-        GM1: ${GM1}
-        GM2: ${GM2}
-        D: ${D}
-        cof1: ${cof1}
-        cof2: ${cof2}`);
-    }
-
     var binaryCaclulationResults = bin_len_faster.plot_binary(GM1, GM2, D, cof1, cof2,
                                                               minXLM, maxXLM, NPN, NR, DR);
 
@@ -1129,11 +1156,8 @@ function updateCurveData() {
     var normalizedImagePositions = binaryCaclulationResults.normalizedImagePositions;
     var causticAndCritNormalized = binaryCaclulationResults.causticAndCrit; // units of thetaE
 
-    // window.alert(times.length + " " + magnifs.length)
     console.log(`(binary) times.length: ${times.length}`);
     console.log(`(binary) magnifs.length: ${magnifs.length}`);
-    // console.log(`(binary) times: ${times}`);
-    // console.log(`(binary) magnifs: ${magnifs}`);
     console.log(`(binary) crit.x1.length: ${causticAndCritNormalized.crit.x1.length}`);
     console.log(`(binary) caustic.x1.length: ${causticAndCritNormalized.caustic.x1.length}`);
   }
@@ -1144,8 +1168,6 @@ function updateCurveData() {
 
     for (var tDay = xAxisInitialDay; tDay <= xAxisFinalDay; tDay += dt) {
       var magnif = getMagnif(tDay);
-      // if (tDay === 0)
-        // console.log("magnif: " + magnif);
       times.push(tDay);
       magnifs.push(magnif);
     }
@@ -1163,7 +1185,6 @@ function updateCurveData() {
   if (autoScaleMagnifHeight === true) {
     var maxMagnif = math.max(curveData.magnifs);
     updatePlotScaleAndRange(undefined, maxMagnif+1, undefined, 0.5);
-    // updateGridRange(xGridStepDefault, (maxMagnif+1)/10);
   }
   lightcurveData = curveData;
 
@@ -1205,15 +1226,19 @@ function getU(timeTerm) {
 function getMagnifFromU(u) {
   var magnifNumerator = u*u + 2;
   var magnifDenominator = u * Math.sqrt(u * u + 4);
-  magnif = magnifNumerator / magnifDenominator; // unitless
+  // unitless
+  magnif = magnifNumerator / magnifDenominator;
   return magnif;
 }
 
 /** getMagnif */
 function getMagnif(t) {
-  var timeTerm = getTimeTerm(t); // unitless
-  var u = getU(timeTerm); // unitless
-  var magnif = getMagnifFromU(u); // unitless
+    // unitless
+  var timeTerm = getTimeTerm(t);
+  // unitless
+  var u = getU(timeTerm);
+  // unitless
+  var magnif = getMagnifFromU(u);
 
   return magnif;
 }
@@ -1221,32 +1246,53 @@ function getMagnif(t) {
 // public properties to be stored in module object,
 // accessible via module object by code executed after this script
 module.exports = {
-  //initialization
-  init: init, // initialization function
-  get initialized() { return initialized; }, // whether initialization is done
+  // initialization
+
+  // initialization function
+  init: init,
+  // whether initialization is done
+  get initialized() { return initialized; },
 
   // getters for variables we want to share
-  get Ml1() { return Ml1; }, // base modeling parameters
-  get Ds() { return Ds; }, // kpc
-  get thetaY() { return thetaY; }, // milliarcseconds (mas)
-  get Dl() { return Dl; }, // kpc
-  get t0() { return t0; }, // days
-  get mu() { return mu; }, // mas/yr
 
-  get Drel() { return Drel; }, // derived modeling parameters
-  get thetaE() { return thetaE; }, // radians
-  get thetaE_mas() { return thetaE / masToRad; }, // milliarcseconds (mas)
-  get tE() { return tE; }, // days
-  get u0() { return u0; }, // unitless (units of thetaE)
-  get lensSep() { return lensSep; }, // milliarcseconds (mas)
-  get incline() { return incline; }, // degrees
+  // base modeling parameters
+  get Ml1() { return Ml1; },
+  // kpc
+  get Ds() { return Ds; },
+  // milliarcseconds (mas)
+  get thetaY() { return thetaY; },
+  // kpc
+  get Dl() { return Dl; },
+  // days
+  get t0() { return t0; },
+  // mas/yr
+  get mu() { return mu; },
+
+  // derived modeling parameters
+
+  // debug: find out units for Drel
+  get Drel() { return Drel; },
+  // radians
+  get thetaE() { return thetaE; },
+  // milliarcseconds (mas)
+  get thetaE_mas() { return thetaE / masToRad; },
+  // days
+  get tE() { return tE; },
+  // unitless (units of thetaE)
+  get u0() { return u0; },
+  // milliarcseconds (mas)
+  get lensSep() { return lensSep; },
+  // degrees
+  get incline() { return incline; },
 
   // controls if plot updates when slider is moved and/or released
   get updateOnSliderMovementFlag() { return updateOnSliderMovementFlag; },
   get updateOnSliderReleaseFlag() { return updateOnSliderReleaseFlag; },
 
   // used for animation
-  get dt() { return dt; }, // time step used for drawing curve (days)
+
+  // time step used for drawing curve (days)
+  get dt() { return dt; },
   get xAxisInitialDay() { return xAxisInitialDay; },
   get xAxisFinalDay() { return xAxisFinalDay; },
   plotLightcurve: plotLightcurve,
@@ -1290,11 +1336,4 @@ module.exports = {
 
   // for updating slider readout
   updateSliderReadout: updateSliderReadout,
-
-  // plotLightcurveSegment: plotLightcurveSegment,
-  // initPlot: initPlot,
-  // context: context,
-  // xDayToPixel: xDayToPixel,
-  // getMagnif: getMagnif,
-  // yMagnifToPixel: yMagnifToPixel,
 };

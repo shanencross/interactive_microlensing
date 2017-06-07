@@ -17,7 +17,8 @@ var eventModule = require("./psbl-microlensing-event.js")
 
 var almostEquals = require("./utils.js").almostEquals;
 
-var initialized = false; // whether module init function has been executed
+// whether module init function has been executed
+var initialized = false;
 
 // base variables (borders)
 var picLeftBorder = 50;
@@ -33,18 +34,13 @@ var picBottomTrail = 10;
 
 // plot range/scale
 var dayWidth = 30;
-// var thetaXwidth = 4/3;
 var thetaXwidth = 4;
-// var thetaYheight = 1; // mas
 var thetaYheight = 3;
 var xAxisInitialDay = -15;
-// var xAxisInitialThetaX = -(4/3)/2
 var xAxisInitialThetaX = -(4)/2
-// var yAxisInitialThetaY = -0.5; // half of thetaYheight so that 0 is the middle
+// half of thetaYheight so that 0 is the middle
 var yAxisInitialThetaY = -3/2;
-// var xGridStepDefault = 0.1;
 var xGridStepDefault = 0.25;
-// var yGridStepDefault = 0.1;
 var yGridStepDefault = 0.25;
 
 /** A lens -- one of the two binary lenses.
@@ -106,9 +102,12 @@ var dashedPathWidth = 2;
 var dashedPathLength = 8;
 var dashedPathSpacing = 10;
 
-var sourceColor = "#004d4d"; // darker teal
+// darker teal
+var sourceColor = "#004d4d";
 // initialized elsewhere in function
-var sourceRadius; // mas
+
+// mas
+var sourceRadius;
 var sourceOutlineWidth = 2;
 var sourceOutlineColor = "teal";
 
@@ -135,11 +134,15 @@ var lensedImagePlusOutlineColor = "fuchsia";
 var lensedImageMinusColor = "green";
 var lensedImageMinusOutlineColor = "lime";
 
-var causticColor1 = "fuchsia";
+// when not debugging, caustic colors 1 & 2 should be the same
+var causticColor1 = "purple";
 var causticColor2 = "purple";
-// causticColor1 = causticColor2; // when not debugging, these should be the same
-var critColor1 = "orangeRed";
+
+
+// when not debugging, crit colors 1 & 2 should be the same
+var critColor1 = "crimson";
 var critColor2 = "crimson";
+
 // critColor1 = critColor2; // when not debugging, these should be the same
 var causticPointSizeX = 2;
 var causticPointSizeY = 2;
@@ -148,8 +151,7 @@ var critPointSizeY = 2;
 
 var binaryLensedImagePointSizeX = 2;
 var binaryLensedImagePointSizeY = 2;
-// var binaryLensedImageOutlineColors = ["aqua", "teal", "orange", "black", "pink"];
-// var binaryLensedImageFillColors = ["pink", "aqua", "teal", "orange", "black"];
+
 var binaryLensedImageOutlineColors = ["black", "black", "black", "black", "black"];
 var binaryLensedImageFillColors = ["orange", "orange", "orange", "orange", "orange"];
 
@@ -158,12 +160,15 @@ var tickLabelFont = "8pt Arial";
 var tickLabelColor = "black";
 var tickLabelAlign = "center";
 var tickLabelBaseline = "middle";
-var tickLabelSpacing = 7; // spacking between tick label and end of trailing gridline
+// spacing between tick label and end of trailing gridline
+var tickLabelSpacing = 7;
 
 // base variables (axis labels)
 var xDayLabel = "time (days)";
-var xLabel = String.fromCharCode(952) + "x (mas)"; // thetaX
-var yLabel = String.fromCharCode(952) + "y (mas)"; // thetaY
+// thetaX
+var xLabel = String.fromCharCode(952) + "x (mas)";
+// thetaY
+var yLabel = String.fromCharCode(952) + "y (mas)";
 var axisLabelFont = "10pt Arial";
 var axisLabelColor = "black";
 var axisLabelAlign = "center";
@@ -198,10 +203,10 @@ var xGridStep;
 var yGridStep;
 
 // derived variable (source/lens/ring)
-var sourcePos; // x value: time (days); y value: thetaY
-var sourcePixelPos; // pixel x and y values
-// var lens1pixelPos;
-// var lens2pixelPos;
+// x value: time (days), y value: thetaY
+var sourcePos;
+// pixel x and y values
+var sourcePixelPos;
 var ringRadius = {x: undefined, y: undefined}
 var sourceOutline;
 var lensedImageOutlines;
@@ -224,28 +229,24 @@ curveCanvas.width = mainCanvas.width;
 curveCanvas.height = mainCanvas.width;
 var curveContext = curveCanvas.getContext("2d");
 
-var thetaXreadout = document.getElementById("thetaXreadout"); // readout of current source thetaX position
-                                                              // mainly for debugging, but may keep
+// readout of current source thetaX position
+var thetaXreadout = document.getElementById("thetaXreadout");
+
 var sourceRadiusNormalizedReadout = document.getElementById("sourceRadiusNormalizedReadout");
 var imageShapeCheckbox = document.getElementById("imageShapeCheckbox");
 var sourceRadiusSlider = document.getElementById("sourceRadiusSlider");
 var sourceRadiusReadout = document.getElementById("sourceRadiusReadout");
 
-// if on, display shapes for the lensed images, not just points;
+// if on, display shapes for the lensed images, not just points
+
 // toggled by checkbox
 var displayImageShapeFlag = false;
-
-var numPointsDefault = 360; // number of points into which source outline is divided
-                         // i.e. a value of 8 would divide the outline into 8
-                         // evenly spaced points
-
-var numExtraPointsDefault = 360;
 
 // debug flags
 var animationFlag = true;
 var centerLayoutFlag = false;
 var drawGridFlag = true;
-var drawFullLensedImagesFlag = true; //NOTE: Hammers performance currently
+var drawFullLensedImagesFlag = true;
 // if on, grid lines/ticks for that axis are created in steps starting from 0,
 // rather than starting from the lowest x-axis value or y-axis value
 var centerXgridOnZeroFlag = true;
@@ -258,17 +259,18 @@ var firefoxCompatibilityFlag = true;
 var lensProximityCheckFlag = true;
 var clippingImageFlag = false;
 var binaryFlag = true;
-var separateBinaryRingsFlag = true; // desplay separate rings for each lens;
-                                    // for debugging/testing
-var causticCurveFlag = true; // display caustic curve
-var critCurveFlag = true; // display critical curve
+// desplay separate rings for each lens;
+
+// for debugging/testing
+var separateBinaryRingsFlag = true;
+
+// display caustic curve
+var causticCurveFlag = true;
+// display critical curve
+var critCurveFlag = true;
 
 var updateOnSliderMovementFlag = eventModule.updateOnSliderMovementFlag;
 var updateOnSliderReleaseFlag = eventModule.updateOnSliderReleaseFlag;
-
-// called from PSPL_microlensing_event.js (or whichever script holds the parameter
-// values) after initializations and slider updates),
-// because we NEED parameters initialized first to do drawing and scaling
 
 /** init */
 function init(animation=animationFlag) {
@@ -293,14 +295,12 @@ function initListeners(updateOnSliderMovement=updateOnSliderMovementFlag,
   console.log("(binary_lens_plane) updateOnSliderRelease: " + updateOnSliderRelease);
 
   // update plot when slider is moved
-
   if (sourceRadiusSlider !== null) {
     if (updateOnSliderMovement === true) {
       sourceRadiusSlider.addEventListener("input", function() { updateSourceRadius(); }, false);
     }
 
     // update plot when slider is released
-
     if (updateOnSliderRelease === true) {
       sourceRadiusSlider.addEventListener("change", function() { updateSourceRadius(); }, false);
 
@@ -346,8 +346,6 @@ function initLenses(isBinary=binaryFlag) {
 /** initSourceRadius */
 function initSourceRadius() {
   sourceRadius = 4/xPixelScale; // source radius in mas
-  // sourceRadius = 0.0133; // mas
-  // sourceRadius = 0.0636; // mas
 
   lensedImageRadius = sourceRadius*xPixelScale;
 
@@ -357,20 +355,19 @@ function initSourceRadius() {
 
 /** updateSourceRadiusSlider */
 function updateSourceRadiusSlider() {
-  sourceRadiusSlider.value = sourceRadius; // source radius in mas
+  // source radius in mas
+  sourceRadiusSlider.value = sourceRadius;
   eventModule.updateSliderReadout(sourceRadiusSlider, sourceRadiusReadout, "sourceRadius");
-  // sourceRadiusReadout.innerHTML = Number(sourceRadiusSlider.value).toFixed(4);
 }
 
 /** updateSourceRadius */
 function updateSourceRadius() {
-  sourceRadius = sourceRadiusSlider.value; // source radisu in mas
+  // source radisu in mas
+  sourceRadius = sourceRadiusSlider.value;
   lensedImageRadius = sourceRadius * xPixelScale;
   updateSourceRadiusSlider();
   eventModule.updateCurveData();
   eventModule.redrawCanvases();
-  // eventModule.plotLightcurve();
-  // redraw();
 }
 
 /** initSourcePos */
@@ -380,7 +377,6 @@ function initSourcePos(animation=animationFlag) {
 
   if (animation === false) {
     sourcePos.x = xAxisFinalThetaX;
-    // sourcePos.x = xAxisInitialThetaX;
   }
 }
 
@@ -393,16 +389,24 @@ function redraw(animation=animationFlag) {
 /** updateScaleAndRangeValues */
 function updateScaleAndRangeValues() {
   // borders
-  picRightBorder = picLeftBorder + picWidth; // right border of picture x-pixel value, NOT including any trailing gridlines
-  picBottomBorder = picTopBorder + picHeight; // bottom border of picture y-pixel value, NOT including any trailing gridlines
+
+  // right border of picture x-pixel value, NOT including any trailing gridlines
+  picRightBorder = picLeftBorder + picWidth;
+  // bottom border of picture y-pixel value, NOT including any trailing gridlines
+  picBottomBorder = picTopBorder + picHeight;
   centerX = picWidth/2 + picLeftBorder;
   centerY = picHeight/2 + picTopBorder;
 
   // trails
-  picLeftTrailingBorder = picLeftBorder - picLeftTrail; // left border of picture x-pixel value, INCLUDING any trailing gridlines
-  picRightTrailingBorder = picRightBorder + picRightTrail; // right border of picture x-pixel value, INCLUDING any trailing gridlines
-  picTopTrailingBorder = picTopBorder - picTopTrail; // top border of picture y-pixel value, INCLUDING any trailing gridlines
-  picBottomTrailingBorder = picBottomBorder + picBottomTrail; // bottom border of picture y-pixel value, INCLUDING any trailing gridlines
+
+  // left border of picture x-pixel value, INCLUDING any trailing gridlines
+  picLeftTrailingBorder = picLeftBorder - picLeftTrail;
+  // right border of picture x-pixel value, INCLUDING any trailing gridlines
+  picRightTrailingBorder = picRightBorder + picRightTrail;
+  // top border of picture y-pixel value, INCLUDING any trailing gridlines
+  picTopTrailingBorder = picTopBorder - picTopTrail;
+  // bottom border of picture y-pixel value, INCLUDING any trailing gridlines
+  picBottomTrailingBorder = picBottomBorder + picBottomTrail;
 
   // range/scale
   xDayPixelScale = picWidth/dayWidth;
@@ -413,15 +417,15 @@ function updateScaleAndRangeValues() {
   xAxisFinalThetaX = xAxisInitialThetaX + thetaXwidth;
   yAxisFinalThetaY = yAxisInitialThetaY + thetaYheight;
 
-  //grid values
-  updateGridRange(xGridStepDefault, yGridStepDefault); // initialize gridline vars
+  // grid values
+  // initialize gridline vars
+  updateGridRange(xGridStepDefault, yGridStepDefault);
 }
 
 /** updateDrawingValues */
 function updateDrawingValues(animation=animationFlag) {
-  // if (animation === true)
-  //   sourcePos.x = getThetaX(eventModule.xAxisInitialDay);
-  sourcePos.y = getThetaYpathValue(sourcePos.x); // update source thetaY
+  // update source thetaY
+  sourcePos.y = getThetaYpathValue(sourcePos.x);
 
   // makes sure "0.0000" is displayed instead of "-0.0000" if rounding error
   // occurs
@@ -443,11 +447,6 @@ function updateDrawingValues(animation=animationFlag) {
 
   // convert position to pixel units
   sourcePixelPos = {x: thetaXtoPixel(sourcePos.x), y: thetaYtoPixel(sourcePos.y)};
-  // ringRadius.x = eventModule.thetaE_mas * xPixelScale;
-  // ringRadius.y = eventModule.thetaE_mas * yPixelScale;
-
-  // lens pixel position
-  // lens1.pixelPos = {x:thetaXtoPixel(lens1.pos.x), y: thetaYtoPixel(lens1.pos.y)};
   initLenses();
 }
 
@@ -473,8 +472,10 @@ function thetaYtoPixel(yPicThetaY) {
 function getThetaX(t) {
   var mu = eventModule.mu;
   var t0 = eventModule.t0;
-  var yearToDay = 365.25; // day/year; const
-  var eqMu = mu / yearToDay; // convert mu to milliarcseconds/day
+   // day/year; const
+  var yearToDay = 365.25;
+  // convert mu to milliarcseconds/day
+  var eqMu = mu / yearToDay;
   var thetaX = eqMu * (t - t0);
   return thetaX;
 }
@@ -493,9 +494,11 @@ function getThetaYpathValue(thetaX) {
 function updateGridRange(xStep, yStep, centerXgridOnZero=centerXgridOnZeroFlag,
                          centerYgridOnZero=centerYgridOnZeroFlag) {
   // update grid with new step values,
+
   // and/or update grid for new initial/final axis values using
 
   // if new step values are passed in, update grid step values;
+
   // otherwise leave grid steps unchanged when updating grid
   if ( !(xStep === undefined) && !(yStep === undefined)) {
     xGridStep = xStep;
@@ -523,14 +526,6 @@ function updateGridRange(xStep, yStep, centerXgridOnZero=centerXgridOnZeroFlag,
 
   // same rounding for final y grid line placement
   yGridFinal = yAxisFinalThetaY;
-
-  // console.log(Math.floor)
-  // console.log("MathFloored xAxisInitialDay: " + Math.floor(xAxisInitialDay));
-  // console.log("xGridInitial: " + xGridInitial);
-  // console.log("xGridFinal: " + xGridFinal);
-  // console.log("MathFloored yAxisInitialThetaY: " + Math.floor(yAxisInitialThetaY));
-  // console.log("yGridInitial: " + yGridInitial);
-  // console.log("yGridFinal: " + yGridFinal);
 }
 
 /** xDayToThetaX */
@@ -606,14 +601,16 @@ var drawing = (function(isBinary=binaryFlag, context=mainContext, canvas=mainCan
                       ring.radius.y, 0, 0, 2*Math.PI)
     context.strokeStyle = ring.color;
     context.lineWidth = ring.width;
-    context.setLineDash([ring.dashedLength, ring.dashedSpacing]); // turn on dashed lines
+     // turn on dashed lines
+    context.setLineDash([ring.dashedLength, ring.dashedSpacing]);
     context.stroke();
-    context.setLineDash([]); // turn off dashed-line drawing
+    // turn off dashed-line drawing
+    context.setLineDash([]);
   }
 
-  // use this for when implementing animation;
+  // use this for when implementing animation
+
   // for now, should be at end of path, if we bother placing it
-  /** drawSource */
   /** drawSource */
   function drawSource(useOutline=false) {
     // set aesthetics
@@ -649,9 +646,7 @@ var drawing = (function(isBinary=binaryFlag, context=mainContext, canvas=mainCan
 
     // dashed line (path yet to be travelled)
     context.beginPath();
-    // context.moveTo(picLeftBorder, sourcePixelPos.y);
     context.moveTo(picLeftBorder, thetaYpixelLeft);
-    // context.lineTo(picRightBorder, sourcePixelPos.y);
     context.lineTo(picRightBorder, thetaYpixelRight);
     context.setLineDash([dashedPathLength, dashedPathSpacing]); // turn on dashed lines
     context.strokeStyle = dashedPathColor;
@@ -661,9 +656,7 @@ var drawing = (function(isBinary=binaryFlag, context=mainContext, canvas=mainCan
 
     // solid line (path traveled so far)
     context.beginPath();
-    // context.moveTo(picLeftBorder, sourcePixelPos.y);
     context.moveTo(picLeftBorder, thetaYpixelLeft);
-    // context.lineTo(sourcePixelPos.x, sourcePixelPos.y);
     context.lineTo(sourcePixelPos.x, sourcePixelPos.y);
     context.strokeStyle = pathColor;
     context.lineWidth = pathWidth;
@@ -688,16 +681,18 @@ var drawing = (function(isBinary=binaryFlag, context=mainContext, canvas=mainCan
       context.beginPath();
 
       // x axis
+
       // the -axisWidth/2 makes the x and y axes fully connect
       // at their intersection for all axis linewidths
       context.moveTo(picLeftBorder - axisWidth/2, picBottomBorder);
       context.lineTo(picRightBorder + 15, picBottomBorder);
 
-      // y axis;
+      // y axis
       context.moveTo(picLeftBorder, picBottomBorder);
       context.lineTo(picLeftBorder, picTopBorder - 15);
 
       // x axis arrow
+
       // NOTE: Doesn't look right for linewidth > 2
       context.moveTo(picRightBorder + 15, picBottomBorder);
       context.lineTo(picRightBorder + 8, picBottomBorder - 5);
@@ -705,6 +700,7 @@ var drawing = (function(isBinary=binaryFlag, context=mainContext, canvas=mainCan
       context.lineTo(picRightBorder + 8, picBottomBorder + 5);
 
       // thetaT axis arrow
+
       // NOTE: Doesn't look right for linewidth > 2
       context.moveTo(picLeftBorder, picTopBorder - 15);
       context.lineTo(picLeftBorder - 5, picTopBorder - 8);
@@ -757,7 +753,6 @@ var drawing = (function(isBinary=binaryFlag, context=mainContext, canvas=mainCan
     context.beginPath();
     console.log(`yGridStep: ${yGridStep}`);
     for (var thetaX = xGridInitial; thetaX <= xGridFinal; thetaX+=xGridStep) {
-      // console.log(thetaX);
       var xPixel = thetaXtoPixel(thetaX);
       // line starts from bottom trail
       context.moveTo(xPixel, picBottomTrailingBorder);
@@ -777,7 +772,8 @@ var drawing = (function(isBinary=binaryFlag, context=mainContext, canvas=mainCan
 
       // catches if yTickLabel is set to "-0.00" due to rounding error and
       // converts to "0.00";
-      // (note 0 === -0 in javascript)
+
+      // (NOTE: 0 === -0 in javascript)
       if (Number(xTickLabel) === -0) {
         xTickLabel = Number(0).toFixed(2);
       }
@@ -803,7 +799,8 @@ var drawing = (function(isBinary=binaryFlag, context=mainContext, canvas=mainCan
       var yTickLabel = Number(thetaY).toFixed(2);
 
       // catches if yTickLabel is set to "-0.00" due to rounding error and
-      // converts to "0.00";
+      // converts to "0.00"
+
       // (note 0 === -0 in javascript)
       if (Number(yTickLabel) === -0) {
         yTickLabel = Number(0).toFixed(2);
@@ -878,7 +875,8 @@ var drawing = (function(isBinary=binaryFlag, context=mainContext, canvas=mainCan
                         crtPointSizeY=critPointSizeY,
                         caustic=causticCurveFlag, crit=critCurveFlag,
                         context=curveContext) {
-    clearPic(context); // clear off-screen canvas
+    // clear off-screen canvas
+    clearPic(context);
 
     if (caustic === true)
       renderCaustic(causColor1, causColor2, causPointSizeX, causPointSizeY, context);
@@ -918,18 +916,6 @@ var drawing = (function(isBinary=binaryFlag, context=mainContext, canvas=mainCan
     xList.push(x);
     yList.push(y - 1);
 
-    // xList.push(x + 1);
-    // yList.push(y + 1);
-
-    // xList.push(x - 1);
-    // yList.push(y + 1);
-
-    // xList.push(x + 1);
-    // yList.push(y - 1);
-
-    // xList.push(x - 1);
-    // yList.push(y - 1);
-
     for (var i=0; i<xList.length; i++) {
       setPixel(imageData, xList[i], yList[i], r, g, b, a);
     }
@@ -941,8 +927,10 @@ var drawing = (function(isBinary=binaryFlag, context=mainContext, canvas=mainCan
     // color must be a valid canvas fillStyle. This will cover most anything
     // you'd want to use.
     // Examples:
-    // colorToRGBA("red")  # [255, 0, 0, 255]
-    // colorToRGBA(""#f00") # [255, 0, 0, 255]
+    // ```
+    // colorToRGBA("red")  // [255, 0, 0, 255]
+    // colorToRGBA(""#f00") // [255, 0, 0, 255]
+    // ```
     var tempCanvas = document.createElement("canvas");
     tempCanvas.height = 1;
     tempCanvas.width = 1;
@@ -958,10 +946,16 @@ var drawing = (function(isBinary=binaryFlag, context=mainContext, canvas=mainCan
     var curve = unNormalizeCurve(curveNormalized);
     var pixelCurve = pixelizeCurve(curve);
 
-    var drawPointsDebugTest = false; // fast, but looks kinda bad
-    var drawPoints = true;  // not quite as fast, but looks good
-    var drawCircles = false; // slow; don't use this
-    var drawLines = false; // fastest, but doesn't work right
+    // debug: check if following comments on performance are obsolete or not
+
+    // fast, but looks kinda bad
+    var drawPointsDebugTest = false;
+    // not quite as fast, but looks good
+    var drawPoints = true;
+    // slow; don't use this
+    var drawCircles = false;
+    // fastest, but doesn't work right
+    var drawLines = false;
 
     if (drawPointsDebugTest === true) {
 
@@ -969,22 +963,23 @@ var drawing = (function(isBinary=binaryFlag, context=mainContext, canvas=mainCan
       var color2RGBA = colorToRGBA(color2);
 
       context.beginPath();
-      var imageData = context.getImageData(0, 0, canvas.width, canvas.height); // only do this once per page
+      // only do this once per page
+      var imageData = context.getImageData(0, 0, canvas.width, canvas.height);
 
       for (var i=1; i<pixelCurve.x1.length; i+=1) {
         var x1 = Math.round(pixelCurve.x1[i]);
         var y1 = Math.round(pixelCurve.y1[i]);
         // debug default: 138, 43, 226, 255
-        setPicPixel(imageData, x1, y1, color1RGBA[0], color1RGBA[1], color1RGBA[2], color1RGBA[3]);
-        // context.fillRect(x1, y1, 1, 1);
-        // window.alert(x1 + " " + y1);
+        setPicPixel(imageData, x1, y1, color1RGBA[0], color1RGBA[1],
+                    color1RGBA[2], color1RGBA[3]);
       }
 
       for (var i=1; i<pixelCurve.x2.length; i+=1) {
         var x2 = Math.round(pixelCurve.x2[i]);
         var y2 = Math.round(pixelCurve.y2[i]);
         // debug default: 0, 128, 0, 255);
-        setPicPixel(imageData, x2, y2, color2RGBA[0], color2RGBA[1], color2RGBA[2], color2RGBA[3]);
+        setPicPixel(imageData, x2, y2, color2RGBA[0], color2RGBA[1],
+                    color2RGBA[2], color2RGBA[3]);
       }
 
       context.putImageData(imageData, 0, 0);
@@ -1048,16 +1043,15 @@ var drawing = (function(isBinary=binaryFlag, context=mainContext, canvas=mainCan
     }
 
     if (drawLines === true) {
-      var pointSeparationThreshold = 1; // minimum pixel separation allowed
-                                               // between points that we connect
-                                               // with lines
+      // minimum pixel separation allowed between points that we connect with
+      // lines
+      var pointSeparationThreshold = 1;
+
       context.beginPath();
       context.moveTo(pixelCurve.x1[0], pixelCurve.y1[0]);
-      // window.alert(pixelCurve.x1.length);
 
       var prevX1;
       var prevY1;
-      // window.alert("length: " + pixelCurve.x1.length);
       // debugging: for length 16220, line starts displaying wrong at i=2411
       for (var i=1; i<pixelCurve.x1.length; i+=1) {
         var x1 = pixelCurve.x1[i];
@@ -1070,12 +1064,6 @@ var drawing = (function(isBinary=binaryFlag, context=mainContext, canvas=mainCan
           var dist1 = Math.sqrt(x1Diff*x1Diff + y1Diff*y1Diff);
 
           if (i === curveNormalized.transitionIndex ) {
-            // window.alert("i: " + i + "\nlength: " + pixelCurve.x1.length
-            //              + "\n\nprevX1: " + prevX1 + "\nprevY1: " + prevY1
-            //              + "\n\nx1: " + x1 + "\ny1: " + y1
-            //              + "\n\ndist1: " + dist1
-            //              + "\n\ntransitionIndex: " + curveNormalized.transitionIndex);
-
             context.moveTo(x1, y1);
           }
           else {
@@ -1107,11 +1095,6 @@ var drawing = (function(isBinary=binaryFlag, context=mainContext, canvas=mainCan
           var dist2 = Math.sqrt(x2Diff*x2Diff + y2Diff*y2Diff);
 
           if (i === curveNormalized.transitionIndex ) {
-            // window.alert("i: " + i + "\nlength: " + pixelCurve.x2.length
-            //              + "\n\nprevX2: " + prevX2 + "\nprevY2: " + prevY2
-            //              + "\n\nx2: " + x2 + "\ny2: " + y2
-            //              + "\n\ndist2: " + dist2);
-
             context.moveTo(x2, y2);
           }
           else {
@@ -1142,9 +1125,6 @@ var drawing = (function(isBinary=binaryFlag, context=mainContext, canvas=mainCan
     // pixel coordinates.
 
     var imagesNormalizedPos = eventModule.imagesNormalizedPos;
-
-    // console.log(`(binary) imagesNormalizedPos.x.length: ${imagesNormalizedPos.x.length}`);
-    // console.log(`(binary) imagesNormalizedPos.x.length: ${imagesNormalizedPos.x[0].length}`);
 
     var imageCount = imagesNormalizedPos.x.length;
     imagesPos = new Array(imageCount);
@@ -1221,8 +1201,8 @@ var drawing = (function(isBinary=binaryFlag, context=mainContext, canvas=mainCan
       }
     }
 
-    // debug: plots every x,y point in image arrays, coded by color, regardless of
-    // time; produces some wacky looking curves; neato
+    // debug: plots every x,y point in image arrays, coded by color, regardless
+    // of time; produces some wacky looking curves; neato
     if (debugPlotAllPoints === true) {
       for (var i=0; i<lensedImagesPixelPos.length; i++) {
         var imagePixelPos = lensedImagesPixelPos[i];
@@ -1249,7 +1229,6 @@ var drawing = (function(isBinary=binaryFlag, context=mainContext, canvas=mainCan
     drawBorder();
     drawGridlinesAndTicks();
     toggleClippingRegion(turnOn=true);
-    // drawSource(useOutline=true);
     drawUarrow();
     if (displayImageShape === true && isBinary === false) {
       if (eventModule.finiteSourceFlag === false ||
@@ -1312,15 +1291,20 @@ var drawing = (function(isBinary=binaryFlag, context=mainContext, canvas=mainCan
 
 // public properties to be stored in module object,
 // accessible via module object by code executed after this script
-
 module.exports = {
   //initialization
-  init: init, // initialization function
-  get initialized() { return initialized; }, // whether initialization is done
 
-  get sourcePos() { return sourcePos; }, // mas
-  get xAxisInitialThetaX() { return xAxisInitialThetaX; }, // mas
-  get sourceRadius() { return sourceRadius; }, // mas
+  // initialization function
+  init: init,
+  // whether initialization is done
+  get initialized() { return initialized; },
+
+  // mas
+  get sourcePos() { return sourcePos; },
+  // mas
+  get xAxisInitialThetaX() { return xAxisInitialThetaX; },
+  // mas
+  get sourceRadius() { return sourceRadius; },
   renderCurves: drawing.renderCurves,
   convertLensedImagesPos: drawing.convertLensedImagesPos,
   redraw: redraw,
