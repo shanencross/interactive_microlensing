@@ -208,7 +208,6 @@ var sourcePos;
 // pixel x and y values
 var sourcePixelPos;
 var ringRadius = {x: undefined, y: undefined}
-var sourceOutline;
 var lensedImageOutlines;
 
 // caustic and crit
@@ -613,28 +612,18 @@ var drawing = (function(context=mainContext, canvas=mainCanvas) {
 
   // for now, should be at end of path, if we bother placing it
   /** drawSource */
-  function drawSource(useOutline=false) {
+  function drawSource() {
     // set aesthetics
     context.lineWidth = sourceOutlineWidth;
     context.strokeStyle = sourceOutlineColor;
     context.fillStyle = sourceColor;
 
     // draw source
-    if (useOutline === true) {
-      for (i in sourceOutline) {
-        context.fillStyle = "SpringGreen";
-        context.beginPath();
-        context.arc(thetaXtoPixel(sourceOutline[i].x), thetaYtoPixel(sourceOutline[i].y), 1, 0, 2*Math.PI, false);
-        context.fill();
-      }
-    }
-    else {
-      context.beginPath();
-      var radiusPixels = sourceRadius * xPixelScale;
-      context.arc(sourcePixelPos.x, sourcePixelPos.y, radiusPixels, 0, 2*Math.PI, false);
-      context.fill();
-      context.stroke();
-    }
+    context.beginPath();
+    var radiusPixels = sourceRadius * xPixelScale;
+    context.arc(sourcePixelPos.x, sourcePixelPos.y, radiusPixels, 0, 2*Math.PI, false);
+    context.fill();
+    context.stroke();
   }
 
   /** drawSourcePath */

@@ -619,7 +619,6 @@ function resetParams() {
     handleError(ex);
   }
 
-
   if (lensPlaneModule !== undefined && lensPlaneModule.initialized === true) {
     lensPlaneModule.initSourceRadius();
   }
