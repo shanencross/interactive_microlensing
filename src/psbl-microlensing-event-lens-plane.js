@@ -242,7 +242,6 @@ var sourceRadiusReadout = document.getElementById("sourceRadiusReadout");
 var displayImagesFlag = false;
 
 // debug flags
-var animationFlag = true;
 var centerLayoutFlag = false;
 var drawGridFlag = true;
 var drawFullLensedImagesFlag = true;
@@ -272,11 +271,11 @@ var updateOnSliderMovementFlag = eventModule.updateOnSliderMovementFlag;
 var updateOnSliderReleaseFlag = eventModule.updateOnSliderReleaseFlag;
 
 /** init */
-function init(animation=animationFlag) {
+function init() {
   initListeners();
   updateScaleAndRangeValues();
   initLenses();
-  initSourcePos(animation=animation);
+  initSourcePos();
   initSourceRadius();
   drawing.renderCurves();
   redraw();
@@ -371,18 +370,14 @@ function updateSourceRadius() {
 }
 
 /** initSourcePos */
-function initSourcePos(animation=animationFlag) {
+function initSourcePos() {
   var sourcePosY = eventModule.thetaY;
   sourcePos = {x: getThetaX(eventModule.xAxisInitialDay), y: sourcePosY};
-
-  if (animation === false) {
-    sourcePos.x = xAxisFinalThetaX;
-  }
 }
 
 /** redraw */
-function redraw(animation=animationFlag) {
-  updateDrawingValues(animation=animation);
+function redraw() {
+  updateDrawingValues();
   drawing.drawPic();
 }
 
@@ -423,7 +418,7 @@ function updateScaleAndRangeValues() {
 }
 
 /** updateDrawingValues */
-function updateDrawingValues(animation=animationFlag) {
+function updateDrawingValues() {
   // update source thetaY
   sourcePos.y = getThetaYpathValue(sourcePos.x);
 
