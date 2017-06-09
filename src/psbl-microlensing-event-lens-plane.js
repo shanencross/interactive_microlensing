@@ -16,6 +16,8 @@ var _ = require("lodash");
 var eventModule = require("./psbl-microlensing-event.js")
 
 var almostEquals = require("./utils.js").almostEquals;
+var ellipse = require("./utils.js").ellipse;
+var Lens = require("./Lens.js");
 
 // whether module init function has been executed
 var initialized = false;
@@ -42,43 +44,6 @@ var xAxisInitialThetaX = -(4)/2
 var yAxisInitialThetaY = -3/2;
 var xGridStepDefault = 0.25;
 var yGridStepDefault = 0.25;
-
-/** A lens -- one of the two binary lenses.
-  * @class Lens */
-function Lens(xPos, yPos, radius, color, outlineWidth, outlineColor,
-              ringRadiusX, ringRadiusY,
-              ringColor, ringWidth, dashedRingLength, dashedRingSpacing) {
-  this.updatePos = function(xPos, yPos) {
-    this.pos = {
-      x: xPos,
-      y: yPos,
-    };
-
-    this.pixelPos = {
-      x: thetaXtoPixel(xPos),
-      y: thetaYtoPixel(yPos),
-    };
-  }
-
-  this.updatePos(xPos, yPos);
-
-  this.radius = 2;
-
-  this.color = "red";
-  this.outlineWidth = outlineWidth;
-  this.outlineColor = outlineColor;
-
-  this.ring = {
-    radius: {
-      x: ringRadiusX,
-      y: ringRadiusY,
-    },
-    color: ringColor,
-    width: ringWidth,
-    dashedLength: dashedRingLength,
-    dashedSpacing: dashedRingSpacing,
-  };
-}
 
 var lens1;
 var lens2;
@@ -111,7 +76,7 @@ var sourceRadius;
 var sourceOutlineWidth = 2;
 var sourceOutlineColor = "teal";
 
-var lensRadius = 2;
+var lensPixelRadius = 2;
 var lensColor = "red";
 var lensOutlineWidth = 2;
 var lensOutlineColor = lensColor;
@@ -233,6 +198,7 @@ var thetaXreadout = document.getElementById("thetaXreadout");
 
 var sourceRadiusNormalizedReadout = document.getElementById("sourceRadiusNormalizedReadout");
 var displayImagesCheckbox = document.getElementById("displayImagesCheckbox");
+// flag must be true for einstein ring drawing to work in Firefox --
 var sourceRadiusSlider = document.getElementById("sourceRadiusSlider");
 var sourceRadiusReadout = document.getElementById("sourceRadiusReadout");
 
@@ -245,21 +211,18 @@ var displayImagesFlag = false;
 var centerLayoutFlag = false;
 var drawGridFlag = true;
 var drawFullLensedImagesFlag = true;
-// if on, grid lines/ticks for that axis are created in steps starting from 0,
+
+// if true, grid lines/ticks for that axis are created in steps starting from 0,
 // rather than starting from the lowest x-axis value or y-axis value
 var centerXgridOnZeroFlag = true;
 var centerYgridOnZeroFlag = true;
-// need on to work in Firefox;
-// replaces context.ellipse with context.arc since firefox doesn't support ellipse;
-// however, y-scaling of ring won't be correct if x/y aspect ratio is not square;
-var firefoxCompatibilityFlag = true;
-// add more points to outline if source is close to lens
-var lensProximityCheckFlag = true;
-var clippingImageFlag = false;
-var binaryFlag = true;
-// desplay separate rings for each lens;
 
-// for debugging/testing
+
+// firefox doesn't support context.ellipse, so this replaces it with a custom
+// ellipse function using context.arc and canvas rescaling/translating
+var firefoxCompatibilityFlag = true;
+
+// display separate rings for each lens
 var separateBinaryRingsFlag = true;
 
 // display caustic curve
@@ -314,31 +277,30 @@ function initListeners(updateOnSliderMovement=updateOnSliderMovementFlag,
                                                                                         sourceRadiusReadout,
                                                                                         "sourceRadius"); }, false);
       }
-
     }
   }
 }
 
 /** initLenses */
 function initLenses() {
-  var ring1radius_mas = eventModule.calculateThetaE(get_mas=true, useBinaryMass=false, lensToUse=1);
-  var ring1radiusX = ring1radius_mas * xPixelScale;
-  var ring1radiusY = ring1radius_mas * yPixelScale;
+  var lensSep = eventModule.lensSep;
 
-  lens1 = new Lens(0, 0, lensRadius, lensColor,
+  var ring1radius_mas = eventModule.calculateThetaE(get_mas=true, useBinaryMass=false, lensToUse=1);
+
+  lens1 = new Lens(xPixelScale, yPixelScale,
+                   thetaXtoPixel, thetaYtoPixel,
+                   -lensSep/2, 0, lensPixelRadius, lensColor,
                    lensOutlineWidth, lensOutlineColor,
-                   ring1radiusX, ring1radiusY,
+                   ring1radius_mas,
                    ringColor, ringWidth, dashedRingLength, dashedRingSpacing);
 
   var ring2radius_mas = eventModule.calculateThetaE(get_mas=true, useBinaryMass=false, lensToUse=2);
-  var ring2radiusX = ring2radius_mas * xPixelScale;
-  var ring2radiusY = ring2radius_mas * yPixelScale;
 
-  var lensSep = eventModule.lensSep;
-  lens1.updatePos(-lensSep/2, 0);
-  lens2 = new Lens(lensSep/2, 0, lensRadius, lensColor,
+  lens2 = new Lens(xPixelScale, yPixelScale,
+                   thetaXtoPixel, thetaYtoPixel,
+                   lensSep/2, 0, lensPixelRadius, lensColor,
                    lensOutlineWidth, lensOutlineColor,
-                   ring2radiusX, ring2radiusY,
+                   ring2radius_mas,
                    ringColor, ringWidth, dashedRingLength, dashedRingSpacing);
 }
 
@@ -576,7 +538,7 @@ var drawing = (function(context=mainContext, canvas=mainCanvas) {
   /** drawLens */
   function drawLens(lens=lens1) {
     context.beginPath();
-    context.arc(lens.pixelPos.x, lens.pixelPos.y, lens.radius, 0, 2*Math.PI, false);
+    context.arc(lens.pixelPos.x, lens.pixelPos.y, lens.pixelRadius, 0, 2*Math.PI, false);
     context.fillStyle = lens.color;
     context.fill();
     context.lineWidth = lens.outlineWidth;
@@ -590,10 +552,10 @@ var drawing = (function(context=mainContext, canvas=mainCanvas) {
     context.beginPath();
     // ellipse not compatible with firefox
     if (firefoxCompatibility === true)
-      context.arc(lens.pixelPos.x, lens.pixelPos.y, ring.radius.x, 0, 2*Math.PI, false);
+      ellipse(context, lens.pixelPos.x, lens.pixelPos.y, ring.pixelRadius.x, ring.pixelRadius.y);
     else
-      context.ellipse(lens.pixelPos.x, lens.pixelPos.y, ring.radius.x,
-                      ring.radius.y, 0, 0, 2*Math.PI)
+      context.ellipse(lens.pixelPos.x, lens.pixelPos.y, ring.pixelRadius.x,
+                      ring.pixelRadius.y, 0, 0, 2*Math.PI)
     context.strokeStyle = ring.color;
     context.lineWidth = ring.width;
      // turn on dashed lines
@@ -623,7 +585,6 @@ var drawing = (function(context=mainContext, canvas=mainCanvas) {
 
   /** drawSourcePath */
   function drawSourcePath() {
-
     var thetaYleft = getThetaYpathValue(xAxisInitialThetaX);
     var thetaYright = getThetaYpathValue(xAxisFinalThetaX);
     var thetaYpixelLeft = thetaYtoPixel(thetaYleft);
