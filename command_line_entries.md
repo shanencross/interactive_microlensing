@@ -30,40 +30,40 @@ npm install --only=dev
 ## Building project
 Build bundle JS file (after installing dependencies):
 ```
-node_modules/.bin/browserify src/main.js -o build/bundle.js
+node_modules/.bin/browserify src/main.js -o build/PSBL_bundle.js
 ```
 
 Build bundle JS file with debug source maps:
 ```
-node_modules/.bin/browserify src/main.js -o build/bundle.js --debug
+node_modules/.bin/browserify src/main.js -o build/PSBL_bundle.js --debug
 ```
 This way, console output for errors will give their location in the original
-.js files, rather than their location in bundle.js. However, this creates a
-larger sized file and should be omitted for bundle.js used in production.
+.js files, rather than their location in PSBL_bundle.js. However, this creates a
+larger sized file and should be omitted for PSBL_bundle.js used in production.
 
 Build bundle JS file, ignoring any missing files called for by require:
 ```
-node_modules/.bin/browserify src/main.js -o build/bundle.js --ignore-missing
+node_modules/.bin/browserify src/main.js -o build/PSBL_bundle.js --ignore-missing
 ```
 
 Continually rebuild bundle JS file whenever scripts are modified:
 ```
-node_modules/.bin/watchify src/main.js -o build/bundle.js
+node_modules/.bin/watchify src/main.js -o build/PSBL_bundle.js
 ```
 
 Continually rebuild bundle JS file whenever scripts are modified with debug
 source maps:
 ```
-node_modules/.bin/watchify src/main.js -o build/bundle.js --debug
+node_modules/.bin/watchify src/main.js -o build/PSBL_bundle.js --debug
 ```
 
 Continually rebuild bundle JS file whenver scripts are modified, ignoring any
 missing files called for by require:
 ```
-node_modules/.bin/watchify src/main.js -o build/bundle.js --ignore-missing
+node_modules/.bin/watchify src/main.js -o build/PSBL_bundle.js --ignore-missing
 ```
 
-Alternatively, you can name bundle.js whatever you want, as long as you
+Alternatively, you can name PSBL_bundle.js whatever you want, as long as you
 modify the <src> tag in the html file using it to match.
 
 ## Building documentation
