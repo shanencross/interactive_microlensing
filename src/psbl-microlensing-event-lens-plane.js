@@ -187,11 +187,19 @@ var lensedImagesPixelPos;
 var mainCanvas = document.getElementById("lensPlaneCanvas");
 var mainContext = mainCanvas.getContext("2d");
 
-// off-screen canvas for critical/caustic curves
-var curveCanvas = document.createElement("canvas");
-curveCanvas.width = mainCanvas.width;
-curveCanvas.height = mainCanvas.width;
-var curveContext = curveCanvas.getContext("2d");
+// off-screen canvases for critical/caustic curves
+var critCanvas = document.createElement("critCanvas");
+critCanvas.width = mainCanvas.width;
+critCanvas.height = mainCanvas.width;
+var critContext = critCanvas.getContext("2d");
+
+var causticCanvas = document.createElement("causticCanvas");
+causticCanvas.width = mainCanvas.width;
+causticCanvas.height = mainCanvas.width;
+var causticContext = causticCanvas.getContext("2d");
+
+var curveCanvases = {crit:critCanvas, caustic:causticCanvas};
+var curveContexts = {crit:critContext, caustic:causticContext};
 
 // readout of current source thetaX position
 var thetaXreadout = document.getElementById("thetaXreadout");
@@ -848,14 +856,14 @@ var drawing = (function(context=mainContext, canvas=mainCanvas) {
 
   /** renderCaustic */
   function renderCaustic(color1="purple", color2="green", pointSizeX,
-                        pointSizeY, context=curveContext) {
+                        pointSizeY, context=critContext) {
     renderCurve(eventModule.causticNormalized, color1, color2, pointSizeX,
                 pointSizeY, context);
   }
 
   /** renderCrit */
   function renderCrit(color1="purple", color2="green", pointSizeX,
-                      pointSizeY, context=curveContext) {
+                      pointSizeY, context=critContext) {
     renderCurve(eventModule.critNormalized, color1, color2, pointSizeX,
                 pointSizeY, context);
   }
@@ -868,7 +876,7 @@ var drawing = (function(context=mainContext, canvas=mainCanvas) {
                         crtPointSizeX=critPointSizeX,
                         crtPointSizeY=critPointSizeY,
                         display=displayFlags,
-                        context=curveContext) {
+                        context=critContext) {
     // clear off-screen canvas
     clearPic(context);
 
@@ -936,7 +944,7 @@ var drawing = (function(context=mainContext, canvas=mainCanvas) {
 
   /** renderCurve */
   function renderCurve(curveNormalized, color1="purple", color2="green",
-                       pointSizeX, pointSizeY, context=curveContext) {
+                       pointSizeX, pointSizeY, context=critContext) {
     var curve = unNormalizeCurve(curveNormalized);
     var pixelCurve = pixelizeCurve(curve);
 
@@ -1107,9 +1115,16 @@ var drawing = (function(context=mainContext, canvas=mainCanvas) {
   }
 
   /** drawRenderedCurves */
-  function drawRenderedCurves(context=mainContext, imgCanvas=curveCanvas) {
-    // Draw image from image canvas onto (most likely main) context
-    context.drawImage(imgCanvas, 0, 0);
+  function drawRenderedCurves(context=mainContext, imgCanvases=curveCanvases) {
+    // Draw images from image canvases onto (most likely main) context
+    for (var key in imgCanvases) {
+      if (imageCanvases.hasOwnProperty(key)) {
+        var imgCanvas = imgCanvases[key];
+        context.drawImage(imgCanvas, 0, 0);
+      }
+    }
+
+
   }
 
   /** convertLensedImagesPos */
