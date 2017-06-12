@@ -197,15 +197,27 @@ var curveContext = curveCanvas.getContext("2d");
 var thetaXreadout = document.getElementById("thetaXreadout");
 
 var sourceRadiusNormalizedReadout = document.getElementById("sourceRadiusNormalizedReadout");
-var displayImagesCheckbox = document.getElementById("displayImagesCheckbox");
-// flag must be true for einstein ring drawing to work in Firefox --
 var sourceRadiusSlider = document.getElementById("sourceRadiusSlider");
 var sourceRadiusReadout = document.getElementById("sourceRadiusReadout");
 
-// if on, display shapes for the lensed images, not just points
+// checkboxes
+var displayImagesCheckbox = document.getElementById("displayImagesCheckbox");
+var displayRingsCheckbox = document.getElementById("displayRingsCheckbox");
+var displayCritCheckbox = document.getElementById("displayCritCheckbox");
+var displayCausticCheckbox = document.getElementById("displayCausticCheckbox");
 
-// toggled by checkbox
-var displayImagesFlag = false;
+
+// flags toggled by checkbox
+var displayFlags = {
+  // display lensed images of source
+  images: displayImagesCheckbox.checked,
+  // display separate rings for each lens
+  rings: displayRingsCheckbox.checked,
+  // display critical curve
+  crit: displayCritCheckbox.checked,
+  // display caustic curve
+  caustic: displayCausticCheckbox.checked,
+}
 
 // debug flags
 var centerLayoutFlag = false;
@@ -217,18 +229,9 @@ var drawFullLensedImagesFlag = true;
 var centerXgridOnZeroFlag = true;
 var centerYgridOnZeroFlag = true;
 
-
 // firefox doesn't support context.ellipse, so this replaces it with a custom
 // ellipse function using context.arc and canvas rescaling/translating
 var firefoxCompatibilityFlag = true;
-
-// display separate rings for each lens
-var separateBinaryRingsFlag = true;
-
-// display caustic curve
-var causticCurveFlag = true;
-// display critical curve
-var critCurveFlag = true;
 
 var updateOnSliderMovementFlag = eventModule.updateOnSliderMovementFlag;
 var updateOnSliderReleaseFlag = eventModule.updateOnSliderReleaseFlag;
@@ -249,12 +252,54 @@ function init() {
 /** initListeners */
 function initListeners(updateOnSliderMovement=updateOnSliderMovementFlag,
                        updateOnSliderRelease=updateOnSliderReleaseFlag) {
+  initCheckboxes();
+  initSliders(updateOnSliderMovement, updateOnSliderRelease);
+}
+
+/** initCheckboxes() */
+function initCheckboxes() {
   displayImagesCheckbox.addEventListener("change",
-                                      function() {
-                                                   displayImagesFlag = displayImagesCheckbox.checked;
-                                                   redraw();
-                                                 },
-                                      false);
+                                         function() {
+                                           displayFlags.images = displayImagesCheckbox.checked;
+                                           redraw();
+                                         },
+                                         false);
+
+  displayRingsCheckbox.addEventListener("change",
+                                        function() {
+                                          displayFlags.rings = displayRingsCheckbox.checked;
+                                          redraw();
+                                        },
+                                        false);
+
+  /*
+  debug: could make this faster if we prerender crit and caustic curves to
+  separate canvases instead of the same canvas, and choose which to display
+  depending on the checkbox flags.
+
+  That way, we wouldn't have to call updateCurveData each time the checkbox is
+  clicked.
+  */
+  displayCritCheckbox.addEventListener("change",
+                                        function() {
+                                          displayFlags.crit = displayCritCheckbox.checked;
+                                          eventModule.updateCurveData();
+                                          redraw();
+                                        },
+                                        false);
+
+  displayCausticCheckbox.addEventListener("change",
+                                        function() {
+                                          displayFlags.caustic = displayCausticCheckbox.checked;
+                                          eventModule.updateCurveData();
+                                          redraw();
+                                        },
+                                        false);
+}
+
+/** initSliders */
+function initSliders(updateOnSliderMovement=updateOnSliderMovementFlag,
+                       updateOnSliderRelease=updateOnSliderReleaseFlag) {
   console.log("(binary_lens_plane) updateOnSliderMovement: " + updateOnSliderMovement);
   console.log("(binary_lens_plane) updateOnSliderRelease: " + updateOnSliderRelease);
 
@@ -273,9 +318,12 @@ function initListeners(updateOnSliderMovement=updateOnSliderMovementFlag,
       // without recalculating/updating other sliders (until after current slider is released)
       if (updateOnSliderMovement === false) {
         sourceRadiusSlider.addEventListener("input",
-                                            function() { eventModule.updateSliderReadout(sourceRadiusSlider,
-                                                                                        sourceRadiusReadout,
-                                                                                        "sourceRadius"); }, false);
+                                            function() {
+                                              eventModule.updateSliderReadout(sourceRadiusSlider,
+                                                                              sourceRadiusReadout,
+                                                                              "sourceRadius");
+                                            },
+                                            false);
       }
     }
   }
@@ -819,15 +867,15 @@ var drawing = (function(context=mainContext, canvas=mainCanvas) {
                         causPointSizeY=causticPointSizeY,
                         crtPointSizeX=critPointSizeX,
                         crtPointSizeY=critPointSizeY,
-                        caustic=causticCurveFlag, crit=critCurveFlag,
+                        display=displayFlags,
                         context=curveContext) {
     // clear off-screen canvas
     clearPic(context);
 
-    if (caustic === true)
+    if (display.caustic === true)
       renderCaustic(causColor1, causColor2, causPointSizeX, causPointSizeY, context);
 
-    if (crit === true)
+    if (display.crit === true)
       renderCrit(crtColor1, crtColor2, crtPointSizeX, crtPointSizeY, context);
   }
 
@@ -1168,7 +1216,7 @@ var drawing = (function(context=mainContext, canvas=mainCanvas) {
   }
 
   /** drawPic */
-  function drawPic(displayImages=displayImagesFlag,
+  function drawPic(display=displayFlags,
                    context=mainContext, canvas=mainCanvas) {
     clearPic();
     drawBackgrounds();
@@ -1180,19 +1228,19 @@ var drawing = (function(context=mainContext, canvas=mainCanvas) {
     drawLens(lens1);
     drawLens(lens2);
 
-    if (causticCurveFlag === true || critCurveFlag === true) {
+    if (display.caustic === true || display.crit === true) {
       // draw caustic and/or crit
 
       drawRenderedCurves();
     }
 
-    if (separateBinaryRingsFlag === true) {
+    if (display.rings === true) {
 
       // draw separate rings for each lens
       drawRing(lens1);
       drawRing(lens2);
     }
-    if (displayImagesCheckbox.checked === true)
+    if (display.images === true)
       drawBinaryPointLensedImages();
     drawSourcePath();
     drawSource();

@@ -240,8 +240,6 @@ var resetGraphButton = document.getElementById("resetGraph");
 
 // const
 var centerLayout = false;
-// switch between binary and single lens modes
-var binaryFlag = true;
 
 // controls whether plot updates when slider is moved
 // or when slider is released
@@ -417,7 +415,7 @@ function updateThetaE() {
 }
 
 /** calculateThetaE */
-function calculateThetaE(get_mas=false, useBinaryMass=binaryFlag, lensToUse=1) {
+function calculateThetaE(get_mas=false, useBinaryMass=true, lensToUse=1) {
   /*
   G: m3 kg−1 s−2 (astropy value)
   c: 299792458.0; // m s-1 (astropy value)
@@ -1079,98 +1077,86 @@ function getThetaX(t) {
 
 /** updateCurveData */
 function updateCurveData() {
-  if (binaryFlag === true) {
-    // send GM1, GM2, D, cof1, cof2, minXLM, maxXLM, and NPN
-    // to bin_len_faster.plot_binary() function
-    var debug = false; // use debug values for binary variables
+  // send GM1, GM2, D, cof1, cof2, minXLM, maxXLM, and NPN
+  // to bin_len_faster.plot_binary() function
+  var debug = false; // use debug values for binary variables
 
-    var thetaE_mas = thetaE / masToRad;
-    var totalMass = Ml1 + Ml2;
-    var GM1 = Ml1/totalMass;
-    var GM2 = Ml2/totalMass;
-    // "D" is the half-separation in units of ?? (debug: check units for D)
-    var D = (lensSep/2)/thetaE_mas;
+  var thetaE_mas = thetaE / masToRad;
+  var totalMass = Ml1 + Ml2;
+  var GM1 = Ml1/totalMass;
+  var GM2 = Ml2/totalMass;
+  // "D" is the half-separation in units of ?? (debug: check units for D)
+  var D = (lensSep/2)/thetaE_mas;
 
-    var cof2 = thetaY/thetaE_mas;
+  var cof2 = thetaY/thetaE_mas;
 
-    var incline_radians = incline * Math.PI/180;
-    var cof1 = -Math.tan(incline_radians);
-    var minXLM = getThetaX(xAxisInitialDay) / thetaE_mas;
-    var maxXLM = getThetaX(xAxisFinalDay) / thetaE_mas;
+  var incline_radians = incline * Math.PI/180;
+  var cof1 = -Math.tan(incline_radians);
+  var minXLM = getThetaX(xAxisInitialDay) / thetaE_mas;
+  var maxXLM = getThetaX(xAxisFinalDay) / thetaE_mas;
 
-    // Number of points for lightcurve
-    var NPN = 4000;
-    // Number of points for critical and caustic curves
-    var NR = 30000;
+  // Number of points for lightcurve
+  var NPN = 4000;
+  // Number of points for critical and caustic curves
+  var NR = 30000;
 
-    // Sampling density of critical and caustic curve points
-    /* For a while, was using this so we could automatically change DR
-       when changing NR.
+  // Sampling density of critical and caustic curve points
+  /* For a while, was using this so we could automatically change DR
+     when changing NR.
 
-       var DR = 3/NR;
-    */
-    // was 0.0001 by default, but this seems to work better
-    var DR = 0.0003;
+     var DR = 3/NR;
+  */
+  // was 0.0001 by default, but this seems to work better
+  var DR = 0.0003;
 
-    if (debug === true) {
-      // testing function with some default values
+  if (debug === true) {
+    // testing function with some default values
 
-      GM1 = 0.2;
-      GM2 = 0.8;
-      D = 0.5;
-      cof1 = 0;
-      cof2 = -0.5;
-      var thetaE_mas_temp = 0.6539599913692768;
-      minXLM = -1.1617229221914211;
-      maxXLM = 1.1617229221914211;
+    GM1 = 0.2;
+    GM2 = 0.8;
+    D = 0.5;
+    cof1 = 0;
+    cof2 = -0.5;
+    var thetaE_mas_temp = 0.6539599913692768;
+    minXLM = -1.1617229221914211;
+    maxXLM = 1.1617229221914211;
 
-      NPN = 4000;
+    NPN = 4000;
 
-      GM1 = 0.61383532827548774
-      GM2 = 1 - GM1;
-      D = lensSep/2;
-      cof1 = 0;
-      cof2 = thetaY;
-      NPN = 4000;
-    }
-
-    console.log(`(binary) GM1: ${GM1}`);
-    console.log(`(binary) GM2: ${GM2}`);
-    console.log(`(binary) D: ${D}`);
-
-    console.log(`(binary) cof1: ${cof1}`);
-    console.log(`(binary) cof2: ${cof2}`);
-    console.log(`(binary) NPN: ${NPN}`);
-    console.log(`(binary) minXLM: ${minXLM}`);
-    console.log(`(binary) maxXLM: ${maxXLM}`);
-    console.log(`(binary) xAxisInitialDay: ${xAxisInitialDay}`);
-    console.log(`(binary) xAxisFinalDay: ${xAxisFinalDay}`);
-    console.log(`(binary) thetaE_mas: ${thetaE_mas}`);
-
-    var binaryCaclulationResults = bin_len_faster.plot_binary(GM1, GM2, D, cof1, cof2,
-                                                              minXLM, maxXLM, NPN, NR, DR);
-
-    var times = numeric.linspace(xAxisInitialDay, xAxisFinalDay, NPN);
-    var magnifs = binaryCaclulationResults.magnifs;
-    var normalizedImagePositions = binaryCaclulationResults.normalizedImagePositions;
-    var causticAndCritNormalized = binaryCaclulationResults.causticAndCrit; // units of thetaE
-
-    console.log(`(binary) times.length: ${times.length}`);
-    console.log(`(binary) magnifs.length: ${magnifs.length}`);
-    console.log(`(binary) crit.x1.length: ${causticAndCritNormalized.crit.x1.length}`);
-    console.log(`(binary) caustic.x1.length: ${causticAndCritNormalized.caustic.x1.length}`);
+    GM1 = 0.61383532827548774
+    GM2 = 1 - GM1;
+    D = lensSep/2;
+    cof1 = 0;
+    cof2 = thetaY;
+    NPN = 4000;
   }
 
-  else  {
-    var times = [];
-    var magnifs = [];
+  console.log(`(binary) GM1: ${GM1}`);
+  console.log(`(binary) GM2: ${GM2}`);
+  console.log(`(binary) D: ${D}`);
 
-    for (var tDay = xAxisInitialDay; tDay <= xAxisFinalDay; tDay += dt) {
-      var magnif = getMagnif(tDay);
-      times.push(tDay);
-      magnifs.push(magnif);
-    }
-  }
+  console.log(`(binary) cof1: ${cof1}`);
+  console.log(`(binary) cof2: ${cof2}`);
+  console.log(`(binary) NPN: ${NPN}`);
+  console.log(`(binary) minXLM: ${minXLM}`);
+  console.log(`(binary) maxXLM: ${maxXLM}`);
+  console.log(`(binary) xAxisInitialDay: ${xAxisInitialDay}`);
+  console.log(`(binary) xAxisFinalDay: ${xAxisFinalDay}`);
+  console.log(`(binary) thetaE_mas: ${thetaE_mas}`);
+
+  var binaryCaclulationResults = bin_len_faster.plot_binary(GM1, GM2, D, cof1, cof2,
+                                                            minXLM, maxXLM, NPN, NR, DR);
+
+  var times = numeric.linspace(xAxisInitialDay, xAxisFinalDay, NPN);
+  var magnifs = binaryCaclulationResults.magnifs;
+  var normalizedImagePositions = binaryCaclulationResults.normalizedImagePositions;
+  var causticAndCritNormalized = binaryCaclulationResults.causticAndCrit; // units of thetaE
+
+  console.log(`(binary) times.length: ${times.length}`);
+  console.log(`(binary) magnifs.length: ${magnifs.length}`);
+  console.log(`(binary) crit.x1.length: ${causticAndCritNormalized.crit.x1.length}`);
+  console.log(`(binary) caustic.x1.length: ${causticAndCritNormalized.caustic.x1.length}`);
+
   var curveData = {
     times:times,
     magnifs:magnifs,
