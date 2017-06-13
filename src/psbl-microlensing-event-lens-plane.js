@@ -188,12 +188,12 @@ var mainCanvas = document.getElementById("lensPlaneCanvas");
 var mainContext = mainCanvas.getContext("2d");
 
 // off-screen canvases for critical/caustic curves
-var critCanvas = document.createElement("critCanvas");
+var critCanvas = document.createElement("canvas");
 critCanvas.width = mainCanvas.width;
 critCanvas.height = mainCanvas.width;
 var critContext = critCanvas.getContext("2d");
 
-var causticCanvas = document.createElement("causticCanvas");
+var causticCanvas = document.createElement("canvas");
 causticCanvas.width = mainCanvas.width;
 causticCanvas.height = mainCanvas.width;
 var causticContext = causticCanvas.getContext("2d");
@@ -280,18 +280,9 @@ function initCheckboxes() {
                                         },
                                         false);
 
-  /*
-  debug: could make this faster if we prerender crit and caustic curves to
-  separate canvases instead of the same canvas, and choose which to display
-  depending on the checkbox flags.
-
-  That way, we wouldn't have to call updateCurveData each time the checkbox is
-  clicked.
-  */
   displayCritCheckbox.addEventListener("change",
                                         function() {
                                           displayFlags.crit = displayCritCheckbox.checked;
-                                          eventModule.updateCurveData();
                                           redraw();
                                         },
                                         false);
@@ -299,7 +290,6 @@ function initCheckboxes() {
   displayCausticCheckbox.addEventListener("change",
                                         function() {
                                           displayFlags.caustic = displayCausticCheckbox.checked;
-                                          eventModule.updateCurveData();
                                           redraw();
                                         },
                                         false);
@@ -856,7 +846,7 @@ var drawing = (function(context=mainContext, canvas=mainCanvas) {
 
   /** renderCaustic */
   function renderCaustic(color1="purple", color2="green", pointSizeX,
-                        pointSizeY, context=critContext) {
+                        pointSizeY, context=causticContext) {
     renderCurve(eventModule.causticNormalized, color1, color2, pointSizeX,
                 pointSizeY, context);
   }
@@ -876,15 +866,22 @@ var drawing = (function(context=mainContext, canvas=mainCanvas) {
                         crtPointSizeX=critPointSizeX,
                         crtPointSizeY=critPointSizeY,
                         display=displayFlags,
-                        context=critContext) {
-    // clear off-screen canvas
-    clearPic(context);
+                        contexts=curveContexts) {
+    // clear off-screen canvases
+    for (key in contexts) {
+      if (contexts.hasOwnProperty(key)) {
+        var context = contexts[key];
+
+        clearPic(context);
+      }
+    }
+
 
     if (display.caustic === true)
-      renderCaustic(causColor1, causColor2, causPointSizeX, causPointSizeY, context);
+      renderCaustic(causColor1, causColor2, causPointSizeX, causPointSizeY, contexts.caustic);
 
     if (display.crit === true)
-      renderCrit(crtColor1, crtColor2, crtPointSizeX, crtPointSizeY, context);
+      renderCrit(crtColor1, crtColor2, crtPointSizeX, crtPointSizeY, contexts.crit);
   }
 
   /** setPixel */
@@ -1118,13 +1115,11 @@ var drawing = (function(context=mainContext, canvas=mainCanvas) {
   function drawRenderedCurves(context=mainContext, imgCanvases=curveCanvases) {
     // Draw images from image canvases onto (most likely main) context
     for (var key in imgCanvases) {
-      if (imageCanvases.hasOwnProperty(key)) {
+      if (imgCanvases.hasOwnProperty(key)) {
         var imgCanvas = imgCanvases[key];
         context.drawImage(imgCanvas, 0, 0);
       }
     }
-
-
   }
 
   /** convertLensedImagesPos */
