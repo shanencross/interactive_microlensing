@@ -865,7 +865,6 @@ var drawing = (function(context=mainContext, canvas=mainCanvas) {
                         causPointSizeY=causticPointSizeY,
                         crtPointSizeX=critPointSizeX,
                         crtPointSizeY=critPointSizeY,
-                        display=displayFlags,
                         contexts=curveContexts) {
     // clear off-screen canvases
     for (key in contexts) {
@@ -875,13 +874,8 @@ var drawing = (function(context=mainContext, canvas=mainCanvas) {
         clearPic(context);
       }
     }
-
-
-    if (display.caustic === true)
-      renderCaustic(causColor1, causColor2, causPointSizeX, causPointSizeY, contexts.caustic);
-
-    if (display.crit === true)
-      renderCrit(crtColor1, crtColor2, crtPointSizeX, crtPointSizeY, contexts.crit);
+    renderCaustic(causColor1, causColor2, causPointSizeX, causPointSizeY, contexts.caustic);
+    renderCrit(crtColor1, crtColor2, crtPointSizeX, crtPointSizeY, contexts.crit);
   }
 
   /** setPixel */
@@ -1111,15 +1105,10 @@ var drawing = (function(context=mainContext, canvas=mainCanvas) {
     }
   }
 
-  /** drawRenderedCurves */
-  function drawRenderedCurves(context=mainContext, imgCanvases=curveCanvases) {
+  /** drawRenderedCurve */
+  function drawRenderedCurve(context=mainContext, imgCanvas=critCanvas) {
     // Draw images from image canvases onto (most likely main) context
-    for (var key in imgCanvases) {
-      if (imgCanvases.hasOwnProperty(key)) {
-        var imgCanvas = imgCanvases[key];
-        context.drawImage(imgCanvas, 0, 0);
-      }
-    }
+    context.drawImage(imgCanvas, 0, 0);
   }
 
   /** convertLensedImagesPos */
@@ -1227,7 +1216,8 @@ var drawing = (function(context=mainContext, canvas=mainCanvas) {
 
   /** drawPic */
   function drawPic(display=displayFlags,
-                   context=mainContext, canvas=mainCanvas) {
+                   context=mainContext, canvas=mainCanvas,
+                   crvCanvases=curveCanvases) {
     clearPic();
     drawBackgrounds();
     drawBorder();
@@ -1238,10 +1228,14 @@ var drawing = (function(context=mainContext, canvas=mainCanvas) {
     drawLens(lens1);
     drawLens(lens2);
 
-    if (display.caustic === true || display.crit === true) {
-      // draw caustic and/or crit
+    if (display.caustic === true) {
+      // draw prerendered caustic
+      drawRenderedCurve(context, crvCanvases.caustic);
+    }
 
-      drawRenderedCurves();
+    if (display.crit === true) {
+      // draw prerendered crit
+      drawRenderedCurve(context, crvCanvases.crit)
     }
 
     if (display.rings === true) {
@@ -1250,6 +1244,7 @@ var drawing = (function(context=mainContext, canvas=mainCanvas) {
       drawRing(lens1);
       drawRing(lens2);
     }
+
     if (display.images === true)
       drawBinaryPointLensedImages();
     drawSourcePath();
