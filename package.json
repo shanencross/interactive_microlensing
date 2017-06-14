@@ -32,6 +32,8 @@
   "scripts": {
     "build": "browserify src/main.js -o build/PSBL_bundle.js",
     "build-debug": "browserify src/main.js -o build/PSBL_bundle.js --debug",
+    "watch": "watchify src/main.js -o build/PSBL_bundle.js",
+    "watch-debug": "watchify src/main.js -o build/PSBL_bundle.js --debug",
     "build-doc": "jsdoc2md src/*.js > documentation.md"
   }
 }
