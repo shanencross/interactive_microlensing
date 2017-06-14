@@ -35,13 +35,6 @@ ring radius</p>
 <dd><p>Main module.
 Main module for interactive microlensing simulator.</p>
 </dd>
-<dt><a href="#module_psbl-microlensing-event">psbl-microlensing-event</a></dt>
-<dd><p>Event module.
-Handles calculation and drawing lightcurve plot for the microlensing.
-event.</p>
-<p>Depicts magnification vs. time curve for microlensing event.</p>
-<p>Also listens for events from related UI buttons/sliders.</p>
-</dd>
 <dt><a href="#module_psbl-microlensing-event-animation">psbl-microlensing-event-animation</a></dt>
 <dd><p>Animation module.
 Handles animated playback of microlensing event.</p>
@@ -51,6 +44,13 @@ Handles animated playback of microlensing event.</p>
 Handles calculation and drawing of the lens plane plot for the microlensing
 event.</p>
 <p>Depicts the source&#39;s path across the sky when the lenses are held fixed.</p>
+<p>Also listens for events from related UI buttons/sliders.</p>
+</dd>
+<dt><a href="#module_psbl-microlensing-event">psbl-microlensing-event</a></dt>
+<dd><p>Event module.
+Handles calculation and drawing lightcurve plot for the microlensing.
+event.</p>
+<p>Depicts magnification vs. time curve for microlensing event.</p>
 <p>Also listens for events from related UI buttons/sliders.</p>
 </dd>
 <dt><a href="#module_utils">utils</a></dt>
@@ -154,6 +154,218 @@ Main module.Main module for interactive microlensing simulator.
 init
 
 **Kind**: inner method of [<code>main</code>](#module_main)  
+<a name="module_psbl-microlensing-event-animation"></a>
+
+## psbl-microlensing-event-animation
+Animation module.Handles animated playback of microlensing event.
+
+
+* [psbl-microlensing-event-animation](#module_psbl-microlensing-event-animation)
+    * [~init()](#module_psbl-microlensing-event-animation..init)
+    * [~updateMinAndMaxTimes()](#module_psbl-microlensing-event-animation..updateMinAndMaxTimes)
+    * [~initListeners()](#module_psbl-microlensing-event-animation..initListeners)
+    * [~run()](#module_psbl-microlensing-event-animation..run)
+    * [~updateTime()](#module_psbl-microlensing-event-animation..updateTime)
+    * [~animateFrame()](#module_psbl-microlensing-event-animation..animateFrame)
+    * [~animateFrameSource()](#module_psbl-microlensing-event-animation..animateFrameSource)
+    * [~updatePlayback()](#module_psbl-microlensing-event-animation..updatePlayback)
+
+<a name="module_psbl-microlensing-event-animation..init"></a>
+
+### psbl-microlensing-event-animation~init()
+init
+
+**Kind**: inner method of [<code>psbl-microlensing-event-animation</code>](#module_psbl-microlensing-event-animation)  
+<a name="module_psbl-microlensing-event-animation..updateMinAndMaxTimes"></a>
+
+### psbl-microlensing-event-animation~updateMinAndMaxTimes()
+updateMinAndMaxTimes
+
+**Kind**: inner method of [<code>psbl-microlensing-event-animation</code>](#module_psbl-microlensing-event-animation)  
+<a name="module_psbl-microlensing-event-animation..initListeners"></a>
+
+### psbl-microlensing-event-animation~initListeners()
+initListeners
+
+**Kind**: inner method of [<code>psbl-microlensing-event-animation</code>](#module_psbl-microlensing-event-animation)  
+<a name="module_psbl-microlensing-event-animation..run"></a>
+
+### psbl-microlensing-event-animation~run()
+run
+
+**Kind**: inner method of [<code>psbl-microlensing-event-animation</code>](#module_psbl-microlensing-event-animation)  
+<a name="module_psbl-microlensing-event-animation..updateTime"></a>
+
+### psbl-microlensing-event-animation~updateTime()
+updateTime
+
+**Kind**: inner method of [<code>psbl-microlensing-event-animation</code>](#module_psbl-microlensing-event-animation)  
+<a name="module_psbl-microlensing-event-animation..animateFrame"></a>
+
+### psbl-microlensing-event-animation~animateFrame()
+animateFrame
+
+**Kind**: inner method of [<code>psbl-microlensing-event-animation</code>](#module_psbl-microlensing-event-animation)  
+<a name="module_psbl-microlensing-event-animation..animateFrameSource"></a>
+
+### psbl-microlensing-event-animation~animateFrameSource()
+animateFrameSource
+
+**Kind**: inner method of [<code>psbl-microlensing-event-animation</code>](#module_psbl-microlensing-event-animation)  
+<a name="module_psbl-microlensing-event-animation..updatePlayback"></a>
+
+### psbl-microlensing-event-animation~updatePlayback()
+updatePlayback
+
+**Kind**: inner method of [<code>psbl-microlensing-event-animation</code>](#module_psbl-microlensing-event-animation)  
+<a name="module_psbl-microlensing-event-lens-plane"></a>
+
+## psbl-microlensing-event-lens-plane
+Lens Plane Module.Handles calculation and drawing of the lens plane plot for the microlensingevent.Depicts the source's path across the sky when the lenses are held fixed.Also listens for events from related UI buttons/sliders.
+
+
+* [psbl-microlensing-event-lens-plane](#module_psbl-microlensing-event-lens-plane)
+    * [~drawing](#module_psbl-microlensing-event-lens-plane..drawing)
+    * [~init()](#module_psbl-microlensing-event-lens-plane..init)
+    * [~initListeners()](#module_psbl-microlensing-event-lens-plane..initListeners)
+    * [~initCheckboxes()](#module_psbl-microlensing-event-lens-plane..initCheckboxes)
+    * [~initSliders()](#module_psbl-microlensing-event-lens-plane..initSliders)
+    * [~initLenses()](#module_psbl-microlensing-event-lens-plane..initLenses)
+    * [~initSourceRadius()](#module_psbl-microlensing-event-lens-plane..initSourceRadius)
+    * [~updateSourceRadiusSlider()](#module_psbl-microlensing-event-lens-plane..updateSourceRadiusSlider)
+    * [~updateSourceRadius()](#module_psbl-microlensing-event-lens-plane..updateSourceRadius)
+    * [~initSourcePos()](#module_psbl-microlensing-event-lens-plane..initSourcePos)
+    * [~redraw()](#module_psbl-microlensing-event-lens-plane..redraw)
+    * [~updateScaleAndRangeValues()](#module_psbl-microlensing-event-lens-plane..updateScaleAndRangeValues)
+    * [~updateDrawingValues()](#module_psbl-microlensing-event-lens-plane..updateDrawingValues)
+    * [~thetaXtoPixel()](#module_psbl-microlensing-event-lens-plane..thetaXtoPixel)
+    * [~xDayToPixel()](#module_psbl-microlensing-event-lens-plane..xDayToPixel)
+    * [~thetaYtoPixel()](#module_psbl-microlensing-event-lens-plane..thetaYtoPixel)
+    * [~getThetaX()](#module_psbl-microlensing-event-lens-plane..getThetaX)
+    * [~getThetaYpathValue()](#module_psbl-microlensing-event-lens-plane..getThetaYpathValue)
+    * [~updateGridRange()](#module_psbl-microlensing-event-lens-plane..updateGridRange)
+    * [~xDayToThetaX()](#module_psbl-microlensing-event-lens-plane..xDayToThetaX)
+
+<a name="module_psbl-microlensing-event-lens-plane..drawing"></a>
+
+### psbl-microlensing-event-lens-plane~drawing
+drawing
+
+**Kind**: inner property of [<code>psbl-microlensing-event-lens-plane</code>](#module_psbl-microlensing-event-lens-plane)  
+<a name="module_psbl-microlensing-event-lens-plane..init"></a>
+
+### psbl-microlensing-event-lens-plane~init()
+init
+
+**Kind**: inner method of [<code>psbl-microlensing-event-lens-plane</code>](#module_psbl-microlensing-event-lens-plane)  
+<a name="module_psbl-microlensing-event-lens-plane..initListeners"></a>
+
+### psbl-microlensing-event-lens-plane~initListeners()
+initListeners
+
+**Kind**: inner method of [<code>psbl-microlensing-event-lens-plane</code>](#module_psbl-microlensing-event-lens-plane)  
+<a name="module_psbl-microlensing-event-lens-plane..initCheckboxes"></a>
+
+### psbl-microlensing-event-lens-plane~initCheckboxes()
+initCheckboxes()
+
+**Kind**: inner method of [<code>psbl-microlensing-event-lens-plane</code>](#module_psbl-microlensing-event-lens-plane)  
+<a name="module_psbl-microlensing-event-lens-plane..initSliders"></a>
+
+### psbl-microlensing-event-lens-plane~initSliders()
+initSliders
+
+**Kind**: inner method of [<code>psbl-microlensing-event-lens-plane</code>](#module_psbl-microlensing-event-lens-plane)  
+<a name="module_psbl-microlensing-event-lens-plane..initLenses"></a>
+
+### psbl-microlensing-event-lens-plane~initLenses()
+initLenses
+
+**Kind**: inner method of [<code>psbl-microlensing-event-lens-plane</code>](#module_psbl-microlensing-event-lens-plane)  
+<a name="module_psbl-microlensing-event-lens-plane..initSourceRadius"></a>
+
+### psbl-microlensing-event-lens-plane~initSourceRadius()
+initSourceRadius
+
+**Kind**: inner method of [<code>psbl-microlensing-event-lens-plane</code>](#module_psbl-microlensing-event-lens-plane)  
+<a name="module_psbl-microlensing-event-lens-plane..updateSourceRadiusSlider"></a>
+
+### psbl-microlensing-event-lens-plane~updateSourceRadiusSlider()
+updateSourceRadiusSlider
+
+**Kind**: inner method of [<code>psbl-microlensing-event-lens-plane</code>](#module_psbl-microlensing-event-lens-plane)  
+<a name="module_psbl-microlensing-event-lens-plane..updateSourceRadius"></a>
+
+### psbl-microlensing-event-lens-plane~updateSourceRadius()
+updateSourceRadius
+
+**Kind**: inner method of [<code>psbl-microlensing-event-lens-plane</code>](#module_psbl-microlensing-event-lens-plane)  
+<a name="module_psbl-microlensing-event-lens-plane..initSourcePos"></a>
+
+### psbl-microlensing-event-lens-plane~initSourcePos()
+initSourcePos
+
+**Kind**: inner method of [<code>psbl-microlensing-event-lens-plane</code>](#module_psbl-microlensing-event-lens-plane)  
+<a name="module_psbl-microlensing-event-lens-plane..redraw"></a>
+
+### psbl-microlensing-event-lens-plane~redraw()
+redraw
+
+**Kind**: inner method of [<code>psbl-microlensing-event-lens-plane</code>](#module_psbl-microlensing-event-lens-plane)  
+<a name="module_psbl-microlensing-event-lens-plane..updateScaleAndRangeValues"></a>
+
+### psbl-microlensing-event-lens-plane~updateScaleAndRangeValues()
+updateScaleAndRangeValues
+
+**Kind**: inner method of [<code>psbl-microlensing-event-lens-plane</code>](#module_psbl-microlensing-event-lens-plane)  
+<a name="module_psbl-microlensing-event-lens-plane..updateDrawingValues"></a>
+
+### psbl-microlensing-event-lens-plane~updateDrawingValues()
+updateDrawingValues
+
+**Kind**: inner method of [<code>psbl-microlensing-event-lens-plane</code>](#module_psbl-microlensing-event-lens-plane)  
+<a name="module_psbl-microlensing-event-lens-plane..thetaXtoPixel"></a>
+
+### psbl-microlensing-event-lens-plane~thetaXtoPixel()
+thetaXtoPixel
+
+**Kind**: inner method of [<code>psbl-microlensing-event-lens-plane</code>](#module_psbl-microlensing-event-lens-plane)  
+<a name="module_psbl-microlensing-event-lens-plane..xDayToPixel"></a>
+
+### psbl-microlensing-event-lens-plane~xDayToPixel()
+xDayToPixel
+
+**Kind**: inner method of [<code>psbl-microlensing-event-lens-plane</code>](#module_psbl-microlensing-event-lens-plane)  
+<a name="module_psbl-microlensing-event-lens-plane..thetaYtoPixel"></a>
+
+### psbl-microlensing-event-lens-plane~thetaYtoPixel()
+thetaYtoPixel
+
+**Kind**: inner method of [<code>psbl-microlensing-event-lens-plane</code>](#module_psbl-microlensing-event-lens-plane)  
+<a name="module_psbl-microlensing-event-lens-plane..getThetaX"></a>
+
+### psbl-microlensing-event-lens-plane~getThetaX()
+getThetaX
+
+**Kind**: inner method of [<code>psbl-microlensing-event-lens-plane</code>](#module_psbl-microlensing-event-lens-plane)  
+<a name="module_psbl-microlensing-event-lens-plane..getThetaYpathValue"></a>
+
+### psbl-microlensing-event-lens-plane~getThetaYpathValue()
+getThetaYpathValue
+
+**Kind**: inner method of [<code>psbl-microlensing-event-lens-plane</code>](#module_psbl-microlensing-event-lens-plane)  
+<a name="module_psbl-microlensing-event-lens-plane..updateGridRange"></a>
+
+### psbl-microlensing-event-lens-plane~updateGridRange()
+updateGridRange
+
+**Kind**: inner method of [<code>psbl-microlensing-event-lens-plane</code>](#module_psbl-microlensing-event-lens-plane)  
+<a name="module_psbl-microlensing-event-lens-plane..xDayToThetaX"></a>
+
+### psbl-microlensing-event-lens-plane~xDayToThetaX()
+xDayToThetaX
+
+**Kind**: inner method of [<code>psbl-microlensing-event-lens-plane</code>](#module_psbl-microlensing-event-lens-plane)  
 <a name="module_psbl-microlensing-event"></a>
 
 ## psbl-microlensing-event
@@ -386,218 +598,6 @@ getMagnifFromU
 getMagnif
 
 **Kind**: inner method of [<code>psbl-microlensing-event</code>](#module_psbl-microlensing-event)  
-<a name="module_psbl-microlensing-event-animation"></a>
-
-## psbl-microlensing-event-animation
-Animation module.Handles animated playback of microlensing event.
-
-
-* [psbl-microlensing-event-animation](#module_psbl-microlensing-event-animation)
-    * [~init()](#module_psbl-microlensing-event-animation..init)
-    * [~updateMinAndMaxTimes()](#module_psbl-microlensing-event-animation..updateMinAndMaxTimes)
-    * [~initListeners()](#module_psbl-microlensing-event-animation..initListeners)
-    * [~run()](#module_psbl-microlensing-event-animation..run)
-    * [~updateTime()](#module_psbl-microlensing-event-animation..updateTime)
-    * [~animateFrame()](#module_psbl-microlensing-event-animation..animateFrame)
-    * [~animateFrameSource()](#module_psbl-microlensing-event-animation..animateFrameSource)
-    * [~updatePlayback()](#module_psbl-microlensing-event-animation..updatePlayback)
-
-<a name="module_psbl-microlensing-event-animation..init"></a>
-
-### psbl-microlensing-event-animation~init()
-init
-
-**Kind**: inner method of [<code>psbl-microlensing-event-animation</code>](#module_psbl-microlensing-event-animation)  
-<a name="module_psbl-microlensing-event-animation..updateMinAndMaxTimes"></a>
-
-### psbl-microlensing-event-animation~updateMinAndMaxTimes()
-updateMinAndMaxTimes
-
-**Kind**: inner method of [<code>psbl-microlensing-event-animation</code>](#module_psbl-microlensing-event-animation)  
-<a name="module_psbl-microlensing-event-animation..initListeners"></a>
-
-### psbl-microlensing-event-animation~initListeners()
-initListeners
-
-**Kind**: inner method of [<code>psbl-microlensing-event-animation</code>](#module_psbl-microlensing-event-animation)  
-<a name="module_psbl-microlensing-event-animation..run"></a>
-
-### psbl-microlensing-event-animation~run()
-run
-
-**Kind**: inner method of [<code>psbl-microlensing-event-animation</code>](#module_psbl-microlensing-event-animation)  
-<a name="module_psbl-microlensing-event-animation..updateTime"></a>
-
-### psbl-microlensing-event-animation~updateTime()
-updateTime
-
-**Kind**: inner method of [<code>psbl-microlensing-event-animation</code>](#module_psbl-microlensing-event-animation)  
-<a name="module_psbl-microlensing-event-animation..animateFrame"></a>
-
-### psbl-microlensing-event-animation~animateFrame()
-animateFrame
-
-**Kind**: inner method of [<code>psbl-microlensing-event-animation</code>](#module_psbl-microlensing-event-animation)  
-<a name="module_psbl-microlensing-event-animation..animateFrameSource"></a>
-
-### psbl-microlensing-event-animation~animateFrameSource()
-animateFrameSource
-
-**Kind**: inner method of [<code>psbl-microlensing-event-animation</code>](#module_psbl-microlensing-event-animation)  
-<a name="module_psbl-microlensing-event-animation..updatePlayback"></a>
-
-### psbl-microlensing-event-animation~updatePlayback()
-updatePlayback
-
-**Kind**: inner method of [<code>psbl-microlensing-event-animation</code>](#module_psbl-microlensing-event-animation)  
-<a name="module_psbl-microlensing-event-lens-plane"></a>
-
-## psbl-microlensing-event-lens-plane
-Lens Plane Module.Handles calculation and drawing of the lens plane plot for the microlensingevent.Depicts the source's path across the sky when the lenses are held fixed.Also listens for events from related UI buttons/sliders.
-
-
-* [psbl-microlensing-event-lens-plane](#module_psbl-microlensing-event-lens-plane)
-    * [~drawing](#module_psbl-microlensing-event-lens-plane..drawing)
-    * [~init()](#module_psbl-microlensing-event-lens-plane..init)
-    * [~initListeners()](#module_psbl-microlensing-event-lens-plane..initListeners)
-    * [~initCheckboxes()](#module_psbl-microlensing-event-lens-plane..initCheckboxes)
-    * [~initSliders()](#module_psbl-microlensing-event-lens-plane..initSliders)
-    * [~initLenses()](#module_psbl-microlensing-event-lens-plane..initLenses)
-    * [~initSourceRadius()](#module_psbl-microlensing-event-lens-plane..initSourceRadius)
-    * [~updateSourceRadiusSlider()](#module_psbl-microlensing-event-lens-plane..updateSourceRadiusSlider)
-    * [~updateSourceRadius()](#module_psbl-microlensing-event-lens-plane..updateSourceRadius)
-    * [~initSourcePos()](#module_psbl-microlensing-event-lens-plane..initSourcePos)
-    * [~redraw()](#module_psbl-microlensing-event-lens-plane..redraw)
-    * [~updateScaleAndRangeValues()](#module_psbl-microlensing-event-lens-plane..updateScaleAndRangeValues)
-    * [~updateDrawingValues()](#module_psbl-microlensing-event-lens-plane..updateDrawingValues)
-    * [~thetaXtoPixel()](#module_psbl-microlensing-event-lens-plane..thetaXtoPixel)
-    * [~xDayToPixel()](#module_psbl-microlensing-event-lens-plane..xDayToPixel)
-    * [~thetaYtoPixel()](#module_psbl-microlensing-event-lens-plane..thetaYtoPixel)
-    * [~getThetaX()](#module_psbl-microlensing-event-lens-plane..getThetaX)
-    * [~getThetaYpathValue()](#module_psbl-microlensing-event-lens-plane..getThetaYpathValue)
-    * [~updateGridRange()](#module_psbl-microlensing-event-lens-plane..updateGridRange)
-    * [~xDayToThetaX()](#module_psbl-microlensing-event-lens-plane..xDayToThetaX)
-
-<a name="module_psbl-microlensing-event-lens-plane..drawing"></a>
-
-### psbl-microlensing-event-lens-plane~drawing
-drawing
-
-**Kind**: inner property of [<code>psbl-microlensing-event-lens-plane</code>](#module_psbl-microlensing-event-lens-plane)  
-<a name="module_psbl-microlensing-event-lens-plane..init"></a>
-
-### psbl-microlensing-event-lens-plane~init()
-init
-
-**Kind**: inner method of [<code>psbl-microlensing-event-lens-plane</code>](#module_psbl-microlensing-event-lens-plane)  
-<a name="module_psbl-microlensing-event-lens-plane..initListeners"></a>
-
-### psbl-microlensing-event-lens-plane~initListeners()
-initListeners
-
-**Kind**: inner method of [<code>psbl-microlensing-event-lens-plane</code>](#module_psbl-microlensing-event-lens-plane)  
-<a name="module_psbl-microlensing-event-lens-plane..initCheckboxes"></a>
-
-### psbl-microlensing-event-lens-plane~initCheckboxes()
-initCheckboxes()
-
-**Kind**: inner method of [<code>psbl-microlensing-event-lens-plane</code>](#module_psbl-microlensing-event-lens-plane)  
-<a name="module_psbl-microlensing-event-lens-plane..initSliders"></a>
-
-### psbl-microlensing-event-lens-plane~initSliders()
-initSliders
-
-**Kind**: inner method of [<code>psbl-microlensing-event-lens-plane</code>](#module_psbl-microlensing-event-lens-plane)  
-<a name="module_psbl-microlensing-event-lens-plane..initLenses"></a>
-
-### psbl-microlensing-event-lens-plane~initLenses()
-initLenses
-
-**Kind**: inner method of [<code>psbl-microlensing-event-lens-plane</code>](#module_psbl-microlensing-event-lens-plane)  
-<a name="module_psbl-microlensing-event-lens-plane..initSourceRadius"></a>
-
-### psbl-microlensing-event-lens-plane~initSourceRadius()
-initSourceRadius
-
-**Kind**: inner method of [<code>psbl-microlensing-event-lens-plane</code>](#module_psbl-microlensing-event-lens-plane)  
-<a name="module_psbl-microlensing-event-lens-plane..updateSourceRadiusSlider"></a>
-
-### psbl-microlensing-event-lens-plane~updateSourceRadiusSlider()
-updateSourceRadiusSlider
-
-**Kind**: inner method of [<code>psbl-microlensing-event-lens-plane</code>](#module_psbl-microlensing-event-lens-plane)  
-<a name="module_psbl-microlensing-event-lens-plane..updateSourceRadius"></a>
-
-### psbl-microlensing-event-lens-plane~updateSourceRadius()
-updateSourceRadius
-
-**Kind**: inner method of [<code>psbl-microlensing-event-lens-plane</code>](#module_psbl-microlensing-event-lens-plane)  
-<a name="module_psbl-microlensing-event-lens-plane..initSourcePos"></a>
-
-### psbl-microlensing-event-lens-plane~initSourcePos()
-initSourcePos
-
-**Kind**: inner method of [<code>psbl-microlensing-event-lens-plane</code>](#module_psbl-microlensing-event-lens-plane)  
-<a name="module_psbl-microlensing-event-lens-plane..redraw"></a>
-
-### psbl-microlensing-event-lens-plane~redraw()
-redraw
-
-**Kind**: inner method of [<code>psbl-microlensing-event-lens-plane</code>](#module_psbl-microlensing-event-lens-plane)  
-<a name="module_psbl-microlensing-event-lens-plane..updateScaleAndRangeValues"></a>
-
-### psbl-microlensing-event-lens-plane~updateScaleAndRangeValues()
-updateScaleAndRangeValues
-
-**Kind**: inner method of [<code>psbl-microlensing-event-lens-plane</code>](#module_psbl-microlensing-event-lens-plane)  
-<a name="module_psbl-microlensing-event-lens-plane..updateDrawingValues"></a>
-
-### psbl-microlensing-event-lens-plane~updateDrawingValues()
-updateDrawingValues
-
-**Kind**: inner method of [<code>psbl-microlensing-event-lens-plane</code>](#module_psbl-microlensing-event-lens-plane)  
-<a name="module_psbl-microlensing-event-lens-plane..thetaXtoPixel"></a>
-
-### psbl-microlensing-event-lens-plane~thetaXtoPixel()
-thetaXtoPixel
-
-**Kind**: inner method of [<code>psbl-microlensing-event-lens-plane</code>](#module_psbl-microlensing-event-lens-plane)  
-<a name="module_psbl-microlensing-event-lens-plane..xDayToPixel"></a>
-
-### psbl-microlensing-event-lens-plane~xDayToPixel()
-xDayToPixel
-
-**Kind**: inner method of [<code>psbl-microlensing-event-lens-plane</code>](#module_psbl-microlensing-event-lens-plane)  
-<a name="module_psbl-microlensing-event-lens-plane..thetaYtoPixel"></a>
-
-### psbl-microlensing-event-lens-plane~thetaYtoPixel()
-thetaYtoPixel
-
-**Kind**: inner method of [<code>psbl-microlensing-event-lens-plane</code>](#module_psbl-microlensing-event-lens-plane)  
-<a name="module_psbl-microlensing-event-lens-plane..getThetaX"></a>
-
-### psbl-microlensing-event-lens-plane~getThetaX()
-getThetaX
-
-**Kind**: inner method of [<code>psbl-microlensing-event-lens-plane</code>](#module_psbl-microlensing-event-lens-plane)  
-<a name="module_psbl-microlensing-event-lens-plane..getThetaYpathValue"></a>
-
-### psbl-microlensing-event-lens-plane~getThetaYpathValue()
-getThetaYpathValue
-
-**Kind**: inner method of [<code>psbl-microlensing-event-lens-plane</code>](#module_psbl-microlensing-event-lens-plane)  
-<a name="module_psbl-microlensing-event-lens-plane..updateGridRange"></a>
-
-### psbl-microlensing-event-lens-plane~updateGridRange()
-updateGridRange
-
-**Kind**: inner method of [<code>psbl-microlensing-event-lens-plane</code>](#module_psbl-microlensing-event-lens-plane)  
-<a name="module_psbl-microlensing-event-lens-plane..xDayToThetaX"></a>
-
-### psbl-microlensing-event-lens-plane~xDayToThetaX()
-xDayToThetaX
-
-**Kind**: inner method of [<code>psbl-microlensing-event-lens-plane</code>](#module_psbl-microlensing-event-lens-plane)  
 <a name="module_utils"></a>
 
 ## utils

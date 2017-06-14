@@ -28,5 +28,10 @@
     "tldrlegal": "1.0.4",
     "uglify-js": "3.0.4",
     "watchify": "3.9.0"
+  },
+  "scripts": {
+    "build": "browserify src/main.js -o build/PSBL_bundle.js",
+    "build-debug": "browserify src/main.js -o build/PSBL_bundle.js --debug",
+    "build-doc": "jsdoc2md src/main.js > documentation.md"
   }
 }
