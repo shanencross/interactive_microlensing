@@ -13,11 +13,23 @@ Calculates binary image parameters for a particular source position.</p>
 <dd><p>Binary lens module.
 Calculates binary image parameters for a range of source positions.</p>
 </dd>
+<dt><a href="#module_ellipse">ellipse</a></dt>
+<dd><p>Ellipse.
+Draw an ellipse (but don&#39;t actually perform the stroke or fill) on a
+Canvas element.
+Unlike the native JS ellipse ellipse function,
+this is compatible with Firefox.</p>
+</dd>
 <dt><a href="#module_handle-error">handle-error</a></dt>
 <dd><p>Error handler module.
 Handles exceptions.</p>
 <p>Needed to handle exceptions raised when trying to load
 a module that is not present.</p>
+</dd>
+<dt><a href="#module_Lens">Lens</a></dt>
+<dd><p>Module containing Lens class
+Class represents lens object, including pixel location and radius, and
+ring radius</p>
 </dd>
 <dt><a href="#module_main">main</a></dt>
 <dd><p>Main module.
@@ -96,6 +108,11 @@ plot_binary
 findCausticAndCritCurves
 
 **Kind**: inner method of [<code>bin-len-faster</code>](#module_bin-len-faster)  
+<a name="module_ellipse"></a>
+
+## ellipse
+Ellipse.Draw an ellipse (but don't actually perform the stroke or fill) on aCanvas element.Unlike the native JS ellipse ellipse function,this is compatible with Firefox.
+
 <a name="module_handle-error"></a>
 
 ## handle-error
@@ -107,6 +124,25 @@ Error handler module.Handles exceptions.Needed to handle exceptions raised wh
 handle
 
 **Kind**: Exported function  
+<a name="module_Lens"></a>
+
+## Lens
+Module containing Lens classClass represents lens object, including pixel location and radius, andring radius
+
+
+* [Lens](#module_Lens)
+    * [~Lens](#module_Lens..Lens)
+        * [new Lens()](#new_module_Lens..Lens_new)
+
+<a name="module_Lens..Lens"></a>
+
+### Lens~Lens
+**Kind**: inner class of [<code>Lens</code>](#module_Lens)  
+<a name="new_module_Lens..Lens_new"></a>
+
+#### new Lens()
+Lens classRepresents lens object, including pixel location and radius, and ring radius
+
 <a name="module_main"></a>
 
 ## main
@@ -421,11 +457,11 @@ Lens Plane Module.Handles calculation and drawing of the lens plane plot for th
 
 
 * [psbl-microlensing-event-lens-plane](#module_psbl-microlensing-event-lens-plane)
-    * [~Lens](#module_psbl-microlensing-event-lens-plane..Lens)
-        * [new Lens()](#new_module_psbl-microlensing-event-lens-plane..Lens_new)
     * [~drawing](#module_psbl-microlensing-event-lens-plane..drawing)
     * [~init()](#module_psbl-microlensing-event-lens-plane..init)
     * [~initListeners()](#module_psbl-microlensing-event-lens-plane..initListeners)
+    * [~initCheckboxes()](#module_psbl-microlensing-event-lens-plane..initCheckboxes)
+    * [~initSliders()](#module_psbl-microlensing-event-lens-plane..initSliders)
     * [~initLenses()](#module_psbl-microlensing-event-lens-plane..initLenses)
     * [~initSourceRadius()](#module_psbl-microlensing-event-lens-plane..initSourceRadius)
     * [~updateSourceRadiusSlider()](#module_psbl-microlensing-event-lens-plane..updateSourceRadiusSlider)
@@ -441,15 +477,6 @@ Lens Plane Module.Handles calculation and drawing of the lens plane plot for th
     * [~getThetaYpathValue()](#module_psbl-microlensing-event-lens-plane..getThetaYpathValue)
     * [~updateGridRange()](#module_psbl-microlensing-event-lens-plane..updateGridRange)
     * [~xDayToThetaX()](#module_psbl-microlensing-event-lens-plane..xDayToThetaX)
-
-<a name="module_psbl-microlensing-event-lens-plane..Lens"></a>
-
-### psbl-microlensing-event-lens-plane~Lens
-**Kind**: inner class of [<code>psbl-microlensing-event-lens-plane</code>](#module_psbl-microlensing-event-lens-plane)  
-<a name="new_module_psbl-microlensing-event-lens-plane..Lens_new"></a>
-
-#### new Lens()
-A lens -- one of the two binary lenses.
 
 <a name="module_psbl-microlensing-event-lens-plane..drawing"></a>
 
@@ -467,6 +494,18 @@ init
 
 ### psbl-microlensing-event-lens-plane~initListeners()
 initListeners
+
+**Kind**: inner method of [<code>psbl-microlensing-event-lens-plane</code>](#module_psbl-microlensing-event-lens-plane)  
+<a name="module_psbl-microlensing-event-lens-plane..initCheckboxes"></a>
+
+### psbl-microlensing-event-lens-plane~initCheckboxes()
+initCheckboxes()
+
+**Kind**: inner method of [<code>psbl-microlensing-event-lens-plane</code>](#module_psbl-microlensing-event-lens-plane)  
+<a name="module_psbl-microlensing-event-lens-plane..initSliders"></a>
+
+### psbl-microlensing-event-lens-plane~initSliders()
+initSliders
 
 **Kind**: inner method of [<code>psbl-microlensing-event-lens-plane</code>](#module_psbl-microlensing-event-lens-plane)  
 <a name="module_psbl-microlensing-event-lens-plane..initLenses"></a>
