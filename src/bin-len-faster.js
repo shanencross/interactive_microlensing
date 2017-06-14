@@ -44,6 +44,10 @@ function plot_binary(GM1=0.5, GM2=0.5, D=0.5, cof1=0.1, cof2=-0.5,
   for (var i=0; i<5; i++) {
     YIA.push(new Array(NPN));
   }
+  var IMPA = [];
+  for (var i=0; i<5; i++) {
+    IMPA.push(new Array(NPN));
+  }
 
   GM2 = 1 - GM1
 
@@ -97,6 +101,8 @@ function plot_binary(GM1=0.5, GM2=0.5, D=0.5, cof1=0.1, cof2=-0.5,
 
       XIA[IM][IXS] = XI[IM];
       YIA[IM][IXS] = YI[IM];
+
+      IMPA[IM][IXS] = IMP[IM];
     }
   }
 
@@ -128,6 +134,7 @@ function plot_binary(GM1=0.5, GM2=0.5, D=0.5, cof1=0.1, cof2=-0.5,
   return {
     normalizedSourcePositions: normalizedSourcePositions,
     normalizedImagePositions: normalizedImagePositions,
+    imageParities: IMPA,
     magnifs: ASA,
     causticAndCrit: causticAndCrit,
   };

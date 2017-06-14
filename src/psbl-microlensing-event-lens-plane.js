@@ -1181,16 +1181,24 @@ var drawing = (function(context=mainContext, canvas=mainCanvas) {
       if (timeIndex === undefined)
         timeIndex = times.length-1;
 
+      var imageParities = eventModule.imageParities;
+
       for (var i=0; i<lensedImagesPixelPos.length; i++) {
-        var imagePixelPos = lensedImagesPixelPos[i];
-        var x = imagePixelPos.x[timeIndex];
-        var y = imagePixelPos.y[timeIndex];
-        context.beginPath();
-        context.strokeStyle = outlineColors[i];
-        context.fillStyle = fillColors[i];
-        context.arc(x, y, 4, 0, 2*Math.PI, false);
-        context.fill();
-        context.stroke();
+        var imageParity = imageParities[i][timeIndex];
+
+        // only draw the image if its parity is non-zero.
+        // images with parity 0 are non-physical solutions.
+        if (imageParity !== 0) {
+          var imagePixelPos = lensedImagesPixelPos[i];
+          var x = imagePixelPos.x[timeIndex];
+          var y = imagePixelPos.y[timeIndex];
+          context.beginPath();
+          context.strokeStyle = outlineColors[i];
+          context.fillStyle = fillColors[i];
+          context.arc(x, y, 4, 0, 2*Math.PI, false);
+          context.fill();
+          context.stroke();
+        }
       }
     }
 

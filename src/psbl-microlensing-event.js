@@ -1149,17 +1149,20 @@ function updateCurveData() {
 
   var times = numeric.linspace(xAxisInitialDay, xAxisFinalDay, NPN);
   var magnifs = binaryCaclulationResults.magnifs;
+  var imageParities = binaryCaclulationResults.imageParities;
   var normalizedImagePositions = binaryCaclulationResults.normalizedImagePositions;
   var causticAndCritNormalized = binaryCaclulationResults.causticAndCrit; // units of thetaE
 
   console.log(`(binary) times.length: ${times.length}`);
   console.log(`(binary) magnifs.length: ${magnifs.length}`);
   console.log(`(binary) crit.x1.length: ${causticAndCritNormalized.crit.x1.length}`);
+  console.log(`(binary) imageParities.length: ${imageParities.length}`);
   console.log(`(binary) caustic.x1.length: ${causticAndCritNormalized.caustic.x1.length}`);
 
   var curveData = {
     times:times,
     magnifs:magnifs,
+    imageParities: imageParities,
     // normalized (over thetaE) positions of the (five or three) lensed images
     imagesNormalizedPos: normalizedImagePositions,
     causticNormalized: causticAndCritNormalized.caustic,
@@ -1288,6 +1291,11 @@ module.exports = {
   // for calculating thetaE for individual lens masses, in addition to the
   // thetaE of the summed lens masses
   calculateThetaE: calculateThetaE,
+
+  get imageParities() {
+    if (lightcurveData !== null && lightcurveData !== undefined)
+      return lightcurveData.imageParities;
+  },
 
   // normalized (over thetaE) positions of the (five or three) lensed images
   get imagesNormalizedPos() {
