@@ -4,9 +4,9 @@
 
 Development of educational interactive microlensing web app using HTML5 canvas
 
-### Django Website Installation Instructions
+## Django Website Installation Instructions
 
-## Install NPM
+### Install NPM
 
 Install NPM, the Node Package Manager.
 
@@ -35,7 +35,7 @@ In the top folder of the repo, install the dependencies with NPM:
 npm install
 ```
 
-## Building project
+### Building project
 
 Note: this assumes you are using a Bash shell.
 
@@ -51,6 +51,8 @@ build/PSBL_bundle.js.
 
 The Django-compatible HTML page is located at:
 html/django_pages/tools_PSBL_microlensing_event.html
+
+You can copy these into the Django website project.
 
 ## Updating project with latest version after installation
 
