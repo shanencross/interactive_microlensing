@@ -110,7 +110,7 @@ Note: These scripts will only work with a Bash shell.
   ```
   npm run watch-debug
   ```
-* Build the in-line JSdoc documentation:
+* Build the in-line JSDoc documentation:
   ```
   npm run build-doc
   ```
