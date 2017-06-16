@@ -8,32 +8,34 @@ Development of educational interactive microlensing web app using HTML5 canvas
 
 ### Install NPM
 
-Install NPM, the Node Package Manager.
+* Install NPM, the Node Package Manager.
 
-NPM is packaged with NodeJS: https://nodejs.org/
+  NPM is packaged with NodeJS. You can install NodeJS with NPM directly from:
+  https://nodejs.org/
 
-To install NPM using a package manager, see instructions here: https://nodejs.org/en/download/package-manager/
+  Or, you can install NPM using a package manager:
+  https://nodejs.org/en/download/package-manager/
 
-For example, on Ubuntu/Debian-based distributions, do:
-```
-curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash -
-sudo apt-get install -y nodejs
-```
+  For example, on Ubuntu/Debian-based distributions, you can do:
+  ```
+  curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash -
+  sudo apt-get install -y nodejs
+  ```
 
-Navigate to your workspace in the command line, and clone this repository:
-```
-git clone https://github.com/shanencross/interactive_microlensing.git
-```
+  * Navigate to your workspace in the command line, and clone this repository:
+  ```
+  git clone https://github.com/shanencross/interactive_microlensing.git
+  ```
 
-Switch to the binary branch:
-```
-git checkout binary
-```
+  * Switch to the binary branch:
+  ```
+  git checkout binary
+  ```
 
-In the top folder of the repo, install the dependencies with NPM:
-```
-npm install
-```
+* In the top folder of the repo, install the dependencies with NPM:
+  ```
+  npm install
+  ```
 
 ### Building project
 
@@ -104,4 +106,4 @@ There are some other useful scripts included in the package.json file.
   ```
   npm run build-doc
   ```
-  ... which outputs to /documentation.md file.
+  ...which outputs to /documentation.md file.
