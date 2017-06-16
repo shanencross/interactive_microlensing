@@ -13,7 +13,7 @@ Development of educational interactive microlensing web app using HTML5 canvas
   NPM is packaged with NodeJS. You can install NodeJS with NPM directly from:
   https://nodejs.org/
 
-  Or, you can install NPM using a package manager:
+  Or, you can install NodeJS/NPM using a package manager:
   https://nodejs.org/en/download/package-manager/
 
   For example, on Ubuntu/Debian-based distributions, you can do:
@@ -106,4 +106,4 @@ There are some other useful scripts included in the package.json file.
   ```
   npm run build-doc
   ```
-  ...which outputs to /documentation.md file.
+  ...which outputs to the /documentation.md file.
