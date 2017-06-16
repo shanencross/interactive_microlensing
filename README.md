@@ -22,12 +22,12 @@ Development of educational interactive microlensing web app using HTML5 canvas
   sudo apt-get install -y nodejs
   ```
 
-  * Navigate to your workspace in the command line, and clone this repository:
+* Navigate to your workspace in the command line, and clone this repository:
   ```
   git clone https://github.com/shanencross/interactive_microlensing.git
   ```
 
-  * Switch to the binary branch:
+* Switch to the binary branch:
   ```
   git checkout binary
   ```
