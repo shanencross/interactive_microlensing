@@ -6,7 +6,7 @@ Development of educational interactive microlensing web app using HTML5 canvas
 
 ## Django Website Installation Instructions
 
-### Install NPM
+### Install NPM, git repo, and NPM dependencies
 
 * Install NPM, the Node Package Manager.
 
