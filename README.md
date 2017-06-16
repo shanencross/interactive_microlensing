@@ -39,9 +39,10 @@ Development of educational interactive microlensing web app using HTML5 canvas
 
 ### Building project
 
-Note: this assumes you are using a Bash shell.
+Note: This assumes you are using a Bash shell. Otherwise, the custom NPM
+scripts won't work.
 
-To build the JavaScript bundle for distribution, use run the build script:
+To build the JavaScript bundle for distribution, run the build script:
 ```
 npm run build
 ```
@@ -86,8 +87,10 @@ the newest version whenever the repo is updated.
 
 There are some other useful scripts included in the package.json file.
 
+Note: These scripts will only work with a Bash shell.
+
 * Build with source maps, so that command line output traces the location of
-  events back to their location in src/ files, rather than their location in
+  events back to their location in the src/ files, rather than their location
   in the Browserify bundle:
   ```
   npm run build-debug
