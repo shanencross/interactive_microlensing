@@ -27,6 +27,11 @@ Development of educational interactive microlensing web app using HTML5 canvas
   git clone https://github.com/shanencross/interactive_microlensing.git
   ```
 
+* Navigate your console to the top folder of the repo. In Bash:
+  ```
+  cd interactive_microlensing
+  ```
+
 * Switch to the binary branch:
   ```
   git checkout binary
