@@ -21,6 +21,8 @@
     "poly-roots": "1.0.8"
   },
   "devDependencies": {
+    "babel-cli": "6.24.1",
+    "babel-preset-env": "1.5.2",
     "browserify": "14.3.0",
     "docco": "0.7.0",
     "exorcist": "0.4.0",
