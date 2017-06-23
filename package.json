@@ -25,15 +25,18 @@
     "docco": "0.7.0",
     "exorcist": "0.4.0",
     "jsdoc-to-markdown": "3.0.0",
+    "mkdirp": "0.5.1",
+    "stripify": "6.0.0",
     "tldrlegal": "1.0.4",
     "uglify-js": "3.0.4",
     "watchify": "3.9.0"
   },
   "scripts": {
-    "build": "browserify src/main.js -o build/PSBL_bundle.js",
-    "build-debug": "browserify src/main.js -o build/PSBL_bundle.js --debug",
-    "watch": "watchify src/main.js -o build/PSBL_bundle.js",
-    "watch-debug": "watchify src/main.js -o build/PSBL_bundle.js --debug",
+    "make-build-folder": "mkdirp build",
+    "build": "npm run make-build-folder && browserify -t stripify src/main.js -o build/PSBL_bundle.js",
+    "build-debug": "npm run make-build-folder && browserify -t stripify src/main.js -o build/PSBL_bundle.js --debug",
+    "watch": "npm run build && watchify -t stripify src/main.js -o build/PSBL_bundle.js",
+    "watch-debug": "npm run build-debug; && watchify -t stripify src/main.js -o build/PSBL_bundle.js --debug",
     "build-doc": "jsdoc2md src/*.js > documentation.md"
   }
 }
