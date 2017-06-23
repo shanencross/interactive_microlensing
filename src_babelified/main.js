@@ -1,15 +1,15 @@
+"use strict";
+
 /** Main module.
   * Main module for interactive microlensing simulator.
   *
   * @module main
   */
-require("babel-polyfill");
 
 // set flag to true to disable all console output for performance
 var disableConsole = false;
 
-if (disableConsole === true)
-   console.log = function() {};
+if (disableConsole === true) console.log = function () {};
 
 var eventModule = require("./psbl-microlensing-event.js");
 var lensPlaneModule = require("./psbl-microlensing-event-lens-plane.js");
