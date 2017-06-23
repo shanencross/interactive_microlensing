@@ -3,13 +3,9 @@
   *
   * @module main
   */
-
-// set flag to true to disable all console output for performance
-var disableConsole = false;
-
-if (disableConsole === true)
-   console.log = function() {};
-
+// lets polyfill function work in I.E. after being babelified
+require("babel-polyfill");
+window.alert('i');
 var eventModule = require("./psbl-microlensing-event.js");
 var lensPlaneModule = require("./psbl-microlensing-event-lens-plane.js");
 var animationModule = require("./psbl-microlensing-event-animation.js");
