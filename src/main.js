@@ -3,8 +3,6 @@
   *
   * @module main
   */
-// lets polyfill function work in I.E. after being babelified
-require("babel-polyfill");
 
 var eventModule = require("./psbl-microlensing-event.js");
 var lensPlaneModule = require("./psbl-microlensing-event-lens-plane.js");
