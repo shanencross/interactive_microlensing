@@ -18,7 +18,7 @@
 </head>
 
 <body style="background-color:#ffffe6; margin-left:auto; margin-right:auto;">
-  <h1 style="font-size:26px; text-align:center;">Point Source, Point Lens Microlensing Event</h1>
+  <h1 style="font-size:26px; text-align:center;">Finite Source, Point Lens Microlensing Event</h1>
 
   <div style="width:1200px; margin-left:auto; margin-right:auto; position:relative;">
     <canvas id="lcurveCanvas" style="float:left; border:1px solid black;" width="550" height="400">
@@ -158,14 +158,16 @@
   <!-- <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js"></script> -->
   <!--Everpolate library: for interpolation of finite source
       correction factor table-->
-  <script src="libraries/everpolate.browserified.min.js"></script>
+  <script src="../libraries/everpolate.browserified.min.js"></script>
   <!-- Microlensing Event scripts -->
   <!-- <script src="PSPL_microlensing_event_main.js"></script> -->
-  <script src="PSPL_microlensing_event.js"></script>
+  <!-- <script src="PSPL_microlensing_event.js"></script>
   <script src="PSPL_microlensing_event_lens_plane.js"></script>
   <script src="PSPL_microlensing_event_finite_source_table.js"></script>
   <script src="PSPL_microlensing_event_finite_source.js"></script>
   <script src="PSPL_microlensing_event_animation.js"></script>
-  <script src="show_or_hide.js"></script>
+  <script src="show_or_hide.js"></script> -->
+
+  <script src="../build/FSPL_bundle.js"></script>
 </body>
 </html>
