@@ -1,0 +1,55 @@
+{
+  "name": "psbl-microlensing-simulator",
+  "version": "1.0.0",
+  "description": "PSBL (Point Source Binary Lens) Microlensing Event Simulator HTML5 web app",
+  "main": "src/main.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shanencross/interactive_microlensing.git"
+  },
+  "author": "Shanen Cross",
+  "license": "UNLICENSED",
+  "private": true,
+  "bugs": {
+    "url": "https://github.com/shanencross/interactive_microlensing/issues"
+  },
+  "homepage": "https://github.com/shanencross/interactive_microlensing#readme",
+  "dependencies": {
+    "lodash": "4.17.4",
+    "mathjs": "3.13.1",
+    "numeric": "1.2.6",
+    "poly-roots": "1.0.8"
+  },
+  "devDependencies": {
+    "browserify": "14.3.0",
+    "docco": "0.7.0",
+    "exorcist": "0.4.0",
+    "jsdoc-to-markdown": "3.0.0",
+    "mkdirp": "0.5.1",
+    "stripify": "6.0.0",
+    "tldrlegal": "1.0.4",
+    "uglify-js": "3.0.4",
+    "watchify": "3.9.0"
+  },
+  "scripts": {
+    "prebuild:bundle": "mkdirp build",
+    "build:bundle": "browserify src/main.js -o build/PSBL_bundle.js",
+    "build:bundle_strip": "npm run build:bundle -- -t stripify",
+    "build:bundle_strip_babel": "npm run build:strip -- -t babelify",
+
+    "build": "npm run build:bundle_strip",
+
+    "prewatch:bundle": "npm run prebuild:bundle",
+
+    "watch:bundle": "watchify src/main.js -o build/PSBL_bundle.js",
+    "watch:bundle_strip": "npm run watch:bundle -- -t stripify",
+    "watch:bundle_strip_babel": "npm run watch:bundle_strip -- -t babelify",
+
+    "watch": "npm run watch:bundle_strip",
+
+    "build:debug": "npm run build:bundle -- --debug",
+    "watch:debug": "npm run watch:bundle -- --debug",
+
+    "build_doc": "jsdoc2md src/*.js > documentation.md"
+  }
+}
