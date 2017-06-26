@@ -654,7 +654,7 @@ function redrawCanvases() {
   }
 
   try {
-    var animationModule = require("./psbl-microlensing-event-animation.js");
+    var animationModule = require("./fspl-microlensing-event-animation.js");
   }
   catch(ex) {
     handleError(ex);
