@@ -192,10 +192,17 @@ if (typeof displayImagesCheckbox !== "undefined" &&
     displayImagesCheckbox !== null) {
   displayFlags.images = displayImagesCheckbox.checked;
   }
+else {
+  displayFlags.images = true;
+}
+
 // display separate rings for each lens
 if (typeof displayRingsCheckbox !== "undefined" &&
     displayRingsCheckbox !== null) {
   displayFlags.rings = displayRingsCheckbox.checked;
+}
+else {
+  displayFlags.rings = true;
 }
 
 // debug flags
@@ -444,7 +451,7 @@ function getThetaX(t) {
 /** getThetaYpathValue */
 function getThetaYpathValue(thetaX) {
 
-  if (typeof eventModule.incline !== undefined &&
+  if (typeof eventModule.incline !== "undefined" &&
       eventModule.incline !== null) {
     var incline_radians = eventModule.incline * Math.PI/180;
     var slope = Math.tan(incline_radians);
@@ -1168,7 +1175,6 @@ var drawing = (function(context=mainContext, canvas=mainCanvas) {
     drawLens(lens1);
 
     if (display.rings === true) {
-
       // draw separate rings for each lens
       drawRing(lens1);
     }

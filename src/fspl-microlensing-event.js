@@ -1013,12 +1013,22 @@ function getThetaX(t) {
 }
 
 /** updateCurveData */
-function updateCurveData() {
+function updateCurveData(isFiniteSource = finiteSourceFlag) {
   var times = [];
   var magnifs = [];
 
+  var finiteSourceModule;
+  if (isFiniteSource) {
+    try {
+      finiteSourceModule = require("./psbl-microlensing-event-finite-source.js");
+    }
+    catch(ex) {
+      handleError(ex);
+    }
+  }
+
   for (var tDay = xAxisInitialDay; tDay <= xAxisFinalDay; tDay += dt) {
-    var magnif = getMagnif(tDay);
+    var magnif = getMagnif(tDay, isFiniteSource, finiteSourceModule);
     // if (tDay === 0)
     //   console.log("magnif: " + magnif);
     times.push(tDay);
@@ -1042,12 +1052,8 @@ function updateCurveData() {
 }
 
 /** toggleFiniteSource */
-function toggleFiniteSource(valueToSet) {
-
-  if (typeof valueToSet === "undefined")
-    finiteSourceFlag = !finiteSourceFlag;
-  else
-    finiteSourceFlag = valueToSet;
+function toggleFiniteSource() {
+  finiteSourceFlag = !finiteSourceFlag;
   updateCurveData();
   redrawCanvases();
 }
@@ -1066,36 +1072,28 @@ function getU(timeTerm) {
 }
 
 /** getMagnifFromU */
-function getMagnifFromU(u, isFiniteSource = finiteSourceFlag) {
+function getMagnifFromU(u, isFiniteSource = finiteSourceFlag, finiteSourceModule) {
   var magnifNumerator = u*u + 2;
   var magnifDenominator = u * Math.sqrt(u * u + 4);
   // unitless
   magnif = magnifNumerator / magnifDenominator;
 
-  if (isFiniteSource) {
-
-    try {
-      var finiteSourceModule = require("./psbl-microlensing-event-finite-source.js");
-    }
-    catch(ex) {
-      handleError(ex);
-    }
-
-    if (typeof finiteSourceModule !== "undefined" && finiteSourceModule.initialized === true)
-      magnif *= finiteSourceModule.getFiniteSourceFactor(u);
+  if (isFiniteSource && typeof finiteSourceModule !== "undefined" &&
+     finiteSourceModule !== null && finiteSourceModule.initialized === true) {
+    magnif *= finiteSourceModule.getFiniteSourceFactor(u);
   }
 
   return magnif;
 }
 
 /** getMagnif */
-function getMagnif(t) {
+function getMagnif(t, isFiniteSource=finiteSourceFlag, finiteSourceModule) {
     // unitless
   var timeTerm = getTimeTerm(t);
   // unitless
   var u = getU(timeTerm);
   // unitless
-  var magnif = getMagnifFromU(u);
+  var magnif = getMagnifFromU(u, isFiniteSource, finiteSourceModule);
 
   return magnif;
 }
