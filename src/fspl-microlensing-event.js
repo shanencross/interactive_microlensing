@@ -117,11 +117,11 @@ var xAxisFinalDay;
 var yAxisFinalMagnif;
 
 // arbitrarily chosen value; const
-var dayWidthDefault = 200;
+var dayWidthDefault = 32;
 // const
 var magnifHeightDefault = 10;
 // arbitrarily chosen value; const
-var xAxisInitialDayDefault = -100;
+var xAxisInitialDayDefault = -16;
 // const
 var yAxisInitialMagnifDefault = 0.5;
 
@@ -134,7 +134,7 @@ var xGridStep;
 var yGridStep;
 
 // arbitrarily chosen value; const
-var xGridStepDefault = 20;
+var xGridStepDefault = 2;
 // const
 var yGridStepDefault = 1;
 
@@ -227,7 +227,8 @@ var finiteSourceCheckbox = document.getElementById("finiteSourceCheckbox");
 
 // const
 var centerLayout = false;
-if (typeof finiteSourceCheckbox !== "undefined" && finiteSourceCheckbox !== null)
+if (typeof finiteSourceCheckbox !== "undefined" &&
+    finiteSourceCheckbox !== null)
   var finiteSourceFlag = finiteSourceCheckbox.checked;
 
 // controls whether plot updates when slider is moved
@@ -314,7 +315,8 @@ function initListeners(updateOnSliderMovement=updateOnSliderMovementFlag,
   yZoomOutButton.addEventListener("click", function() { updateGraph("yZoomOut"); }, false);
 
   resetGraphButton.addEventListener("click", function() { updateGraph("reset"); }, false)
-  if (typeof finiteSourceCheckbox !== "undefined" && finiteSourceCheckbox !== null)
+  if (typeof finiteSourceCheckbox !== "undefined" &&
+     finiteSourceCheckbox !== null)
     finiteSourceCheckbox.addEventListener("change", toggleFiniteSource, false);
   else
     finiteSourceFlag = false;
@@ -331,11 +333,11 @@ function initParams() {
 
   fixU0 = fixU0checkbox.checked
   // solMass
-  Ml = 1*0.62
+  Ml = 0.1
   // kpc: Ds =  Dl / (1 - 1/mu)
   Ds = 8.0;
   // milliarcseconds (mas)
-  thetaY =  -0.03 * 0.8346900557366428;
+  thetaY = -0.05463809952990817329;
   // kpc:
   // ```
   // Dl = Ds * (1 - 1/mu)
@@ -393,7 +395,7 @@ function updateThetaE() {
 }
 
 /** calculateThetaE */
-function calculateThetaE(get_mas=false, useBinaryMass=true, lensToUse=1) {
+function calculateThetaE(get_mas=false) {
   /*
   G: m3 kg−1 s−2 (astropy value)
   c: 299792458.0; // m s-1 (astropy value)
@@ -556,13 +558,13 @@ function resetParams(isFiniteSource = finiteSourceFlag) {
   updateSliders();
 
   try {
-    var lensPlaneModule = require("./psbl-microlensing-event-lens-plane.js");
+    var lensPlaneModule = require("./fspl-microlensing-event-lens-plane.js");
   }
   catch(ex) {
     handleError(ex);
   }
 
-  if (lensPlaneModule !== undefined && lensPlaneModule.initialized === true) {
+  if (typeof lensPlaneModule !== "undefined" && lensPlaneModule.initialized === true) {
     lensPlaneModule.initSourceRadius();
   }
 
@@ -641,13 +643,13 @@ function updateParam(param) {
 /** redrawCanvases */
 function redrawCanvases() {
   try {
-    var lensPlaneModule = require("./psbl-microlensing-event-lens-plane.js");
+    var lensPlaneModule = require("./fspl-microlensing-event-lens-plane.js");
   }
   catch(ex) {
     handleError(ex);
   }
 
-  if (lensPlaneModule !== undefined && lensPlaneModule.initialized === true) {
+  if (typeof lensPlaneModule !== "undefined" && lensPlaneModule.initialized === true) {
     lensPlaneModule.redraw();
   }
 
@@ -658,7 +660,7 @@ function redrawCanvases() {
     handleError(ex);
   }
 
-  if (animationModule !== undefined && animationModule.initialized === true) {
+  if (typeof animationModule !== "undefined" && animationModule.initialized === true) {
     plotLightcurve(animationModule.time);
     //redraw current animation frame
     animationModule.animateFrame();
