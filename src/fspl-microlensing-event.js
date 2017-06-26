@@ -1020,7 +1020,7 @@ function updateCurveData(isFiniteSource = finiteSourceFlag) {
   var finiteSourceModule;
   if (isFiniteSource) {
     try {
-      finiteSourceModule = require("./psbl-microlensing-event-finite-source.js");
+      finiteSourceModule = require("./fspl-microlensing-event-finite-source.js");
     }
     catch(ex) {
       handleError(ex);
@@ -1077,9 +1077,8 @@ function getMagnifFromU(u, isFiniteSource = finiteSourceFlag, finiteSourceModule
   var magnifDenominator = u * Math.sqrt(u * u + 4);
   // unitless
   magnif = magnifNumerator / magnifDenominator;
-
   if (isFiniteSource && typeof finiteSourceModule !== "undefined" &&
-     finiteSourceModule !== null && finiteSourceModule.initialized === true) {
+     finiteSourceModule !== null) {
     magnif *= finiteSourceModule.getFiniteSourceFactor(u);
   }
 

@@ -15,6 +15,7 @@
   },
   "homepage": "https://github.com/shanencross/interactive_microlensing#readme",
   "dependencies": {
+    "everpolate": "0.0.3",
     "lodash": "4.17.4",
     "mathjs": "3.13.1",
     "numeric": "1.2.6",
@@ -36,20 +37,14 @@
     "build:bundle": "browserify src/main.js -o build/FSPL_bundle.js",
     "build:bundle_strip": "npm run build:bundle -- -t stripify",
     "build:bundle_strip_babel": "npm run build:strip -- -t babelify",
-
     "build": "npm run build:bundle_strip",
-
     "prewatch:bundle": "npm run prebuild:bundle",
-
     "watch:bundle": "watchify src/main.js -o build/FSPL_bundle.js",
     "watch:bundle_strip": "npm run watch:bundle -- -t stripify",
     "watch:bundle_strip_babel": "npm run watch:bundle_strip -- -t babelify",
-
     "watch": "npm run watch:bundle_strip",
-
     "build:debug": "npm run build:bundle -- --debug",
     "watch:debug": "npm run watch:bundle -- --debug",
-
     "build_doc": "jsdoc2md src/*.js > documentation.md"
   }
 }
