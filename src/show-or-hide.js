@@ -1,22 +1,35 @@
-console.log("Executing show_or_hide.js")
+/** Show/Hide finite source options module.
+  * @module show-or-hide.js
+  */
 
-var show_or_hide = (function() {
+console.log("Executing show-or-hide.js")
 
-  function toggle() {
-  	var element = document.getElementById("toggleText");
-  	var text = document.getElementById("displayText");
-  	if(element.style.display == "block") {
-      		element.style.display = "none";
-  		text.innerHTML = "+" + text.innerHTML.slice(1, text.innerHTML.length);
-    	}
-  	else {
-  		element.style.display = "block";
-  		text.innerHTML = "&minus;" + text.innerHTML.slice(1, text.innerHTML.length);
-  	}
+var toggleLink;
+var toggledElement;
+var initialized = false;
+
+function init() {
+  toggleLink = document.getElementById("toggleLink");
+  toggledElement = document.getElementById("toggledElement");
+  toggleLink.addEventListener("click", toggle, false);
+  initialized = true;
 }
 
-  return {
-    toggle: toggle,
-    // toggleDiv: toggleDiv,
-  };
-})();
+function toggle() {
+  if (initialized === false)
+    init();
+
+	if(toggledElement.style.display == "block") {
+    		toggledElement.style.display = "none";
+		toggleLink.innerHTML = "+" + toggleLink.innerHTML.slice(1, toggleLink.innerHTML.length);
+  	}
+	else {
+		toggledElement.style.display = "block";
+		toggleLink.innerHTML = "&minus;" + toggleLink.innerHTML.slice(1, toggleLink.innerHTML.length);
+	}
+}
+
+module.exports = {
+  init: init,
+  toggle: toggle,
+};
