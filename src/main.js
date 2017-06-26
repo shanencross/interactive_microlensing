@@ -11,9 +11,10 @@ var animationModule = require("./fspl-microlensing-event-animation.js");
 
 /** init */
 function init() {
+  // add event listener to show/hide link for finite source options
   showOrHideModule.init();
 
-  // modules must be initialized in specific order
+  // these modules must be initialized in specific order
   eventModule.init();
   lensPlaneModule.init();
   animationModule.init();

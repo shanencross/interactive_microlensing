@@ -1053,7 +1053,7 @@ function updateCurveData(isFiniteSource = finiteSourceFlag) {
 
 /** toggleFiniteSource */
 function toggleFiniteSource() {
-  finiteSourceFlag = !finiteSourceFlag;
+  finiteSourceFlag = finiteSourceCheckbox.checked;
   updateCurveData();
   redrawCanvases();
 }

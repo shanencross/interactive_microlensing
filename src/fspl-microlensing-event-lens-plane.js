@@ -184,6 +184,12 @@ var sourceRadiusReadout = document.getElementById("sourceRadiusReadout");
 var displayImagesCheckbox = document.getElementById("displayImagesCheckbox");
 var displayRingsCheckbox = document.getElementById("displayRingsCheckbox");
 
+// number of points into which source outline is divided
+// i.e. a value of 8 would divide the outline into 8
+// evenly spaced points
+var numPointsDefault = 360;
+var numExtraPointsDefault = 360;
+
 // flags toggled by checkbox
 var displayFlags = {};
 
@@ -218,6 +224,10 @@ var centerYgridOnZeroFlag = true;
 // firefox doesn't support context.ellipse, so this replaces it with a custom
 // ellipse function using context.arc and canvas rescaling/translating
 var firefoxCompatibilityFlag = true;
+
+// add more points to outline if source is close to lens
+var lensProximityCheckFlag = true;
+var clippingImageFlag = false;
 
 var updateOnSliderMovementFlag = eventModule.updateOnSliderMovementFlag;
 var updateOnSliderReleaseFlag = eventModule.updateOnSliderReleaseFlag;
@@ -416,6 +426,12 @@ function updateDrawingValues() {
 
   // initialize lensed image positions
   lensedImages = getLensedImages(sourcePos);
+
+  if (drawFullLensedImagesFlag === true &&
+      eventModule.finiteSourceFlag === true) {
+        sourceOutline = getCircleOutline(sourceRadius, sourcePos);
+        lensedImageOutlines = getLensedImageOutlines(sourceOutline);
+      }
 }
 
 /** thetaXtoPixel */
@@ -1180,11 +1196,25 @@ var drawing = (function(context=mainContext, canvas=mainCanvas) {
     }
 
     if (display.images === true)
-      ;
+      if (eventModule.finiteSourceFlag === true) {
+        if (clippingImageFlag === true) {
+          context.save();
+          context.beginPath();
+          context.rect(0, 0, canvas.width, context.canvas.height);
+          context.arc(lens1.pixelPos.x, lens1.pixelPos.y, ringRadius.x,
+                      0, Math.PI * 2, true);
+          context.clip();
+        }
+        drawFullLensedImages(debug=false, fillOn=true, strokeOn=true, lens1);
+        if (clippingImageFlag === true)
+          context.restore();
+      }
+      else {
+        drawPointLensedImages();
+      }
 
     drawSourcePath();
     drawSource();
-    drawPointLensedImages();
 
     toggleClippingRegion(turnOn=false);
     drawAxes();
@@ -1212,6 +1242,7 @@ module.exports = {
   get xAxisInitialThetaX() { return xAxisInitialThetaX; },
   // mas
   get sourceRadius() { return sourceRadius; },
+
   redraw: redraw,
   getThetaX: getThetaX,
   initSourceRadius: initSourceRadius,
