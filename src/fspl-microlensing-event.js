@@ -567,8 +567,7 @@ function resetParams(isFiniteSource = finiteSourceFlag) {
     lensPlaneModule.initSourceRadius();
   }
 
-  if (isFiniteSource === true)
-    updateCurveData();
+  updateCurveData();
   redrawCanvases();
 }
 
