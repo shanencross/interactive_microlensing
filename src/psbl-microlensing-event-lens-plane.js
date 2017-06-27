@@ -128,6 +128,10 @@ var tickLabelBaseline = "middle";
 // spacing between tick label and end of trailing gridline
 var tickLabelSpacing = 7;
 
+// how many ticks there are between each tick label
+var xTickLabelStep = 2;
+var yTickLabelStep = 2;
+
 // base variables (axis labels)
 var xDayLabel = "time (days)";
 // thetaX
@@ -743,7 +747,8 @@ var drawing = (function(context=mainContext, canvas=mainCanvas) {
   function drawGridlinesAndTicks(drawGrid=drawGridFlag, noTicks) {
     // draw vertical lines and x axis tick labels
     context.beginPath();
-    console.log(`yGridStep: ${yGridStep}`);
+
+    var xTickLabelCounter = 0;
     for (var thetaX = xGridInitial; thetaX <= xGridFinal; thetaX+=xGridStep) {
       var xPixel = thetaXtoPixel(thetaX);
       // line starts from bottom trail
@@ -759,24 +764,32 @@ var drawing = (function(context=mainContext, canvas=mainCanvas) {
 
       context.lineTo(xPixel, yLineEnd);
 
-      // tick text label
-      var xTickLabel = Number(thetaX).toFixed(2);
+      if (xTickLabelCounter === 0) {
+        // tick text label
+        var xTickLabel = Number(thetaX).toFixed(2);
 
-      // catches if yTickLabel is set to "-0.00" due to rounding error and
-      // converts to "0.00";
+        // catches if yTickLabel is set to "-0.00" due to rounding error and
+        // converts to "0.00";
 
-      // (NOTE: 0 === -0 in javascript)
-      if (Number(xTickLabel) === -0) {
-        xTickLabel = Number(0).toFixed(2);
+        // (NOTE: 0 === -0 in javascript)
+        if (Number(xTickLabel) === -0) {
+          xTickLabel = Number(0).toFixed(2);
+        }
+        context.font = tickLabelFont;
+        context.fillStyle = tickLabelColor;
+        context.textAlign = tickLabelAlign;
+        context.textBaseline = tickLabelBaseline;
+        context.fillText(xTickLabel, xPixel, picBottomTrailingBorder + tickLabelSpacing);
       }
-      context.font = tickLabelFont;
-      context.fillStyle = tickLabelColor;
-      context.textAlign = tickLabelAlign;
-      context.textBaseline = tickLabelBaseline;
-      context.fillText(xTickLabel, xPixel, picBottomTrailingBorder + tickLabelSpacing);
+
+      if (xTickLabelCounter >= xTickLabelStep - 1)
+        xTickLabelCounter = 0;
+      else
+        xTickLabelCounter++;
     }
 
     //draw horizontal lines and y axis tick label
+    var yTickLabelCounter = 0;
     for (var thetaY = yGridInitial; thetaY <= yGridFinal; thetaY+=yGridStep) {
       var yPixel = thetaYtoPixel(thetaY);
       context.moveTo(picLeftTrailingBorder, yPixel);
@@ -788,20 +801,27 @@ var drawing = (function(context=mainContext, canvas=mainCanvas) {
         xLineEnd = picLeftBorder + picLeftTrail;
       context.lineTo(xLineEnd, yPixel);
 
-      var yTickLabel = Number(thetaY).toFixed(2);
+      if (yTickLabelCounter === 0) {
+        var yTickLabel = Number(thetaY).toFixed(2);
 
-      // catches if yTickLabel is set to "-0.00" due to rounding error and
-      // converts to "0.00"
+        // catches if yTickLabel is set to "-0.00" due to rounding error and
+        // converts to "0.00"
 
-      // (note 0 === -0 in javascript)
-      if (Number(yTickLabel) === -0) {
-        yTickLabel = Number(0).toFixed(2);
+        // (note 0 === -0 in javascript)
+        if (Number(yTickLabel) === -0) {
+          yTickLabel = Number(0).toFixed(2);
+        }
+        context.font = tickLabelFont;
+        context.fillStyle = tickLabelColor;
+        context.textAlign = "right";
+        context.textBaseline = tickLabelBaseline;
+        context.fillText(yTickLabel,picLeftTrailingBorder - tickLabelSpacing,  yPixel);
       }
-      context.font = tickLabelFont;
-      context.fillStyle = tickLabelColor;
-      context.textAlign = "right";
-      context.textBaseline = tickLabelBaseline;
-      context.fillText(yTickLabel,picLeftTrailingBorder - tickLabelSpacing,  yPixel);
+
+      if (yTickLabelCounter >= yTickLabelStep - 1)
+        yTickLabelCounter = 0;
+      else
+        yTickLabelCounter++;
     }
     context.lineWidth = gridWidth;
     context.strokeStyle = gridColor;

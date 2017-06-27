@@ -24,9 +24,9 @@ var running = false;
 var minTime;
 var maxTime;
 // (days) time step per frame of animation
-var animationStep = 0.1;
+var animationStep = 0.5;
 // (days) time step for "stepBack" and "stepForward" playback commands
-var playbackControlStep = 5;
+var playbackControlStep = 1;
 
 var timeReadout = document.getElementById("timeReadout");
 var stepBackButton = document.getElementById("stepBack");

@@ -145,10 +145,10 @@ var xGridStepDefault = 20;
 var yGridStepDefault = 1;
 
 // Step increments used by debug buttons to alter range/scale
-var xGraphShiftStep = 0.25;
-var yGraphShiftStep = xGraphShiftStep;
-var xGraphZoomStep = 0.25;
-var yGraphZoomStep = xGraphZoomStep;
+var xGraphShiftStep = 10;
+var yGraphShiftStep = 0.25;
+var xGraphZoomStep = 10;
+var yGraphZoomStep = 1;
 
 // plot aesthetics
 var canvasBackgroundColor = "#ffffe6"
