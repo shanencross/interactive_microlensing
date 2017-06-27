@@ -36,14 +36,13 @@ var picBottomTrail = 10;
 
 // plot range/scale
 var dayWidth = 30;
-var thetaXwidth = 4;
-var thetaYheight = 3;
+var thetaXwidth = 4/3;
+var thetaYheight = 1; // mas
 var xAxisInitialDay = -15;
-var xAxisInitialThetaX = -(4)/2
-// half of thetaYheight so that 0 is the middle
-var yAxisInitialThetaY = -3/2;
-var xGridStepDefault = 0.25;
-var yGridStepDefault = 0.25;
+var xAxisInitialThetaX = -(4/3)/2
+var yAxisInitialThetaY = -0.5; // half of thetaYheight so that 0 is the middle
+var xGridStepDefault = 0.1;
+var yGridStepDefault = 0.1;
 
 var lens1;
 
