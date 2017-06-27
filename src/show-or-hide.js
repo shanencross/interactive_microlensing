@@ -11,8 +11,11 @@ var initialized = false;
 function init() {
   toggleLink = document.getElementById("toggleLink");
   toggledElement = document.getElementById("toggledElement");
-  toggleLink.addEventListener("click", toggle, false);
-  initialized = true;
+  if (typeof toggleLink !== "undefined" && toggleLink !== null &&
+      typeof toggledElement !== "undefined" && toggledElement !== null) {
+    toggleLink.addEventListener("click", toggle, false);
+    initialized = true;
+  }
 }
 
 function toggle() {

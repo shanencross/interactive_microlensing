@@ -463,7 +463,6 @@ function updateSliderReadout(slider, readout, sliderName="") {
   else if (sliderName === "sourceRadius") {
     fixedDecimalePlace = 4;
   }
-
   readout.innerHTML = Number(slider.value).toFixed(fixedDecimalPlace);
 }
 
@@ -525,7 +524,7 @@ function updateSliders() {
     thetaYreadout.innerHTML += "+";
   }
 
-  DlSlider.value = Dl;;
+  DlSlider.value = Dl;
   updateSliderReadout(DlSlider, DlReadout, "Dl");
   if (Dl > DlMax) {
     DlReadout.innerHTML += "+";
