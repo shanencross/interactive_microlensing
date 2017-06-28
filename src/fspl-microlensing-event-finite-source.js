@@ -38,10 +38,10 @@ function getFiniteSourceFactor(u) {
     this.printedOnce = true;
   }
 
-  if (B0 > 1.00001251)
-    largeB0array.push(B0);
-  else if (B0 < 0.00200000)
-    smallB0array.push(B0);
+  // if (B0 > 1.00001251)
+  //   largeB0array.push(B0);
+  // else if (B0 < 0.00200000)
+  //   smallB0array.push(B0);
 
   return B0
 }
