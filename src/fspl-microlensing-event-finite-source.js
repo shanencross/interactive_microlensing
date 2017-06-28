@@ -14,6 +14,7 @@ var tableModule = require("./fspl-microlensing-event-finite-source-table.js");
 
 var smallB0array = [];
 var largeB0array = [];
+var lastB0array = [];
 
 /** getFiniteSourceFactor */
 function getFiniteSourceFactor(u) {
@@ -43,6 +44,8 @@ function getFiniteSourceFactor(u) {
   else if (B0 < 0.00200000)
     smallB0array.push(B0);
 
+  lastB0array = B0;
+
   return B0
 }
 
@@ -51,4 +54,5 @@ module.exports = {
   getFiniteSourceFactor: getFiniteSourceFactor,
   get largeB0array() { return largeB0array; },
   get smallB0array() { return smallB0array; },
+  get lastB0array() { return lastB0array; }
 };
