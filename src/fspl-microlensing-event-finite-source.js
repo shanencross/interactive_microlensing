@@ -12,9 +12,9 @@ var eventModule = require("./fspl-microlensing-event.js");
 var lensPlaneModule = require("./fspl-microlensing-event-lens-plane.js");
 var tableModule = require("./fspl-microlensing-event-finite-source-table.js");
 
-var smallB0array = [];
-var largeB0array = [];
-var lastB0array = [];
+var smallZarray = [];
+var largeZarray = [];
+var lastZarray = [];
 
 /** getFiniteSourceFactor */
 function getFiniteSourceFactor(u) {
@@ -39,20 +39,10 @@ function getFiniteSourceFactor(u) {
     this.printedOnce = true;
   }
 
-  if (B0 > 1.00001251)
-    largeB0array.push(B0);
-  else if (B0 < 0.00200000)
-    smallB0array.push(B0);
-
-  lastB0array = B0;
-
   return B0
 }
 
 
 module.exports = {
   getFiniteSourceFactor: getFiniteSourceFactor,
-  get largeB0array() { return largeB0array; },
-  get smallB0array() { return smallB0array; },
-  get lastB0array() { return lastB0array; }
 };

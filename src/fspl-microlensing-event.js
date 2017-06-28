@@ -1064,18 +1064,6 @@ function updateCurveData(isFiniteSource = finiteSourceFlag) {
   }
 
   lightcurveData = curveData;
-
-
-  if (isFiniteSource && typeof finiteSourceModule !== "undefined" &&
-      finiteSourceModule !== null) {
-    var largeB0array = finiteSourceModule.largeB0array;
-    var smallB0array = finiteSourceModule.smallB0array;
-    var lastB0array = finiteSourceModule.lastB0array;
-
-    console.log("small B0 array: " + smallB0array.length);
-    console.log("large B0 array: " + largeB0array.length);
-    console.log("last B0 array: " + lastB0array.length);
-  }
 }
 
 /** toggleFiniteSource */
