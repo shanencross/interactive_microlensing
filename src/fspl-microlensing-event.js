@@ -99,9 +99,6 @@ var thetaE;
 // lightcurve information
 var lightcurveData = null;
 
-// tracks whether u0 is to be held fixed while other quantities vary
-var fixU0;
-
 // plot scale
 var dayWidth;
 var magnifHeight;
@@ -227,9 +224,17 @@ var finiteSourceCheckbox = document.getElementById("finiteSourceCheckbox");
 
 // const
 var centerLayout = false;
-if (typeof finiteSourceCheckbox !== "undefined" &&
-    finiteSourceCheckbox !== null)
-  var finiteSourceFlag = finiteSourceCheckbox.checked;
+
+// checkbox flags
+
+// default values for checkbox flags
+var fixU0flagDefault = false;
+var finiteSourceFlagDefault = false;
+
+// tracks whether u0 is to be held fixed while other quantities vary
+var fixU0flag = fixU0flagDefault;
+// tracks whether finite or point source is being used
+var finiteSourceFlag = finiteSourceFlagDefault;
 
 // controls whether plot updates when slider is moved
 // or when slider is released
@@ -301,8 +306,8 @@ function initListeners(updateOnSliderMovement=updateOnSliderMovementFlag,
   resetParamsButton.addEventListener("click", resetParams, false);
 
   // checkbox to hold u0 value fixed while varying other quantities besides thetaY
-  fixU0checkbox.addEventListener("change", function() { fixU0 = fixU0checkbox.checked;
-                                                        console.log(`fixU0: ${fixU0}`); }, false);
+  fixU0checkbox.addEventListener("change", function() { fixU0flag = fixU0checkbox.checked;
+                                                        console.log(`fixU0flag: ${fixU0flag}`); }, false);
   // debug plot range/scale and reset buttons
   xLeftButton.addEventListener("click", function() { updateGraph("xLeft"); }, false);
   xRightButton.addEventListener("click", function() {updateGraph("xRight"); }, false);
@@ -331,7 +336,6 @@ function initParams() {
 
   // set base quantity defaults
 
-  fixU0 = fixU0checkbox.checked
   // solMass
   Ml = 0.1
   // kpc: Ds =  Dl / (1 - 1/mu)
@@ -351,6 +355,19 @@ function initParams() {
   // ```
   mu = 7;
 
+  // set default checkboxes
+  if (typeof fixU0checkbox !== "undefined" &&
+      fixU0checkbox !== null) {
+    fixU0checkbox.checked = false;
+    fixU0flag = fixU0checkbox.checked;
+  }
+
+  if (typeof finiteSourceCheckbox !== "undefined" &&
+      finiteSourceCheckbox !== null) {
+    finiteSourceCheckbox.checked = false;
+    var finiteSourceFlag = finiteSourceCheckbox.checked;
+  }
+
   // set derived quantities
   updateDerivedQuantities(initializing=true);
 }
@@ -359,7 +376,7 @@ function initParams() {
 function updateDerivedQuantities(initializing=false) {
   updateDrel();
   updateThetaE();
-  if (fixU0 === false || initializing === true)
+  if (fixU0flag === false || initializing === true)
     updateU0();
   else
     updateThetaY();
@@ -588,7 +605,7 @@ function updateParam(param) {
     }
     // tE depends on thetaE depends on Drel depends on Ds
   }
-  else if (param === "thetaY" && fixU0 === false) {
+  else if (param === "thetaY" && fixU0flag === false) {
     thetaY = Number(thetaYslider.value);
   }
   else if (param === "Dl") {
@@ -1047,6 +1064,15 @@ function updateCurveData(isFiniteSource = finiteSourceFlag) {
   }
 
   lightcurveData = curveData;
+
+
+  if (isFiniteSource && typeof finiteSourceModule !== "undefined" &&
+      finiteSourceModule !== null) {
+    var largeB0array = finiteSourceModule.largeB0array;
+    var smallB0array = finiteSourceModule.smallB0array;
+
+    // window.alert(largeB0array.length);
+  }
 }
 
 /** toggleFiniteSource */

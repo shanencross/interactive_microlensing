@@ -189,26 +189,17 @@ var displayRingsCheckbox = document.getElementById("displayRingsCheckbox");
 var numPointsDefault = 360;
 var numExtraPointsDefault = 360;
 
+// default checkbox values
+var ringsFlagDefault = true;
+var imagesFlagDefault = true;
+
 // flags toggled by checkbox
 var displayFlags = {};
 
-// display lensed images of source
-if (typeof displayImagesCheckbox !== "undefined" &&
-    displayImagesCheckbox !== null) {
-  displayFlags.images = displayImagesCheckbox.checked;
-  }
-else {
-  displayFlags.images = true;
-}
-
-// display separate rings for each lens
-if (typeof displayRingsCheckbox !== "undefined" &&
-    displayRingsCheckbox !== null) {
-  displayFlags.rings = displayRingsCheckbox.checked;
-}
-else {
-  displayFlags.rings = true;
-}
+// initialize default checkbox flag values, even if the checkboxes don't exist
+// on html page
+displayFlags.images = imagesFlagDefault;
+displayFlags.rings = ringsFlagDefault;
 
 // debug flags
 var centerLayoutFlag = false;
@@ -252,7 +243,6 @@ function initListeners(updateOnSliderMovement=updateOnSliderMovementFlag,
 
 /** initCheckboxes() */
 function initCheckboxes() {
-
   if (typeof displayImagesCheckbox !== "undefined" &&
       displayImagesCheckbox !== null) {
     displayImagesCheckbox.addEventListener("change",
@@ -261,6 +251,8 @@ function initCheckboxes() {
                                              redraw();
                                            },
                                            false);
+    // default checkbox to value of flag
+    displayImagesCheckbox.checked = displayFlags.images;
   }
 
   if (typeof displayRingsCheckbox !== "undefined" &&
@@ -271,6 +263,8 @@ function initCheckboxes() {
                                             redraw();
                                           },
                                           false);
+    // default checkbox to value of flag
+    displayRingsCheckbox.checked = displayFlags.rings;
   }
 }
 
@@ -1194,6 +1188,9 @@ var drawing = (function(context=mainContext, canvas=mainCanvas) {
       drawRing(lens1);
     }
 
+    drawSourcePath();
+    drawSource();
+
     if (display.images === true)
       if (eventModule.finiteSourceFlag === true) {
         if (clippingImageFlag === true) {
@@ -1211,9 +1208,6 @@ var drawing = (function(context=mainContext, canvas=mainCanvas) {
       else {
         drawPointLensedImages();
       }
-
-    drawSourcePath();
-    drawSource();
 
     toggleClippingRegion(turnOn=false);
     drawAxes();
