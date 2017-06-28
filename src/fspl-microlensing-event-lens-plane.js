@@ -217,6 +217,8 @@ var firefoxCompatibilityFlag = true;
 
 // add more points to outline if source is close to lens
 var lensProximityCheckFlag = true;
+// obsolete flag originally used to fix lensed images by "clipping" them;
+// did not work because clipping wasn't enough
 var clippingImageFlag = false;
 
 var updateOnSliderMovementFlag = eventModule.updateOnSliderMovementFlag;
@@ -482,7 +484,9 @@ function getCircleOutline(radius=sourceRadius, thetaPos=sourcePos,
   var outline = [];
   var deltaAngle = (finalAngle - initialAngle)/numPoints;
 
-  for (var angle=initialAngle; (angle<finalAngle && almostEquals(angle, finalAngle) === false); angle+=deltaAngle) {
+  for (var angle=initialAngle;
+       (angle<finalAngle && almostEquals(angle, finalAngle) === false);
+       angle+=deltaAngle) {
     var xOffset = radius * Math.cos(angle);
     var yOffset = radius * Math.sin(angle);
     var point = {x: thetaPos.x + xOffset, y: thetaPos.y + yOffset};
@@ -500,10 +504,18 @@ function getCircleOutline(radius=sourceRadius, thetaPos=sourcePos,
 }
 
 /** addExtraPoints */
-function addExtraPoints(outline, radius, thetaPos, initialAngle, finalAngle, distR, numExtraPoints=numExtraPointsDefault) {
+function addExtraPoints(outline, radius, thetaPos, initialAngle, finalAngle,
+                        distR, numExtraPoints=numExtraPointsDefault) {
   var deltaAngle = (finalAngle - initialAngle)/numExtraPoints;
-  if (almostEquals(distR, 0, epsilon=1/xPixelScale) === true) {
-    for (var angle=initialAngle+deltaAngle; (angle<finalAngle && almostEquals(angle, finalAngle) === false); angle+=deltaAngle) {
+  // var minDistance = 1 / xPixelScale;
+  var minDistance = 1 / 300;
+  // var minDistance = 0.01;
+  // console.log("extraPoints debug:\ndistR:" + distR +
+  //             "\nalmostEquals: " + almostEquals(distR, 0, minDistance));
+  if (almostEquals(distR, 0, minDistance) === true) {
+    for (var angle=initialAngle+deltaAngle;
+         (angle<finalAngle && almostEquals(angle, finalAngle) === false);
+         angle+=deltaAngle) {
       var xOffset = radius * Math.cos(angle);
       var yOffset = radius * Math.sin(angle);
       var point = {x: thetaPos.x + xOffset, y: thetaPos.y + yOffset};
@@ -1001,17 +1013,18 @@ var drawing = (function(context=mainContext, canvas=mainCanvas) {
       context.fillStyle = "green";
 
       if (debug === true) {
-        context.fillStyle = "DarkGrey";
+        context.fillStyle = "black";
       }
       var outlines = lensedImageOutlines.minus;
     }
 
     else {
-      console.log(`sign ${sign} is in valid. Must be "plus" or "minus"`)
+      console.log(`sign ${sign} is invalid. Must be "plus" or "minus"`)
       return;
     }
 
-    if (outlines === undefined || outlines.length === 0) {
+    if (typeof outlines === "undefined" || outlines === null ||
+        outlines.length === 0) {
       return;
     }
 
@@ -1191,23 +1204,15 @@ var drawing = (function(context=mainContext, canvas=mainCanvas) {
     drawSourcePath();
     drawSource();
 
-    if (display.images === true)
+    if (display.images === true) {
       if (eventModule.finiteSourceFlag === true) {
-        if (clippingImageFlag === true) {
-          context.save();
-          context.beginPath();
-          context.rect(0, 0, canvas.width, context.canvas.height);
-          context.arc(lens1.pixelPos.x, lens1.pixelPos.y, ringRadius.x,
-                      0, Math.PI * 2, true);
-          context.clip();
-        }
-        drawFullLensedImages(debug=false, fillOn=true, strokeOn=true, lens1);
-        if (clippingImageFlag === true)
-          context.restore();
+        drawFullLensedImages(debug=false, fillOn=true, strokeOn=false, lens1);
+        drawFullLensedImages(debug=true, fillOn=true, strokeOn=true, lens1);
       }
       else {
         drawPointLensedImages();
       }
+    }
 
     toggleClippingRegion(turnOn=false);
     drawAxes();
