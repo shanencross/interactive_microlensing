@@ -507,12 +507,26 @@ function getCircleOutline(radius=sourceRadius, thetaPos=sourcePos,
 function addExtraPoints(outline, radius, thetaPos, initialAngle, finalAngle,
                         distR, numExtraPoints=numExtraPointsDefault) {
   var deltaAngle = (finalAngle - initialAngle)/numExtraPoints;
-  // var minDistance = 1 / xPixelScale;
-  var minDistance = 1 / 300;
-  // var minDistance = 0.01;
-  // console.log("extraPoints debug:\ndistR:" + distR +
-  //             "\nalmostEquals: " + almostEquals(distR, 0, minDistance));
-  if (almostEquals(distR, 0, minDistance) === true) {
+
+  // distance of point to lens in units of source radius.
+
+  // used to determine when to add extra points.
+
+  // in units of source radius because larger sources require more points to
+  // be added.
+  
+  // mas / mas = unitless
+  var z = distR / sourceRadius;
+
+  // threshold below which we add extra points.
+  // higher value yields better image shapes, worse performance (plot update
+  // speed).
+
+  // Determined happy medium of good shapes vs. performance through testing.
+  var minZ = 0.05;
+
+  // Add extra points if z (distance in units of sourcer adius)
+  if (z < minZ || almostEquals(z, minZ) === true) {
     for (var angle=initialAngle+deltaAngle;
          (angle<finalAngle && almostEquals(angle, finalAngle) === false);
          angle+=deltaAngle) {
@@ -1206,8 +1220,8 @@ var drawing = (function(context=mainContext, canvas=mainCanvas) {
 
     if (display.images === true) {
       if (eventModule.finiteSourceFlag === true) {
-        drawFullLensedImages(debug=false, fillOn=true, strokeOn=false, lens1);
-        drawFullLensedImages(debug=true, fillOn=true, strokeOn=true, lens1);
+        drawFullLensedImages(debug=false, fillOn=true, strokeOn=true, lens1);
+        // drawFullLensedImages(debug=true, fillOn=true, strokeOn=true, lens1);
       }
       else {
         drawPointLensedImages();
