@@ -61,6 +61,7 @@ var c = 299792458.0;
 
 // rad/mas; const
 var masToRad = 4.84813681109536e-9;
+var yearToDay = 365.25; // day/year; const
 
 // Dl slider/value is kept one "step" below Ds; determines size of that step
 
@@ -227,21 +228,28 @@ var centerLayout = false;
 
 // checkbox flags
 
-// default values for checkbox flags
-var fixU0flagDefault = false;
-var finiteSourceFlagDefault = false;
-
 // tracks whether u0 is to be held fixed while other quantities vary
-var fixU0flag = fixU0flagDefault;
+var fixU0flag = false;
 // tracks whether finite or point source is being used
-var finiteSourceFlag = finiteSourceFlagDefault;
+var finiteSourceFlag = false;
 
 // controls whether plot updates when slider is moved
 // or when slider is released
 var updateOnSliderMovementFlag = true;
 var updateOnSliderReleaseFlag = false;
 
-/** init */
+/** init
+  * Initialize event module.
+  *
+  * Initialize event parameters, button/slider/checkbox event listeners,
+  * plotting parameters, and lightcurve data, and draws lightcurve plot.
+  *
+  * Main module should call this after requiring the event module,
+  * the lensPlane module, and the animation module so that all inter-module
+  * references work correctly.
+  *
+  * Turns module 'initialized' flag on.
+  */
 function init() {
   initParams();
   initListeners();
@@ -260,7 +268,15 @@ function init() {
   initialized = true;
 }
 
-/** initListeners */
+/** initListeners
+  *
+  * Initialize event listeners for sliders, buttons, and checkboxes.
+  *
+  * Also updates the sliders to match initialized parameter values.
+  *
+  * If no finite source checkbox is found on html page,
+  * turns finite source flag off.
+  */
 function initListeners(updateOnSliderMovement=updateOnSliderMovementFlag,
                        updateOnSliderRelease=updateOnSliderReleaseFlag) {
 
@@ -330,7 +346,27 @@ function initListeners(updateOnSliderMovement=updateOnSliderMovementFlag,
   updateSliders();
 }
 
-/** initParams */
+/** initParams
+  * Initialize the paramter values.
+  *
+  * This includes the basic slider values, and the derived quantities
+  * caluclated from those values,
+  *
+  * Also initialize the checkboxes to match the values their flags have been
+  * set to.
+  *
+  * Basic parameters include:
+  *  Ml
+  *  Ds
+  *  thetaY
+  *  Dl
+  *  t0
+  *  mu
+  *
+  * Checkboxes/flags include:
+  *  fixU0checkbox and fixu0flag
+  * finiteSourceCheckbox and finiteSourceFlag
+  */
 function initParams() {
   // set lense curve parameters to defaults
 
@@ -358,21 +394,29 @@ function initParams() {
   // set default checkboxes
   if (typeof fixU0checkbox !== "undefined" &&
       fixU0checkbox !== null) {
-    fixU0checkbox.checked = false;
-    fixU0flag = fixU0checkbox.checked;
+    fixU0checkbox.checked = fixU0flag;
   }
 
   if (typeof finiteSourceCheckbox !== "undefined" &&
       finiteSourceCheckbox !== null) {
-    finiteSourceCheckbox.checked = false;
-    var finiteSourceFlag = finiteSourceCheckbox.checked;
+    finiteSourceCheckbox.checked = finiteSourceFlag;
   }
 
   // set derived quantities
   updateDerivedQuantities(initializing=true);
 }
 
-/** updateDerivedQuantities */
+/** updateDerivedQuantities
+  *
+  * Updated derived quantities that must be calculated from basic
+  * parameters.
+  *
+  * This includes:
+  *   Drel
+  *   thetaE
+  *   u0 or thetaY (depending on which is being held fixed)
+  *   tE
+  */
 function updateDerivedQuantities(initializing=false) {
   updateDrel();
   updateThetaE();
@@ -384,7 +428,12 @@ function updateDerivedQuantities(initializing=false) {
   updateTE();
 }
 
-/** updateU0 */
+/** updateU0
+  * Update u0 parameter using thetaY value.
+  *
+  * If thetaY has been changed but u0 has not, u0 needs to be updated since
+  * they are functions of one another.
+  */
 function updateU0() {
   // convert from mas to radians
   var thetaY_rad = thetaY * masToRad;
@@ -392,7 +441,12 @@ function updateU0() {
   u0 = thetaY_rad / thetaE;
 }
 
-/** updateThetaY */
+/** updateThetaY
+  * Update thetaY parameter using u0 value.
+  *
+  * If u0 has been changed but thetaY has not, thetaY needs to be updated since
+  * they are functions of one another.
+  */
 function updateThetaY() {
   // convert from radians to mas
   var thetaE_mas = thetaE / masToRad ;
@@ -400,18 +454,32 @@ function updateThetaY() {
   thetaY = u0 * thetaE_mas;
 }
 
-/** updateDrel */
+/** updateDrel
+  * Update Drel paramter using Dl and Ds values.
+  */
 function updateDrel() {
   // kpc
   Drel = 1/((1/Dl) - (1/Ds));
 }
 
-/** updateThetaE */
+/** updateThetaE
+  * Re-calculate and update thetaE parameter.
+  */
 function updateThetaE() {
   thetaE = calculateThetaE();
 }
 
-/** calculateThetaE */
+/** calculateThetaE
+  * Calculate thetaE value from Ml, Drel, and constants, but do not
+  * store in thetaE parameter yet.
+  *
+  * By Setting get_mas argument to true, can be used to fetch thetaE in mas
+  * (milliarcseconds), even though paramter is stored in radians.
+  *
+  * @param {boolean} get_mas - Sets the units of the thetaE result to
+  *                            mas (if true) or radians (if false).
+  *
+  */
 function calculateThetaE(get_mas=false) {
   /*
   G: m3 kg−1 s−2 (astropy value)
@@ -447,10 +515,10 @@ function calculateThetaE(get_mas=false) {
   return thetaEresult;
 }
 
-/** updateTE */
+/** updateTE
+  * Update thetaE parameter from mu, thetaE, and constants.
+  */
 function updateTE() {
-  var yearToDay = 365.25; // day/year; const
-
   // mu converted for equation to rad/yr
   var eqMu = mu * masToRad / yearToDay
 
@@ -460,7 +528,14 @@ function updateTE() {
   tE = thetaE/eqMu;
 }
 
-/** updateSliderReadout */
+/** updateSliderReadout
+  * Update readout of a particular slider to match slider value.
+  *
+  * @param {slider} slider - Slider HTML element to update.
+  * @param {readout} readout - Slider readout HTML element to update.
+  * @param {string} sliderName - Name of slider. Used to determine number
+  *                              of decimal places to use for readout.
+  */
 function updateSliderReadout(slider, readout, sliderName="") {
   // Update individual slider readout to match slider value
 
@@ -483,7 +558,18 @@ function updateSliderReadout(slider, readout, sliderName="") {
   readout.innerHTML = Number(slider.value).toFixed(fixedDecimalPlace);
 }
 
-/** updateSliders */
+/** updateSliders
+  * Update sliders to match parameter values, including derived quantities.
+  *
+  * Also sets maximum readout values, and adds a '+' onto readouts that exceed
+  * their max.
+  *
+  * If dev changes slider rangers on HTML page, they need to update these max
+  * values too.
+  *
+  * Likewise if dev changes these max values, slider range won't be changed
+  * unless they change the HTML page slider ranges too.
+  */
 function updateSliders() {
   // maximum parameter values that can be displayed;
 
@@ -567,7 +653,12 @@ function updateSliders() {
   }
 }
 
-/** resetParams */
+/** resetParams
+  * Reset event parameters to default values.
+  *
+  * Resets parameters (basic and derived), updates the lightcurve data, and
+  * redraws canvases.
+  */
 function resetParams(isFiniteSource = finiteSourceFlag) {
   // reset lense curve parameters to defaults and redraw curve
   initParams();
@@ -588,7 +679,25 @@ function resetParams(isFiniteSource = finiteSourceFlag) {
   redrawCanvases();
 }
 
-/** updateParam */
+/** updateParam
+  * Update parameter to match slider value along with values dependent on it
+  * and redraw canvases.
+  *
+  * Updates paramter, then parameters dependent on it, then updates sliders,
+  * then the lightcurve data, then redraws canvases.
+  * canvases.
+  *
+  * Parameters that can be updated:
+  *  Ml
+  *  Ds
+  *  thetaY
+  *  Dl
+  *  t0
+  *  mu
+  *  tE
+  *  u0
+  * @param {string} param - Name of parameter to update.
+  */
 function updateParam(param) {
   if (param === "Ml") {
     Ml = Number(MlSlider.value);
@@ -655,7 +764,13 @@ function updateParam(param) {
   redrawCanvases();
 }
 
-/** redrawCanvases */
+/** redrawCanvases
+  * Redraw canvases.
+  *
+  * Checks for availability of lens plane and animation modules and uses their
+  * drawing functions if available. Otherwise, defaults to local drawing
+  * function.
+  */
 function redrawCanvases() {
   try {
     var lensPlaneModule = require("./fspl-microlensing-event-lens-plane.js");
@@ -685,7 +800,26 @@ function redrawCanvases() {
   }
 }
 
-/** updateGraph */
+/** updateGraph
+  * Change graph/plot parameter and redraw it.
+  *
+  * Updates a plot parameter and the parameters dependent on it,
+  * then updates the lightcurve data to match the new range/scale,
+  * and redraws plot.
+  *
+  * @param {string} shift - Name of the change to make to the graph.
+  *
+  * valid values for shift:
+  *  xLeft
+  *  xRight
+  *  yUp
+  *  yDown
+  *  xZoomIn
+  *  xZoomOut
+  *  yZoomIn
+  *  yZoomOut
+  *  reset
+  */
 function updateGraph(shift) {
   console.log(shift);
   var xInit, yInit, xWidth, yHeight;
@@ -700,7 +834,7 @@ function updateGraph(shift) {
   else if (shift === "yUp") {
     yInit = yAxisInitialMagnif - yGraphShiftStep;
   }
-    else if (shift === "yDown") {
+  else if (shift === "yDown") {
     yInit = yAxisInitialMagnif + yGraphShiftStep;
   }
   else if (shift === "xZoomIn") {
@@ -726,7 +860,14 @@ function updateGraph(shift) {
   plotLightcurve();
 }
 
-/** updateGridRange */
+/** updateGridRange
+  * Sets the plot grid range parameters using other graph/plot parameters.
+  *
+  * With arguments, can also set new grid step values.
+  *
+  * @param {number} xStep - New x-axis grid step value to set.
+  * @param {number} yStep - New y-axis grid step value to set.
+  */
 function updateGridRange(xStep, yStep) {
   // update grid with new step values,
   // and/or update grid for new initial/final axis values using
@@ -734,7 +875,7 @@ function updateGridRange(xStep, yStep) {
   // if new step values are passed in, update grid step values;
 
   // otherwise leave grid steps unchanged when updating grid
-  if ( xStep !== undefined && yStep !== undefined) {
+  if (xStep !== undefined && yStep !== undefined) {
     xGridStep = xStep;
     yGridStep = yStep;
   }
@@ -768,24 +909,34 @@ function updateGridRange(xStep, yStep) {
     yGridFinal = yGridStep * (Math.floor(yAxisFinalMagnif / yGridStep));
 }
 
-/** clearGraph */
+/** clearGraph
+  * Erases plot, usually so updated plot can be drawn.
+  */
 function clearGraph() {
   context.clearRect(graphLeftBorder, graphTopBorder, graphWidth, graphHeight);
 }
 
-/** xDayToPixel */
+/** xDayToPixel
+  * Converts plot day value to canvas x pixel value.
+  * @param {number} xPlotDay - Day value for plot to be converted.
+  */
 function xDayToPixel(xPlotDay) {
   var xPlotPixel = (xPlotDay - xAxisInitialDay) * xPixelScale + graphLeftBorder;
   return xPlotPixel;
 }
 
-/** yMagnifToPixel */
+/** yMagnifToPixel
+  * Converts plot magnification value to canvas y pixel value.
+  * @param {number} yPlotMagnif - magnification value for plot to be converted
+  */
 function yMagnifToPixel(yPlotMagnif) {
   var yPlotPixel = graphBottomBorder - (yPlotMagnif - yAxisInitialMagnif) * yPixelScale;
   return yPlotPixel;
 }
 
-/** drawAxes */
+/** drawAxes
+  * Draw axes using graph parameters.
+  */
 function drawAxes() {
   context.beginPath();
 
@@ -821,7 +972,10 @@ function drawAxes() {
   context.stroke();
 }
 
-/** drawAxisLabels */
+/** drawAxisLabels
+  * Draw labels for axes using graph parameters.
+  *
+  */
 function drawAxisLabels() {
   // x label
   context.font = axisLabelFont;
@@ -1019,8 +1173,6 @@ function plotLightcurveAlone(tDayFinal=xAxisFinalDay, inputData, dashedCurve=fal
 
 /** getThetaX */
 function getThetaX(t) {
-  // day/year; const
-  var yearToDay = 365.25;
   // convert mu to milliarcseconds/day
   var eqMu = mu / yearToDay;
   var thetaX = eqMu * (t - t0);

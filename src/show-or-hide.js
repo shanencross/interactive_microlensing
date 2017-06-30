@@ -1,5 +1,5 @@
 /** Show/Hide finite source options module.
-  * @module show-or-hide.js
+  * @module show-or-hide
   */
 
 console.log("Executing show-or-hide.js")
